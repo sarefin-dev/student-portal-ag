@@ -26,20 +26,84 @@ export default async function StudentDashboardPage() {
     .eq('enrollments.student_id', user?.id)
     .order('issued_at', { ascending: false });
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">My Courses</h1>
-        <Link href="/courses">
-          <Button variant="outline">Browse Catalog</Button>
-        </Link>
-      </div>
+  const { data: upcomingSessions } = await supabase
+    .from('live_sessions')
+    .select('id, title, start_time, courses!inner(title, slug)')
+    .in('course_id', enrollments?.map(e => e.course_id) || [])
+    .gte('start_time', new Date().toISOString())
+    .order('start_time', { ascending: true })
+    .limit(3);
 
-      {(!enrollments || enrollments.length === 0) ? (
-        <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
-          You are not enrolled in any courses yet.
+  const { data: payments } = await supabase
+    .from('installments')
+    .select('*, orders!inner(courses(title))')
+    .eq('orders.student_id', user?.id)
+    .eq('status', 'pending')
+    .lte('due_date', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
+    .order('due_date', { ascending: true })
+    .limit(3);
+
+  return (
+    <div className="space-y-8">
+      
+      {/* ALERTS SECTION */}
+      {((payments && payments.length > 0) || (upcomingSessions && upcomingSessions.length > 0)) && (
+        <div className="grid md:grid-cols-2 gap-6">
+          {upcomingSessions && upcomingSessions.length > 0 && (
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-5">
+              <h3 className="font-semibold text-primary mb-3 flex items-center gap-2">Upcoming Classes</h3>
+              <div className="space-y-3">
+                {upcomingSessions.map((session: any) => (
+                  <div key={session.id} className="flex justify-between items-center bg-background p-3 rounded shadow-sm text-sm">
+                    <div>
+                      <div className="font-medium">{session.title}</div>
+                      <div className="text-xs text-muted-foreground">{session.courses.title}</div>
+                    </div>
+                    <div className="text-right whitespace-nowrap ml-4">
+                      <div className="font-semibold text-primary">{new Date(session.start_time).toLocaleDateString()}</div>
+                      <div className="text-xs text-muted-foreground">{new Date(session.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {payments && payments.length > 0 && (
+            <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-5">
+              <h3 className="font-semibold text-destructive mb-3 flex items-center gap-2">Payments Due Soon</h3>
+              <div className="space-y-3">
+                {payments.map((payment: any) => (
+                  <div key={payment.id} className="flex justify-between items-center bg-background p-3 rounded shadow-sm text-sm border-l-2 border-l-destructive">
+                    <div>
+                      <div className="font-medium">Installment {payment.sequence_number}</div>
+                      <div className="text-xs text-muted-foreground">{payment.orders.courses?.title}</div>
+                    </div>
+                    <div className="text-right ml-4">
+                      <div className="font-bold">৳ {payment.amount}</div>
+                      <div className="text-xs font-semibold text-destructive">Due: {new Date(payment.due_date).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      ) : (
+      )}
+
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">My Courses</h1>
+          <Link href="/courses">
+            <Button variant="outline">Browse Catalog</Button>
+          </Link>
+        </div>
+
+        {(!enrollments || enrollments.length === 0) ? (
+          <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
+            You are not enrolled in any courses yet.
+          </div>
+        ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {enrollments.map((enr: any) => {
             const course = enr.courses;
@@ -74,6 +138,7 @@ export default async function StudentDashboardPage() {
           })}
         </div>
       )}
+      </div>
 
 
       {certificates && certificates.length > 0 && (
