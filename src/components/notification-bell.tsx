@@ -20,6 +20,8 @@ export function NotificationBell() {
   const supabase = createClient();
 
   useEffect(() => {
+    let channel: any = null;
+
     async function loadNotifications() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -35,19 +37,18 @@ export function NotificationBell() {
         setNotifications(data);
         setUnreadCount(data.filter(n => !n.read_at).length);
       }
+
+      channel = supabase.channel('notifications')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, (payload) => {
+          setNotifications(prev => [payload.new, ...prev].slice(0, 10));
+          setUnreadCount(prev => prev + 1);
+        })
+        .subscribe();
     }
     loadNotifications();
 
-    // Optionally set up real-time here
-    const channel = supabase.channel('notifications')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
-        setNotifications(prev => [payload.new, ...prev].slice(0, 10));
-        setUnreadCount(prev => prev + 1);
-      })
-      .subscribe();
-
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, []);
 
