@@ -40,7 +40,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
     }
 
     return (
-      <div className="container mx-auto py-12 max-w-lg">
+      <div className="container mx-auto py-6 md:py-12 px-4 max-w-lg">
         <div className="rounded border bg-card p-8 shadow-none space-y-6">
           <h1 className="text-2xl font-bold">Review Your Order</h1>
           <div className="rounded border bg-muted/50 p-4 flex justify-between items-center">
@@ -85,7 +85,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
   // STEP 2: METHOD SELECT
   if (step === 'method') {
     return (
-      <div className="container mx-auto py-12 max-w-lg">
+      <div className="container mx-auto py-6 md:py-12 px-4 max-w-lg">
         <div className="rounded border bg-card p-8 shadow-none space-y-6">
           <h1 className="text-2xl font-bold">Select Payment Method</h1>
           <div className="space-y-4">
@@ -110,7 +110,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
   // STEP 3: INSTRUCTIONS
   if (step === 'instructions') {
     return (
-      <div className="container mx-auto py-12 max-w-lg">
+      <div className="container mx-auto py-6 md:py-12 px-4 max-w-lg">
         <div className="rounded border bg-card p-8 shadow-none space-y-6">
           <h1 className="text-2xl font-bold capitalize">{method} Instructions</h1>
           
