@@ -20,11 +20,12 @@ export function NotificationBell() {
   const supabase = createClient();
 
   useEffect(() => {
+    let isMounted = true;
     let channel: any = null;
 
     async function loadNotifications() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user || !isMounted) return;
 
       const { data } = await supabase
         .from('notifications')
@@ -33,21 +34,26 @@ export function NotificationBell() {
         .order('created_at', { ascending: false })
         .limit(10);
 
+      if (!isMounted) return;
+
       if (data) {
         setNotifications(data);
         setUnreadCount(data.filter(n => !n.read_at).length);
       }
 
-      channel = supabase.channel('notifications')
+      channel = supabase.channel(`notifications-${user.id}-${Date.now()}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, (payload) => {
-          setNotifications(prev => [payload.new, ...prev].slice(0, 10));
-          setUnreadCount(prev => prev + 1);
+          if (isMounted) {
+            setNotifications(prev => [payload.new, ...prev].slice(0, 10));
+            setUnreadCount(prev => prev + 1);
+          }
         })
         .subscribe();
     }
     loadNotifications();
 
     return () => {
+      isMounted = false;
       if (channel) supabase.removeChannel(channel);
     };
   }, []);
