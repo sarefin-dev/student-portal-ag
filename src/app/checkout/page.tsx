@@ -112,25 +112,47 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
     return (
       <div className="container mx-auto py-6 md:py-12 px-4 max-w-lg">
         <div className="rounded border bg-card p-8 shadow-none space-y-6">
-          <h1 className="text-2xl font-bold capitalize">{method} Instructions</h1>
+          <h1 className="text-2xl font-bold capitalize">{method === 'bank' ? 'Bank Transfer' : method} Instructions</h1>
           
           <div className="rounded bg-accent p-6 text-center space-y-2">
             <p className="text-sm uppercase tracking-wider font-semibold text-accent-foreground/70">Amount to send</p>
-            <div className="text-4xl font-mono font-bold text-accent-foreground">Tk {order.total_amount}</div>
+            <div className="text-4xl font-mono font-bold text-accent-foreground">৳ {order.total_amount}</div>
           </div>
 
-          <div className="space-y-4 text-sm leading-relaxed border-l-4 border-ring pl-4 py-2">
-            <p>1. Open your {method} app or dial USSD.</p>
-            <p>2. Select <strong>Send Money</strong>.</p>
-            <p>3. Enter number: <strong className="text-lg">01711223344</strong></p>
-            <p>4. Enter amount: <strong>{order.total_amount}</strong></p>
-            <p>5. Enter reference: <strong>{orderId.substring(0,6)}</strong></p>
-            <p>6. Note down the <strong>Transaction ID (TrxID)</strong> from the confirmation SMS.</p>
+          <div className="space-y-4">
+            <div className="flex gap-4 p-4 border rounded items-start">
+              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold shrink-0">1</div>
+              <div className="w-full">
+                <p className="font-semibold mb-2">
+                  {method === 'bank' ? 'Transfer to this Bank Account' : 'Send Money to this number'}
+                </p>
+                
+                {method === 'bank' ? (
+                  <div className="space-y-2 text-sm bg-muted p-3 rounded">
+                    <p><span className="text-muted-foreground">Bank:</span> <strong>Dutch-Bangla Bank (DBBL)</strong></p>
+                    <p><span className="text-muted-foreground">Acc Name:</span> <strong>ArefinLab IT</strong></p>
+                    <p><span className="text-muted-foreground">Acc No:</span> <strong>123.456.7890</strong></p>
+                    <p><span className="text-muted-foreground">Branch:</span> <strong>Gulshan Branch</strong></p>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <code className="text-lg font-mono bg-muted px-2 py-1 rounded">01700-000000</code>
+                    <Button variant="ghost" size="sm" type="button"><Copy className="w-4 h-4" /></Button>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex gap-4 p-4 border rounded items-start">
+              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold shrink-0">2</div>
+              <div>
+                <p className="font-semibold mb-1">Save the Transaction ID</p>
+                <p className="text-sm text-muted-foreground">
+                  {method === 'bank' ? 'Note down the transaction reference from your bank slip or app.' : 'After sending, you will receive a TrxID (e.g. DHK3M7RCLJ).'}
+                </p>
+              </div>
+            </div>
           </div>
-
-          <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
-            বাংলা: সেন্ড মানি করার পর যে TrxID পাবেন, তা পরের ধাপে দিন। আমরা স্বয়ংক্রিয়ভাবে মিলিয়ে আপনার কোর্স চালু করে দিবো।
-          </p>
 
           <Button asChild size="lg" className="w-full">
             <Link href={`/checkout?orderId=${orderId}&step=submit&method=${method}`}>I have sent the money →</Link>
@@ -150,7 +172,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
       <div className="container mx-auto py-12 max-w-lg">
         <div className="rounded border bg-card p-8 shadow-none space-y-6">
           <h1 className="text-2xl font-bold">Verify Payment</h1>
-          <p className="text-muted-foreground">Enter the details of your {method} transaction.</p>
+          <p className="text-muted-foreground">Enter the details of your {method === 'bank' ? 'bank transfer' : method + ' transaction'}.</p>
 
           {error === 'DuplicateTrxId' && (
             <div className="bg-destructive/10 text-destructive p-4 rounded flex gap-2 items-start text-sm">
@@ -165,7 +187,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Transaction ID (TrxID)</label>
-              <input required name="trxId" placeholder="e.g. DHK3M7RCLJ" className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 uppercase" />
+              <input required name="trxId" placeholder={method === 'bank' ? "e.g. REF-123456" : "e.g. DHK3M7RCLJ"} className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 uppercase" />
             </div>
 
             <div className="space-y-2">
@@ -174,8 +196,10 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Sender Number</label>
-              <input required name="senderNumber" placeholder="e.g. 01876623875" className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+              <label className="text-sm font-medium">
+                {method === 'bank' ? 'Bank Name & Branch' : 'Sender Number'}
+              </label>
+              <input required name="senderNumber" placeholder={method === 'bank' ? "e.g. Brac Bank, Gulshan" : "e.g. 01876623875"} className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
             </div>
 
             <Button size="lg" className="w-full mt-4" type="submit">Submit for Verification</Button>
