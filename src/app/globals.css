@@ -25,68 +25,172 @@
   --color-accent-foreground: hsl(var(--accent-foreground));
 
   --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-bn: var(--font-noto-bengali);
 
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 }
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
-  }
- 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-  }
+:root {
+  /* Canvas */
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+
+  /* Actions */
+  --primary: #0A1A2F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F1F5F9;
+  --secondary-foreground: #0F172A;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: #E6F9FF;
+  --accent-foreground: #0A1A2F;
+
+  /* Semantic */
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --success: #16A34A;
+  --success-foreground: #FFFFFF;
+  --warning: #D97706;
+  --warning-foreground: #FFFFFF;
+
+  /* Structure */
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #007A9E;
+  --radius: 0.25rem; /* 4px */
+
+  /* Charts */
+  --chart-1: #00C2FF;
+  --chart-2: #0A1A2F;
+  --chart-3: #16A34A;
+  --chart-4: #D97706;
+  --chart-5: #64748B;
+
+  /* Sidebar */
+  --sidebar: #0A1A2F;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #00C2FF;
+  --sidebar-primary-foreground: #0A1A2F;
+  --sidebar-accent: #16273D;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #1E2E45;
+  --sidebar-ring: #00C2FF;
+}
+
+.dark {
+  /* Canvas */
+  --background: #0B1420;
+  --foreground: #F1F5F9;
+  --card: #131F2E;
+  --card-foreground: #F1F5F9;
+  --popover: #131F2E;
+  --popover-foreground: #F1F5F9;
+
+  /* Actions */
+  --primary: #00C2FF;
+  --primary-foreground: #0A1A2F;
+  --secondary: #1B2838;
+  --secondary-foreground: #F1F5F9;
+  --muted: #1B2838;
+  --muted-foreground: #94A3B8;
+  --accent: #16273D;
+  --accent-foreground: #F1F5F9;
+
+  /* Semantic */
+  --destructive: #F87171;
+  --destructive-foreground: #0B1420;
+  --success: #4ADE80;
+  --success-foreground: #0B1420;
+  --warning: #FBBF24;
+  --warning-foreground: #0B1420;
+
+  /* Structure */
+  --border: #1E2E45;
+  --input: #1E2E45;
+  --ring: #00C2FF;
+
+  /* Charts */
+  --chart-1: #00C2FF;
+  --chart-2: #94A3B8;
+  --chart-3: #4ADE80;
+  --chart-4: #FBBF24;
+  --chart-5: #64748B;
+
+  /* Sidebar — unchanged from :root */
+  --sidebar: #0A1A2F;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #00C2FF;
+  --sidebar-primary-foreground: #0A1A2F;
+  --sidebar-accent: #16273D;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #1E2E45;
+  --sidebar-ring: #00C2FF;
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
   }
 }

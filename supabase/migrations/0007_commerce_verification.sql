@@ -167,7 +167,19 @@ begin
     return 'no_match';
   end if;
 
+  select * into v_order from orders where id = v_pv.order_id;
+
+  -- 1. Check if SMS matches what they submitted in the form
   if v_txn.parsed_amount <> v_pv.submitted_amount then
+    update pending_verifications set status = 'manual_review', updated_at = now()
+    where id = p_pending_verification_id;
+    return 'amount_mismatch';
+  end if;
+
+  -- 2. Check if the payment actually covers the expected cost (prevent tampering)
+  -- If there's an installment plan, we would check the installment amount here.
+  -- For now, check against the order's total_amount.
+  if v_txn.parsed_amount < v_order.total_amount then
     update pending_verifications set status = 'manual_review', updated_at = now()
     where id = p_pending_verification_id;
     return 'amount_mismatch';

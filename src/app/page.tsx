@@ -32,13 +32,11 @@ export default async function Home() {
           Welcome to the new learning experience. Access your courses, track your progress, and join live sessions all in one place.
         </p>
         <div className="flex items-center gap-4">
-          <Link href="/login">
-            <Button size="lg">Sign In</Button>
+          <Link href="/courses">
+            <Button size="lg">Browse Courses</Button>
           </Link>
-          <Link href="/signup">
-            <Button variant="outline" size="lg">
-              Create Account
-            </Button>
+          <Link href="/login">
+            <Button variant="outline" size="lg">Sign In</Button>
           </Link>
         </div>
       </main>

@@ -364,6 +364,7 @@ Each phase is a milestone the agent can implement and verify independently. Scre
 - **P4 — Live & lifecycle:** live sessions + attendance + reminders (`FR-LIVE-*`); enrollment lifecycle: perpetual, archive, deactivate, ban, suspend (`FR-ENR-*`); CLS-04; ADM-05/06; INS-03.
 - **P5 — Storefront & promos:** paid/free resources + signed downloads (`FR-RES-*`); bundles, coupons, referrals, waitlist (`FR-PRO-*`); PUB-04; ADM-07/08/09.
 - **P6 — Dashboards, notifications, content:** role dashboards (`FR-DSH-1..3`); notifications email+in-app (`FR-NOT-*`) via Resend + `pg_cron`; testimonials (`FR-CNT-*`); STU-01..05; INS-01/05/06; ADM-01/10/11/12; SYS-*.
+- **P7 — Mobile Responsiveness (Audit & Polish):** Since a significant portion of students will use mobile phones, perform a complete audit of the application (especially the Classroom, Assessments, Storefront, and Checkout) to ensure the UI behaves perfectly on small screens. Fix responsive grid layouts, sidebar collapsing (hamburger menus), touch targets, and scrolling behaviors.
 
 **Definition of done per task:** `npm run typecheck && npm run lint && npm run test` pass; relevant Playwright e2e passes; RLS enforced; no secrets in client bundle; builds with `output: 'standalone'`.
 

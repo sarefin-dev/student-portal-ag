@@ -1,0 +1,11 @@
+[
+  {
+    "title": "Welcome to ArefinLab Student Portal",
+    "slug": "blog/hello-world",
+    "date": "2026-08-20T00:00:00.000Z",
+    "description": "A quick introduction to our new learning platform.",
+    "draft": false,
+    "body": "const{Fragment:e,jsx:n,jsxs:t}=arguments[0];function _createMdxContent(r){const o={em:\"em\",h1:\"h1\",p:\"p\",strong:\"strong\",...r.components};return t(e,{children:[n(o.h1,{children:\"Hello World\"}),\"\\n\",t(o.p,{children:[\"Welcome to the ArefinLab Student Portal. This is our first blog post rendered completely using \",n(o.strong,{children:\"MDX\"}),\" and \",n(o.em,{children:\"Velite\"}),\".\"]}),\"\\n\",n(\"div\",{className:\"p-4 bg-muted rounded-md mt-4\",children:n(o.p,{children:\"This is a custom React component block inside MDX.\"})})]})}return{default:function(e={}){const{wrapper:t}=e.components||{};return t?n(t,{...e,children:n(_createMdxContent,{...e})}):_createMdxContent(e)}};",
+    "permalink": "/blog/blog/hello-world"
+  }
+]
