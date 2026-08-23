@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Link from "next/link"
 
 export default function LoginPage() {
   return (
@@ -27,7 +28,12 @@ export default function LoginPage() {
                   <Input id="signin-email" name="email" type="email" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="signin-password">Password</Label>
+                    <Link href="/forgot-password" className="text-xs text-primary hover:underline" tabIndex={-1}>
+                      Forgot password?
+                    </Link>
+                  </div>
                   <Input id="signin-password" name="password" type="password" required />
                 </div>
                 <Button formAction={login} className="w-full mt-4">
