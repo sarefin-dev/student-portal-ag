@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { NavigationButton } from '@/components/ui/navigation-button';
 import Link from 'next/link';
 
 export default async function CourseHomePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -52,9 +53,9 @@ export default async function CourseHomePage({ params }: { params: Promise<{ slu
           Select a lesson from the syllabus on the left to begin learning, or resume where you left off.
         </p>
         {firstLessonId ? (
-          <Link href={`/learn/${course.slug}/lessons/${firstLessonId}`}>
-            <Button size="lg">Resume Course</Button>
-          </Link>
+          <NavigationButton href={`/learn/${course.slug}/lessons/${firstLessonId}`} size="lg">
+            Resume Course
+          </NavigationButton>
         ) : (
           <Button size="lg" disabled>No lessons available</Button>
         )}

@@ -7,6 +7,7 @@ import { CheckCircle2, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react
 import { VideoPlayer } from '@/components/video-player';
 import { Button } from '@/components/ui/button';
 import { SubmitButton } from '@/components/ui/submit-button';
+import { NavigationButton } from '@/components/ui/navigation-button';
 import { AssessmentTaker } from './assessment-taker';
 import { env } from '@/env';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
@@ -129,9 +130,9 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
       {/* Sticky Bottom Bar */}
       <div className="border-t bg-background p-4 flex items-center justify-between fixed bottom-0 left-0 right-0 md:left-[300px]">
         {prevLesson ? (
-          <Link href={`/learn/${slug}/lessons/${prevLesson.id}`}>
-            <Button variant="outline"><ChevronLeft className="w-4 h-4 mr-2" /> Previous Lesson</Button>
-          </Link>
+          <NavigationButton href={`/learn/${slug}/lessons/${prevLesson.id}`} variant="outline">
+            <ChevronLeft className="w-4 h-4 mr-2" /> Previous Lesson
+          </NavigationButton>
         ) : (
           <Button variant="outline" disabled><ChevronLeft className="w-4 h-4 mr-2" /> Previous Lesson</Button>
         )}
@@ -193,9 +194,9 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
           </form>
 
           {nextLesson ? (
-            <Link href={`/learn/${slug}/lessons/${nextLesson.id}`}>
-              <Button variant="default">Next Lesson <ChevronRight className="w-4 h-4 ml-2" /></Button>
-            </Link>
+            <NavigationButton href={`/learn/${slug}/lessons/${nextLesson.id}`} variant="default">
+              Next Lesson <ChevronRight className="w-4 h-4 ml-2" />
+            </NavigationButton>
           ) : (
             <Button variant="default" disabled>Next Lesson <ChevronRight className="w-4 h-4 ml-2" /></Button>
           )}
