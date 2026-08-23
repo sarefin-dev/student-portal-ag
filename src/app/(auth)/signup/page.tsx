@@ -14,8 +14,16 @@ export default function SignupPage() {
         </div>
         <form className="space-y-4">
           <div className="space-y-2">
+            <Label htmlFor="full_name">Full Name</Label>
+            <Input id="full_name" name="full_name" type="text" required />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" name="email" type="email" required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">WhatsApp Number</Label>
+            <Input id="phone" name="phone" type="tel" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
