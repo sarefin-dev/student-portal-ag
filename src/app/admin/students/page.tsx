@@ -24,7 +24,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
 
   let queryBuilder = supabaseAdmin
     .from('admin_student_profiles_view')
-    .select('*', { count: 'exact' });
+    .select('*', { count: 'estimated' });
 
   if (search) {
     queryBuilder = queryBuilder.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
