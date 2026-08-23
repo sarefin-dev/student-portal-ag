@@ -21,6 +21,7 @@ import {
   ChevronRight,
   LogOut,
   Menu,
+  Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -33,7 +34,8 @@ const navGroups = [
       { label: "Overview", href: "/admin", icon: LayoutDashboard },
       { label: "Courses", href: "/admin/courses", icon: BookOpen },
       { label: "Resources", href: "/admin/resources", icon: FileText },
-      { label: "Bundles", href: "/admin/bundles", icon: Package },
+      { label: "Products (SKUs)", href: "/admin/products", icon: Package },
+      { label: "Services", href: "/admin/services", icon: Briefcase },
       { label: "Coupons", href: "/admin/coupons", icon: Tag },
     ],
   },
