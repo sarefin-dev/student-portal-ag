@@ -66,13 +66,26 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
           <h2 className="text-lg font-bold">Course Price Settings</h2>
           <p className="text-sm text-muted-foreground">Set the price for the public checkout page.</p>
         </div>
-        <form action={updatePrice} className="flex items-center gap-2">
+        <form action={updatePrice} className="flex flex-col sm:flex-row items-end sm:items-center gap-4">
           <input type="hidden" name="courseId" value={course.id} />
-          <div className="relative">
-            <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">Tk</span>
-            <Input name="price_amount" type="number" step="0.01" defaultValue={course.price_amount} className="pl-8 w-32" />
+          
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground font-medium">Selling Price</label>
+            <div className="relative">
+              <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">Tk</span>
+              <Input name="price_amount" type="number" step="0.01" defaultValue={course.price_amount} className="pl-8 w-32" />
+            </div>
           </div>
-          <Button variant="outline" type="submit">Update Price</Button>
+          
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground font-medium">Original Price (Strike)</label>
+            <div className="relative">
+              <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">Tk</span>
+              <Input name="compare_at_price" type="number" step="0.01" defaultValue={course.compare_at_price || ''} className="pl-8 w-32" placeholder="Optional" />
+            </div>
+          </div>
+
+          <Button variant="outline" type="submit" className="mb-[2px]">Update Price</Button>
         </form>
       </div>
 

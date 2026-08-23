@@ -21,6 +21,8 @@ export async function createResource(formData: FormData) {
   const type = formData.get('type') as string;
   const isFree = formData.get('is_free') === 'true';
   const priceAmount = formData.get('price_amount') ? parseFloat(formData.get('price_amount') as string) : null;
+  const compareAtPriceRaw = formData.get('compare_at_price');
+  const compareAtPrice = compareAtPriceRaw ? parseFloat(compareAtPriceRaw as string) : null;
   const watermarkEnabled = formData.get('watermark_enabled') === 'true';
   const downloadLimit = formData.get('download_limit') ? parseInt(formData.get('download_limit') as string, 10) : null;
   const file = formData.get('file') as File;
@@ -55,6 +57,7 @@ export async function createResource(formData: FormData) {
       type,
       is_free: isFree,
       price_amount: isFree ? null : priceAmount,
+      compare_at_price: isFree ? null : compareAtPrice,
       storage_path: fileName,
       watermark_enabled: watermarkEnabled,
       download_limit: downloadLimit,

@@ -129,12 +129,18 @@ export function ResourceManager({ resources }: { resources: any[] }) {
                   />
                   <Label htmlFor="is_free">This resource is Free</Label>
                 </div>
-                {!isFree && (
-                  <div className="mt-2 space-y-2">
-                    <Label>Price (BDT)</Label>
-                    <Input name="price_amount" type="number" step="0.01" min="1" required={!isFree} placeholder="e.g. 500" />
-                  </div>
-                )}
+                  {!isFree && (
+                    <div className="mt-2 grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Selling Price (BDT)</Label>
+                        <Input name="price_amount" type="number" step="0.01" min="1" required={!isFree} placeholder="e.g. 500" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Original Price (Strike)</Label>
+                        <Input name="compare_at_price" type="number" step="0.01" placeholder="Optional" />
+                      </div>
+                    </div>
+                  )}
               </div>
               <div className="space-y-2">
                 <Label>PDF File</Label>

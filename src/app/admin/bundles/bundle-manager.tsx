@@ -23,11 +23,13 @@ export function BundleManager({ bundles, courses }: { bundles: any[], courses: a
     
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
+    const compareAtPriceRaw = formData.get('compare_at_price');
     
     const res = await createBundle(
       formData.get('title') as string,
       formData.get('description') as string,
       parseFloat(formData.get('price_amount') as string),
+      compareAtPriceRaw ? parseFloat(compareAtPriceRaw as string) : null,
       (formData.get('available_from') as string) ? new Date(formData.get('available_from') as string).toISOString() : null,
       (formData.get('available_until') as string) ? new Date(formData.get('available_until') as string).toISOString() : null,
       selectedCourses
@@ -130,9 +132,15 @@ export function BundleManager({ bundles, courses }: { bundles: any[], courses: a
                 <Label>Description</Label>
                 <Textarea name="description" placeholder="Short description..." className="resize-none h-20" />
               </div>
-              <div className="space-y-2">
-                <Label>Price (BDT)</Label>
-                <Input name="price_amount" type="number" step="0.01" min="1" required placeholder="e.g. 5000" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Selling Price (BDT)</Label>
+                  <Input name="price_amount" type="number" step="0.01" min="1" required placeholder="e.g. 5000" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Original Price (Strike)</Label>
+                  <Input name="compare_at_price" type="number" step="0.01" placeholder="Optional" />
+                </div>
               </div>
               
               <div className="space-y-2 border p-3 rounded-md bg-muted/30 max-h-48 overflow-y-auto">

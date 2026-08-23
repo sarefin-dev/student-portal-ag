@@ -112,10 +112,12 @@ export async function updatePrice(formData: FormData) {
   const { supabase } = await requireAuth();
   const courseId = formData.get('courseId') as string;
   const price_amount = parseFloat(formData.get('price_amount') as string);
+  const compare_at_price_raw = formData.get('compare_at_price');
+  const compare_at_price = compare_at_price_raw ? parseFloat(compare_at_price_raw as string) : null;
 
   const { error } = await supabase
     .from('courses')
-    .update({ price_amount })
+    .update({ price_amount, compare_at_price })
     .eq('id', courseId);
 
   if (error) throw new Error("Error updating price");

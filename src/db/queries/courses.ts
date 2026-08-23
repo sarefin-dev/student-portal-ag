@@ -12,6 +12,7 @@ export async function getActiveCourses(supabase: SupabaseClient) {
       type,
       thumbnail_url,
       price_amount,
+      compare_at_price,
       currency
     `)
     .eq('status', 'active')

@@ -12,7 +12,7 @@ async function verifyAdmin() {
   return user;
 }
 
-export async function createBundle(title: string, description: string, priceAmount: number, availableFrom: string | null, availableUntil: string | null, courseIds: string[]) {
+export async function createBundle(title: string, description: string, priceAmount: number, compareAtPrice: number | null, availableFrom: string | null, availableUntil: string | null, courseIds: string[]) {
   const user = await verifyAdmin();
   if (!user) return { success: false, error: "Unauthorized" };
 
@@ -25,6 +25,7 @@ export async function createBundle(title: string, description: string, priceAmou
       title,
       description,
       price_amount: priceAmount,
+      compare_at_price: compareAtPrice,
       available_from: availableFrom || null,
       available_until: availableUntil || null
     })

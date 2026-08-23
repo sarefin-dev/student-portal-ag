@@ -36,14 +36,21 @@ export default async function CoursesCatalogPage() {
                 )}
               </div>
               <div className="flex flex-1 flex-col p-6">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary capitalize">
-                    {course.type.replace('_', ' ')}
-                  </span>
-                  <span className="font-bold">
-                    {course.currency} {course.price_amount}
-                  </span>
-                </div>
+                  <div className="mb-4 flex items-center justify-between">
+                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary capitalize">
+                      {course.type.replace('_', ' ')}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {course.compare_at_price && course.compare_at_price > course.price_amount && (
+                        <span className="text-sm text-muted-foreground line-through">
+                          {course.currency} {course.compare_at_price}
+                        </span>
+                      )}
+                      <span className="font-bold text-lg">
+                        {course.currency} {course.price_amount}
+                      </span>
+                    </div>
+                  </div>
                 <h3 className="mb-2 text-xl font-bold leading-tight">{course.title}</h3>
                 <p className="mb-6 flex-1 text-sm text-muted-foreground line-clamp-3">
                   {course.description || 'No description provided.'}

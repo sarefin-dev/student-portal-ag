@@ -25,7 +25,12 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           <p className="mb-6 text-lg text-muted-foreground">{course.description}</p>
           
           <div className="mb-8 flex items-center gap-4 text-2xl font-bold">
-            {course.currency} {course.price_amount}
+            {course.compare_at_price && course.compare_at_price > course.price_amount && (
+              <span className="text-xl text-muted-foreground line-through font-normal">
+                {course.currency} {course.compare_at_price}
+              </span>
+            )}
+            <span>{course.currency} {course.price_amount}</span>
           </div>
 
           <Link href={`/checkout?course=${course.id}`}>
