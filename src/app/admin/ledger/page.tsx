@@ -32,6 +32,7 @@ async function manualEnroll(formData: FormData) {
   const courseId = formData.get('courseId') as string;
   const amount = formData.get('amount') as string;
   const trxId = formData.get('trxId') as string;
+  const paymentDate = formData.get('payment_date') as string;
 
   // 1. Find user by email (using Admin because profiles are private)
   const { data: targetUser } = await supabaseAdmin
@@ -48,7 +49,8 @@ async function manualEnroll(formData: FormData) {
     p_course_id: courseId,
     p_amount: parseFloat(amount),
     p_trx_id: trxId || `MANUAL-${Date.now()}`,
-    p_admin_id: user.id
+    p_admin_id: user.id,
+    p_payment_date: paymentDate ? new Date(paymentDate).toISOString() : new Date().toISOString()
   });
 
   if (error) {
@@ -125,6 +127,12 @@ export default async function ManualLedgerPage({ searchParams }: { searchParams:
               <div className="space-y-2">
                 <label className="text-sm font-medium">Transaction ID (Optional)</label>
                 <input name="trxId" placeholder="e.g. Bank Ref" className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm" />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Actual Payment Date</label>
+                <input name="payment_date" type="datetime-local" className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm" />
+                <p className="text-xs text-muted-foreground">Leave blank to use current time.</p>
               </div>
 
               <Button type="submit" className="w-full">Record & Enroll</Button>
