@@ -22,8 +22,8 @@ export default async function StudentDashboardPage() {
 
   const { data: certificates } = await supabase
     .from('certificates')
-    .select('*, enrollments!inner(student_id, courses(title))')
-    .eq('enrollments.student_id', user?.id)
+    .select('*, courses(title)')
+    .eq('student_id', user?.id)
     .order('issued_at', { ascending: false });
 
   const { data: upcomingSessions } = await supabase
@@ -79,9 +79,9 @@ export default async function StudentDashboardPage() {
                       <div className="font-medium">Installment {payment.sequence_number}</div>
                       <div className="text-xs text-muted-foreground">{payment.orders.courses?.title}</div>
                     </div>
-                    <div className="text-right ml-4">
-                      <div className="font-bold">৳ {payment.amount}</div>
-                      <div className="text-xs font-semibold text-destructive">Due: {new Date(payment.due_date).toLocaleDateString()}</div>
+                    <div className="text-right whitespace-nowrap ml-4">
+                      <div className="font-semibold text-destructive">${payment.amount}</div>
+                      <div className="text-xs text-muted-foreground">Due: {new Date(payment.due_date).toLocaleDateString()}</div>
                     </div>
                   </div>
                 ))}
@@ -92,54 +92,47 @@ export default async function StudentDashboardPage() {
       )}
 
       <div>
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">My Courses</h1>
-          <Link href="/courses">
-            <Button variant="outline">Browse Catalog</Button>
-          </Link>
-        </div>
-
-        {(!enrollments || enrollments.length === 0) ? (
+        <h2 className="mb-6 text-2xl font-bold">My Learning</h2>
+        {!enrollments || enrollments.length === 0 ? (
           <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
             You are not enrolled in any courses yet.
           </div>
         ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {enrollments.map((enr: any) => {
-            const course = enr.courses;
-            return (
-              <div key={enr.course_id} className="flex flex-col overflow-hidden rounded-lg border bg-card shadow-sm transition-all hover:shadow-md">
-                <div className="aspect-video w-full bg-muted">
-                  {course.thumbnail_url ? (
-                    <img src={course.thumbnail_url} alt={course.title} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-secondary">
-                      <span className="text-sm font-medium text-secondary-foreground">Course Image</span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-1 flex-col p-6">
-                  <h3 className="mb-4 text-xl font-bold leading-tight">{course.title}</h3>
-                  <div className="mb-6 mt-auto">
-                    <div className="mb-2 flex items-center justify-between text-sm">
-                      <span className="font-medium text-muted-foreground">Progress</span>
-                      <span className="font-bold">{enr.completion_percent}%</span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
-                      <div className="h-full bg-primary transition-all" style={{ width: `${enr.completion_percent}%` }} />
-                    </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {enrollments.map((enr: any) => {
+              const course = enr.courses;
+              return (
+                <div key={enr.course_id} className="flex flex-col overflow-hidden rounded-lg border bg-card shadow-sm transition-all hover:shadow-md">
+                  <div className="aspect-video w-full bg-muted">
+                    {course.thumbnail_url ? (
+                      <img src={course.thumbnail_url} alt={course.title} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-secondary">
+                        <span className="text-sm font-medium text-secondary-foreground">Course Image</span>
+                      </div>
+                    )}
                   </div>
-                  <Link href={`/learn/${course.slug}`} className="w-full">
-                    <Button className="w-full">Continue Learning</Button>
-                  </Link>
+                  <div className="flex flex-1 flex-col p-6">
+                    <h3 className="mb-4 text-xl font-bold leading-tight">{course.title}</h3>
+                    <div className="mb-6 mt-auto">
+                      <div className="mb-2 flex items-center justify-between text-sm">
+                        <span className="font-medium text-muted-foreground">Progress</span>
+                        <span className="font-bold">{enr.completion_percent}%</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+                        <div className="h-full bg-primary transition-all" style={{ width: `${enr.completion_percent}%` }} />
+                      </div>
+                    </div>
+                    <Link href={`/learn/${course.slug}`} className="w-full">
+                      <Button className="w-full">Continue Learning</Button>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
       </div>
-
 
       {certificates && certificates.length > 0 && (
         <div className="mt-12 space-y-6">
@@ -148,7 +141,7 @@ export default async function StudentDashboardPage() {
             {certificates.map((cert: any) => (
               <div key={cert.id} className="flex flex-col overflow-hidden rounded-lg border bg-card p-6 shadow-sm">
                 <div className="flex-1 space-y-2">
-                  <h3 className="font-bold">{cert.enrollments.courses.title}</h3>
+                  <h3 className="font-bold">{cert.courses?.title}</h3>
                   <p className="text-sm text-muted-foreground">Issued: {new Date(cert.issued_at).toLocaleDateString()}</p>
                 </div>
                 <div className="mt-4 flex gap-2">
