@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getCourseBySlug } from '@/db/queries/courses';
 import { Button } from '@/components/ui/button';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -22,7 +23,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             {course.type.replace('_', ' ')}
           </span>
           <h1 className="mb-4 text-4xl font-extrabold tracking-tight">{course.title}</h1>
-          <p className="mb-6 text-lg text-muted-foreground">{course.description}</p>
+          <MarkdownRenderer content={course.description || ''} className="mb-6 text-lg text-muted-foreground" />
           
           <div className="mb-8 flex items-center gap-4 text-2xl font-bold">
             {course.compare_at_price && course.compare_at_price > course.price_amount && (

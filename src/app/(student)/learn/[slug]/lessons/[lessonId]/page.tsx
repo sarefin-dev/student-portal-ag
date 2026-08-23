@@ -6,6 +6,7 @@ import { VideoPlayer } from '@/components/video-player';
 import { Button } from '@/components/ui/button';
 import { AssessmentTaker } from './assessment-taker';
 import { env } from '@/env';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 
 export default async function LessonPage({ params }: { params: Promise<{ slug: string, lessonId: string }> }) {
   const { slug, lessonId } = await params;
@@ -44,9 +45,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
 
                 if (block.block_type === 'text') {
                   return (
-                    <div key={block.id} className="prose prose-neutral max-w-none dark:prose-invert">
-                      <div dangerouslySetInnerHTML={{ __html: payload.content_markdown || '' }} />
-                    </div>
+                    <MarkdownRenderer key={block.id} content={payload.content_markdown || ''} />
                   );
                 }
 
