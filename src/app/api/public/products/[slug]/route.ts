@@ -67,6 +67,56 @@ export async function GET(
     });
   }
 
+  // Expand events
+  const eventItems = product.product_items?.filter((pi: any) => pi.item_type === 'event') || [];
+  if (eventItems.length > 0) {
+    const eventIds = eventItems.map((pi: any) => pi.item_id);
+    const { data: events } = await supabase
+      .from('events')
+      .select('id, title, description, event_type, format, starts_at, ends_at, timezone, venue, capacity, is_recorded, host, cover_image_url, status')
+      .in('id', eventIds);
+      
+    // Fetch capacities in a separate query due to how PostgREST works without stored procedures
+    const { data: registrations } = await supabase
+      .from('event_registrations')
+      .select('event_id, status')
+      .in('event_id', eventIds)
+      .neq('status', 'cancelled');
+
+    product.product_items = product.product_items.map((pi: any) => {
+      if (pi.item_type === 'event') {
+        const eventDetail = events?.find(e => e.id === pi.item_id);
+        
+        let computed_event_state = 'upcoming';
+        let seats_remaining = null;
+        
+        if (eventDetail) {
+          const now = new Date();
+          const start = new Date(eventDetail.starts_at);
+          const end = new Date(eventDetail.ends_at);
+          
+          if (eventDetail.status === 'cancelled') {
+            computed_event_state = 'cancelled';
+          } else if (now < start) {
+            computed_event_state = 'upcoming';
+          } else if (now >= start && now <= end) {
+            computed_event_state = 'live';
+          } else {
+            computed_event_state = 'completed';
+          }
+          
+          if (eventDetail.capacity) {
+            const regsCount = registrations?.filter(r => r.event_id === eventDetail.id).length || 0;
+            seats_remaining = eventDetail.capacity - regsCount;
+          }
+        }
+
+        return { ...pi, event: { ...eventDetail, computed_event_state, seats_remaining } };
+      }
+      return pi;
+    });
+  }
+
   // Same logic can be added here for digital_assets and services
 
   return NextResponse.json(product, {
