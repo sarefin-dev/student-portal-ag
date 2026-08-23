@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { VideoPlayer } from '@/components/video-player';
 import { Button } from '@/components/ui/button';
 import { AssessmentTaker } from './assessment-taker';
@@ -129,13 +129,33 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
       <div className="border-t bg-background p-4 flex items-center justify-between fixed bottom-0 left-0 right-0 md:left-[300px]">
         {prevLesson ? (
           <Link href={`/learn/${slug}/lessons/${prevLesson.id}`}>
-            <Button variant="outline">Previous Lesson</Button>
+            <Button variant="outline"><ChevronLeft className="w-4 h-4 mr-2" /> Previous Lesson</Button>
           </Link>
         ) : (
-          <Button variant="outline" disabled>Previous Lesson</Button>
+          <Button variant="outline" disabled><ChevronLeft className="w-4 h-4 mr-2" /> Previous Lesson</Button>
         )}
         
         <div className="flex items-center gap-2">
+          {isLessonCompleted && (
+            <form action={async () => {
+              'use server';
+              const supabase = await createClient();
+              const { data: { user } } = await supabase.auth.getUser();
+              if (blockIds.length > 0) {
+                await supabase
+                  .from('block_progress')
+                  .delete()
+                  .eq('student_id', user!.id)
+                  .in('content_block_id', blockIds);
+              }
+              revalidatePath(`/learn/${slug}`);
+            }}>
+              <Button type="submit" variant="ghost" className="text-muted-foreground hover:text-foreground">
+                <RotateCcw className="w-4 h-4 mr-2" /> Reset Progress
+              </Button>
+            </form>
+          )}
+
           <form action={async () => {
             'use server';
             const supabase = await createClient();
@@ -165,16 +185,16 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                 <CheckCircle2 className="w-4 h-4 mr-2" /> Completed
               </Button>
             ) : (
-              <Button type="submit" variant="secondary">Mark Complete</Button>
+              <Button type="submit" variant="secondary"><CheckCircle2 className="w-4 h-4 mr-2" /> Mark Complete</Button>
             )}
           </form>
 
           {nextLesson ? (
             <Link href={`/learn/${slug}/lessons/${nextLesson.id}`}>
-              <Button variant="default">Next Lesson</Button>
+              <Button variant="default">Next Lesson <ChevronRight className="w-4 h-4 ml-2" /></Button>
             </Link>
           ) : (
-            <Button variant="default" disabled>Next Lesson</Button>
+            <Button variant="default" disabled>Next Lesson <ChevronRight className="w-4 h-4 ml-2" /></Button>
           )}
         </div>
       </div>
