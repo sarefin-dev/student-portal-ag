@@ -1,7 +1,7 @@
 import { Redis } from '@upstash/redis';
 import { env } from '@/env';
 
-import { unstable_after as after } from 'next/server';
+import { after } from 'next/server';
 
 export const redis = new Redis({
   url: env.UPSTASH_REDIS_REST_URL,
