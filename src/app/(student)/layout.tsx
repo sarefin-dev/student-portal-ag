@@ -13,6 +13,7 @@ function NavLinks() {
       <a href="/dashboard" className="rounded px-3 py-2 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">My Courses</a>
       <a href="/dashboard/payments" className="rounded px-3 py-2 text-sm font-medium opacity-80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:opacity-100">My Payments</a>
       <a href="/dashboard/testimonials" className="rounded px-3 py-2 text-sm font-medium opacity-80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:opacity-100">Testimonials</a>
+      <a href="/dashboard/settings" className="rounded px-3 py-2 text-sm font-medium opacity-80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:opacity-100">Settings</a>
       <a href="/courses" className="rounded px-3 py-2 text-sm font-medium opacity-80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:opacity-100 mt-4">Course Catalog</a>
     </>
   );
