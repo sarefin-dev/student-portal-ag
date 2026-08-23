@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
+import { CheckCircle2 } from 'lucide-react';
 import { VideoPlayer } from '@/components/video-player';
 import { Button } from '@/components/ui/button';
 import { AssessmentTaker } from './assessment-taker';
@@ -55,12 +56,36 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
   const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Check if lesson is completed
+  let isLessonCompleted = false;
+  if (user && blockIds.length > 0) {
+    const { data: progress } = await supabase
+      .from('block_progress')
+      .select('content_block_id')
+      .eq('student_id', user.id)
+      .in('content_block_id', blockIds)
+      .eq('status', 'completed');
+      
+    if (progress && progress.length === blockIds.length) {
+      isLessonCompleted = true;
+    }
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)]">
       {/* Scrollable content area */}
       <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-32">
         <div className="mx-auto max-w-[720px] space-y-8">
-          <h1 className="text-3xl font-bold">{lesson.title}</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold">{lesson.title}</h1>
+            {isLessonCompleted && (
+              <span className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1 text-sm font-medium text-green-600">
+                <CheckCircle2 className="w-4 h-4" /> Completed
+              </span>
+            )}
+          </div>
 
           {(!lesson.content_blocks || lesson.content_blocks.length === 0) ? (
             <p className="text-muted-foreground">This lesson is currently empty.</p>
@@ -146,7 +171,13 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
               redirect(`/learn/${slug}/lessons/${nextLesson.id}`);
             }
           }}>
-            <Button type="submit" variant="secondary">Mark Complete</Button>
+            {isLessonCompleted ? (
+              <Button type="button" variant="secondary" disabled className="text-green-600 bg-green-500/10 hover:bg-green-500/10 opacity-100 border-none cursor-default">
+                <CheckCircle2 className="w-4 h-4 mr-2" /> Completed
+              </Button>
+            ) : (
+              <Button type="submit" variant="secondary">Mark Complete</Button>
+            )}
           </form>
 
           {nextLesson ? (
