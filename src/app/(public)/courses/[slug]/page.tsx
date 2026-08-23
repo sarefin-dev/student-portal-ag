@@ -20,6 +20,24 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                          course.enrollment_cutoff_date && 
                          new Date(course.enrollment_cutoff_date) < new Date();
 
+  // Check if user is already enrolled
+  const { data: { user } } = await supabase.auth.getUser();
+  let isEnrolled = false;
+
+  if (user) {
+    const { data: enrollment } = await supabase
+      .from('enrollments')
+      .select('id')
+      .eq('student_id', user.id)
+      .eq('course_id', course.id)
+      .eq('status', 'active')
+      .maybeSingle();
+      
+    if (enrollment) {
+      isEnrolled = true;
+    }
+  }
+
   return (
     <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
       {/* Hero Section */}
@@ -40,7 +58,13 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             <span>{course.currency} {course.price_amount}</span>
           </div>
 
-          {course.status === 'coming_soon' ? (
+          {isEnrolled ? (
+            <Link href={`/learn/${course.slug}`}>
+              <Button size="lg" className="w-full sm:w-auto" variant="secondary">
+                Go to Course
+              </Button>
+            </Link>
+          ) : course.status === 'coming_soon' ? (
             <WaitlistForm courseId={course.id} slug={course.slug} />
           ) : isCutoffPassed ? (
             <div className="rounded-lg bg-destructive/10 p-4 text-destructive border border-destructive/20 mb-4">
