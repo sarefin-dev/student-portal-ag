@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import {
   flexRender,
   getCoreRowModel,
-  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import {
@@ -20,6 +18,7 @@ import { LocalTime } from '@/components/local-time';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Eye } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 function JsonDiffViewer({ before, after }: { before: any, after: any }) {
   // A simple nice rendering of JSON diff
@@ -45,8 +44,8 @@ function JsonDiffViewer({ before, after }: { before: any, after: any }) {
   );
 }
 
-export function AuditLogTable({ data }: { data: any[] }) {
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 20 });
+export function AuditLogTable({ data, currentPage, totalPages }: { data: any[], currentPage: number, totalPages: number }) {
+  const router = useRouter();
 
   const columns = [
     {
@@ -120,9 +119,6 @@ export function AuditLogTable({ data }: { data: any[] }) {
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onPaginationChange: setPagination,
-    state: { pagination }
   });
 
   return (
@@ -176,23 +172,28 @@ export function AuditLogTable({ data }: { data: any[] }) {
             </TableBody>
           </Table>
         </div>
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
+        <div className="flex items-center justify-between py-4">
+          <div className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </div>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/admin/audit-log?page=${currentPage - 1}`)}
+              disabled={currentPage <= 1}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/admin/audit-log?page=${currentPage + 1}`)}
+              disabled={currentPage >= totalPages}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
