@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { CheckCircle2, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { VideoPlayer } from '@/components/video-player';
 import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { AssessmentTaker } from './assessment-taker';
 import { env } from '@/env';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
@@ -150,9 +151,9 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
               }
               revalidatePath(`/learn/${slug}`);
             }}>
-              <Button type="submit" variant="ghost" className="text-muted-foreground hover:text-foreground">
+              <SubmitButton variant="ghost" className="text-muted-foreground hover:text-foreground" pendingText="Resetting...">
                 <RotateCcw className="w-4 h-4 mr-2" /> Reset Progress
-              </Button>
+              </SubmitButton>
             </form>
           )}
 
@@ -185,7 +186,9 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                 <CheckCircle2 className="w-4 h-4 mr-2" /> Completed
               </Button>
             ) : (
-              <Button type="submit" variant="secondary"><CheckCircle2 className="w-4 h-4 mr-2" /> Mark Complete</Button>
+              <SubmitButton variant="secondary" pendingText="Marking...">
+                <CheckCircle2 className="w-4 h-4 mr-2" /> Mark Complete
+              </SubmitButton>
             )}
           </form>
 
