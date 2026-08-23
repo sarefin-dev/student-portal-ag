@@ -39,7 +39,12 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             <span>{course.currency} {course.price_amount}</span>
           </div>
 
-          {isCutoffPassed ? (
+          {course.status === 'coming_soon' ? (
+            <div className="rounded-lg bg-primary/10 p-4 text-primary border border-primary/20 mb-4 text-center sm:text-left">
+              <h3 className="font-semibold text-xl">Coming Soon!</h3>
+              <p>Enrollment for this course will open soon. Stay tuned!</p>
+            </div>
+          ) : isCutoffPassed ? (
             <div className="rounded-lg bg-destructive/10 p-4 text-destructive border border-destructive/20 mb-4">
               <h3 className="font-semibold text-lg">Enrollment Closed</h3>
               <p>The enrollment cutoff date for this cohort has passed.</p>

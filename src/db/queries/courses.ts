@@ -19,7 +19,7 @@ export async function getActiveCourses(supabase: SupabaseClient) {
         start_date,
         enrollment_cutoff_date
       `)
-      .eq('status', 'active')
+      .in('status', ['active', 'coming_soon'])
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
 

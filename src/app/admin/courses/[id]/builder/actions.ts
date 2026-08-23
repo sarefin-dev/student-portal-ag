@@ -113,6 +113,23 @@ export async function publishCourse(formData: FormData) {
   revalidatePath(`/courses`); // Public catalog
 }
 
+export async function setComingSoon(formData: FormData) {
+  const { supabase } = await requireAuth();
+  const courseId = formData.get('courseId') as string;
+
+  const { data: course } = await supabase.from('courses').select('slug').eq('id', courseId).single();
+
+  await supabase
+    .from('courses')
+    .update({ status: 'coming_soon' })
+    .eq('id', courseId);
+
+  if (course?.slug) await invalidateCourseCache(course.slug);
+  
+  revalidatePath(`/admin/courses/${courseId}/builder`);
+  revalidatePath(`/courses`); // Public catalog
+}
+
 export async function unpublishCourse(formData: FormData) {
   const { supabase } = await requireAuth();
   const courseId = formData.get('courseId') as string;

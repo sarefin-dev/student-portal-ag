@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { addModule, addSubmodule, addLesson, publishCourse, unpublishCourse, updatePrice } from './actions';
+import { addModule, addSubmodule, addLesson, publishCourse, unpublishCourse, updatePrice, setComingSoon } from './actions';
 
 export default async function CourseBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -52,6 +52,14 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
           <Link href={`/admin/courses/${course.id}/assessments`}>
             <Button variant="outline">Manage Assessments</Button>
           </Link>
+          
+          {course.status !== 'coming_soon' && course.status !== 'active' && (
+            <form action={setComingSoon}>
+              <input type="hidden" name="courseId" value={course.id} />
+              <Button variant="secondary">Set Coming Soon</Button>
+            </form>
+          )}
+
           {course.status !== 'active' ? (
             <form action={publishCourse}>
               <input type="hidden" name="courseId" value={course.id} />
