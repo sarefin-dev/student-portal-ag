@@ -71,6 +71,14 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
       cell: ({ row }) => new Date(row.getValue('created_at')).toLocaleDateString(),
     },
     {
+      accessorKey: 'last_sign_in_at',
+      header: 'Last Access',
+      cell: ({ row }) => {
+        const lastSignIn = row.getValue('last_sign_in_at');
+        return lastSignIn ? new Date(lastSignIn as string).toLocaleDateString() : <span className="text-muted-foreground italic">Never</span>;
+      }
+    },
+    {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => {
