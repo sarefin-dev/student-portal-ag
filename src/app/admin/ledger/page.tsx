@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { LedgerTable } from './ledger-table';
@@ -102,41 +104,41 @@ export default async function ManualLedgerPage({ searchParams }: { searchParams:
             <DialogHeader>
               <DialogTitle>Record Manual Payment & Enroll</DialogTitle>
             </DialogHeader>
-            <form action={manualEnroll} className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Student Email</label>
-                <input required name="email" type="email" placeholder="student@example.com" className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm" />
-                <p className="text-xs text-muted-foreground">User must have already created an account.</p>
-              </div>
+              <form action={manualEnroll} className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label>Student Email</Label>
+                  <Input required name="email" type="email" placeholder="student@example.com" />
+                  <p className="text-[0.8rem] text-muted-foreground">User must have already created an account.</p>
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Course</label>
-                <select required name="courseId" className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm">
-                  <option value="">Select a course...</option>
-                  {courses?.map(c => (
-                    <option key={c.id} value={c.id}>{c.title}</option>
-                  ))}
-                </select>
-              </div>
+                <div className="space-y-2">
+                  <Label>Course</Label>
+                  <select required name="courseId" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                    <option value="">Select a course...</option>
+                    {courses?.map(c => (
+                      <option key={c.id} value={c.id}>{c.title}</option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Amount Paid (Tk)</label>
-                <input required name="amount" type="number" step="0.01" className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm" />
-              </div>
+                <div className="space-y-2">
+                  <Label>Amount Paid (Tk)</Label>
+                  <Input required name="amount" type="number" step="0.01" />
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Transaction ID (Optional)</label>
-                <input name="trxId" placeholder="e.g. Bank Ref" className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm" />
-              </div>
+                <div className="space-y-2">
+                  <Label>Transaction ID (Optional)</Label>
+                  <Input name="trxId" placeholder="e.g. Bank Ref" />
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Actual Payment Date</label>
-                <input name="payment_date" type="datetime-local" className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm" />
-                <p className="text-xs text-muted-foreground">Leave blank to use current time.</p>
-              </div>
+                <div className="space-y-2">
+                  <Label>Actual Payment Date</Label>
+                  <Input name="payment_date" type="datetime-local" />
+                  <p className="text-[0.8rem] text-muted-foreground">Leave blank to use current time.</p>
+                </div>
 
-              <Button type="submit" className="w-full">Record & Enroll</Button>
-            </form>
+                <Button type="submit" className="w-full">Record & Enroll</Button>
+              </form>
           </DialogContent>
         </Dialog>
       </div>
