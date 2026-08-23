@@ -23,7 +23,8 @@ export async function middleware(request: NextRequest) {
                       request.nextUrl.pathname.startsWith('/login');
 
   if (isAuthRoute && ratelimit) {
-    const ip = request.headers.get('x-forwarded-for') ?? '127.0.0.1';
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
     
     const { success, limit, reset, remaining } = await ratelimit.limit(`ratelimit_${ip}`);
 

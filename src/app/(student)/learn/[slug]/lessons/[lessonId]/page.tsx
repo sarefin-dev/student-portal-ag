@@ -15,6 +15,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
 
   if (!lesson) notFound();
 
+  const blockIds = lesson.content_blocks?.map((b: any) => b.id) || [];
   const { data: assessment } = await supabase
     .from('assessments')
     .select('*, assessment_questions(*)')
@@ -85,10 +86,10 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
           const supabase = await createClient();
           const { data: { user } } = await supabase.auth.getUser();
           
-          if (lesson.content_blocks && lesson.content_blocks.length > 0) {
-            const payloads = lesson.content_blocks.map((block: any) => ({
+          if (blockIds.length > 0) {
+            const payloads = blockIds.map((id: string) => ({
               student_id: user!.id,
-              content_block_id: block.id,
+              content_block_id: id,
               status: 'completed'
             }));
             

@@ -1,6 +1,8 @@
 import { Redis } from '@upstash/redis';
 import { env } from '@/env';
 
+import { unstable_after as after } from 'next/server';
+
 export const redis = new Redis({
   url: env.UPSTASH_REDIS_REST_URL,
   token: env.UPSTASH_REDIS_REST_TOKEN,
@@ -26,10 +28,9 @@ export async function withCache<T>(
 
   if (cachedData) {
     if (now > cachedData.staleAt) {
-      // Data is stale. Return stale data immediately to user, 
-      // but trigger a background fetch to revalidate (Stale-While-Revalidate).
-      // We don't await this so the user isn't blocked.
-      revalidateBackground(key, fetcher, options).catch(console.error);
+      after(() => {
+        revalidateBackground(key, fetcher, options).catch(console.error);
+      });
     }
     return cachedData.data;
   }

@@ -80,21 +80,26 @@ export async function getCourseBySlug(supabase: SupabaseClient, slug: string) {
 }
 
 // Retrieve full lesson details including content blocks
-export async function getLessonWithBlocks(supabase: SupabaseClient, lessonId: string) {
-  const { data, error } = await supabase
-    .from('lessons')
-    .select(`
-      *,
-      content_blocks (
-        id,
-        block_type,
-        position,
-        payload
-      )
-    `)
-    .eq('id', lessonId)
-    .is('deleted_at', null)
-    .single();
+  export async function getLessonWithBlocks(supabase: SupabaseClient, lessonId: string) {
+    const { data, error } = await supabase
+      .from('lessons')
+      .select(`
+        *,
+        submodules (
+          modules (
+            course_id
+          )
+        ),
+        content_blocks (
+          id,
+          block_type,
+          position,
+          payload
+        )
+      `)
+      .eq('id', lessonId)
+      .is('deleted_at', null)
+      .single();
 
   if (error) throw error;
 
