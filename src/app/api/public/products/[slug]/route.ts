@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+// Revalidate this API route cache every 60 seconds (ISR)
+export const revalidate = 60;
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -66,5 +69,9 @@ export async function GET(
 
   // Same logic can be added here for digital_assets and services
 
-  return NextResponse.json(product);
+  return NextResponse.json(product, {
+    headers: {
+      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=600',
+    }
+  });
 }
