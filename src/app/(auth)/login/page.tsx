@@ -20,7 +20,7 @@ export default function LoginPage() {
           </TabsList>
           
           <TabsContent value="signin" className="mt-4">
-            <div className="rounded-lg border p-6 shadow-sm bg-card">
+            <div className="rounded-lg border p-6 shadow-sm bg-card min-h-[440px] flex flex-col justify-center">
               <form className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
@@ -38,7 +38,7 @@ export default function LoginPage() {
           </TabsContent>
 
           <TabsContent value="signup" className="mt-4">
-            <div className="rounded-lg border p-6 shadow-sm bg-card">
+            <div className="rounded-lg border p-6 shadow-sm bg-card min-h-[440px] flex flex-col justify-center">
               <form className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="full_name">Full Name</Label>
