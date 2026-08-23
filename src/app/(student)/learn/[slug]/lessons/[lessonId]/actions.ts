@@ -16,6 +16,24 @@ export async function submitAssessment(assessmentId: string, courseId: string, a
 
   const supabaseAdmin = createSupabaseClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
 
+  // Verify true course ID of the assessment
+  const { data: trueCourseId } = await supabaseAdmin.rpc('assessment_course_id', { p_assessment_id: assessmentId });
+  if (!trueCourseId || trueCourseId !== courseId) {
+    throw new Error("Assessment does not belong to this course");
+  }
+
+  // Check enrollment manually using authenticated client (RLS enforced)
+  const { data: enrollment } = await supabase
+    .from('enrollments')
+    .select('status')
+    .eq('course_id', trueCourseId)
+    .eq('student_id', user.id)
+    .single();
+
+  if (enrollment?.status !== 'active') {
+    throw new Error("You must be actively enrolled in this course to submit an assessment.");
+  }
+
   // Fetch assessment and questions
   const { data: assessment } = await supabaseAdmin
     .from('assessments')
