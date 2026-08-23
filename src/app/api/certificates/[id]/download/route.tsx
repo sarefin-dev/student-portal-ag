@@ -167,35 +167,13 @@ export async function GET(
     }
   }
 
-  // Handle AI Summary Caching
-  let aiSummary = cert.courses.ai_summary;
-  if (!aiSummary && cert.courses.outcomes && cert.courses.outcomes.length > 0) {
-    try {
-      const { text } = await generateText({
-        model: google('gemini-2.5-flash'),
-        prompt: `Write a very concise, professional one-sentence summary (max 150 characters) of what was covered in this course for a certificate of completion. Start the sentence dynamically (e.g. "key concepts including...", "advanced topics such as...", or "practical skills in..."). Do not include the course name. 
-        Course Title: ${cert.courses.title}
-        Outcomes: ${cert.courses.outcomes.join(', ')}`,
-      });
-      aiSummary = text.replace(/^["']|["']$/g, '').trim();
-      
-      // Cache the result in the database bypassing RLS
-      const { createClient: createAdminClient } = await import('@supabase/supabase-js');
-      const adminAuth = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-      
-      await adminAuth.from('courses').update({ ai_summary: aiSummary }).eq('id', cert.courses.id);
-    } catch (e) {
-      console.error("AI Summary generation failed", e);
-    }
-  }
-
   // Generate PDF
   const pdfStream = await ReactPDF.renderToStream(
     <CertificateDocument 
       studentName={cert.profiles?.full_name || 'Student'}
       courseTitle={cert.courses?.title || 'Course'}
       courseDuration={cert.courses?.duration || null}
-      courseSummary={aiSummary}
+      courseSummary={cert.courses?.ai_summary || null}
       issueDate={new Date(cert.issued_at).toLocaleDateString()}
       verifyCode={cert.verify_code}
       instructorName={instructorName}

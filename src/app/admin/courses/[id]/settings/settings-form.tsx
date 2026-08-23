@@ -57,6 +57,68 @@ export function CourseSettingsForm({ course }: { course: any }) {
         <textarea name="description" defaultValue={course.description || ''} rows={4} className="flex w-full rounded border border-input bg-background px-3 py-2 text-sm" />
       </div>
 
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Course Outcomes (One per line)</label>
+        <textarea 
+          name="outcomes" 
+          defaultValue={course.outcomes?.join('\n') || ''} 
+          rows={4} 
+          className="flex w-full rounded border border-input bg-background px-3 py-2 text-sm" 
+          placeholder="Understand the fundamentals of React..."
+        />
+      </div>
+
+      <div className="space-y-2 bg-muted/50 p-4 rounded-lg border">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">AI Certificate Summary</label>
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            onClick={async (e) => {
+              const btn = e.currentTarget;
+              const form = btn.closest('form');
+              if (!form) return;
+              
+              const title = (form.elements.namedItem('title') as HTMLInputElement).value;
+              const outcomes = (form.elements.namedItem('outcomes') as HTMLTextAreaElement).value;
+              
+              if (!title || !outcomes) {
+                alert('Title and Outcomes are required to generate a summary.');
+                return;
+              }
+
+              btn.disabled = true;
+              const oldText = btn.innerText;
+              btn.innerText = 'Generating...';
+              
+              try {
+                const { generateAiSummary } = await import('./actions');
+                const res = await generateAiSummary(title, outcomes);
+                if (res.summary) {
+                  (form.elements.namedItem('ai_summary') as HTMLTextAreaElement).value = res.summary;
+                } else {
+                  alert(res.error || 'Failed to generate');
+                }
+              } finally {
+                btn.disabled = false;
+                btn.innerText = oldText;
+              }
+            }}
+          >
+            Auto-Generate with AI
+          </Button>
+        </div>
+        <textarea 
+          name="ai_summary" 
+          defaultValue={course.ai_summary || ''} 
+          rows={2} 
+          className="flex w-full rounded border border-input bg-background px-3 py-2 text-sm" 
+          placeholder="e.g. Covering advanced topics such as React Server Components..."
+        />
+        <p className="text-xs text-muted-foreground">This 1-sentence summary is printed on the student's PDF certificate.</p>
+      </div>
+
       {course.type === 'live_cohort' && (
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
