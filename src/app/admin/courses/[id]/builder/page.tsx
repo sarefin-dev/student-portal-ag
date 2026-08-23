@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { addModule, addSubmodule, addLesson, publishCourse, updatePrice } from './actions';
+import { addModule, addSubmodule, addLesson, publishCourse, unpublishCourse, updatePrice } from './actions';
 
 export default async function CourseBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -45,17 +45,22 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
           <h1 className="text-3xl font-bold">Course Builder: {course.title}</h1>
           <p className="text-muted-foreground">Status: <span className="capitalize font-bold">{course.status}</span></p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-4">
           <Link href={`/admin/courses/${course.id}/settings`}>
             <Button variant="outline">General Settings</Button>
           </Link>
           <Link href={`/admin/courses/${course.id}/assessments`}>
             <Button variant="outline">Manage Assessments</Button>
           </Link>
-          {course.status !== 'active' && (
+          {course.status !== 'active' ? (
             <form action={publishCourse}>
               <input type="hidden" name="courseId" value={course.id} />
               <Button variant="default">Publish Course</Button>
+            </form>
+          ) : (
+            <form action={unpublishCourse}>
+              <input type="hidden" name="courseId" value={course.id} />
+              <Button variant="destructive">Deactivate Course</Button>
             </form>
           )}
         </div>

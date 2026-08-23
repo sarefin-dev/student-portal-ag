@@ -108,6 +108,19 @@ export async function publishCourse(formData: FormData) {
   revalidatePath(`/courses`); // Public catalog
 }
 
+export async function unpublishCourse(formData: FormData) {
+  const { supabase } = await requireAuth();
+  const courseId = formData.get('courseId') as string;
+
+  await supabase
+    .from('courses')
+    .update({ status: 'draft' })
+    .eq('id', courseId);
+
+  revalidatePath(`/admin/courses/${courseId}/builder`);
+  revalidatePath(`/courses`); // Public catalog
+}
+
 export async function updatePrice(formData: FormData) {
   const { supabase } = await requireAuth();
   const courseId = formData.get('courseId') as string;
