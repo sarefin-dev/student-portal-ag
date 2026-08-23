@@ -84,14 +84,16 @@ const styles = StyleSheet.create({
   }
 });
 
-const CertificateDocument = ({ studentName, courseTitle, issueDate, verifyCode, instructorName }: any) => (
+const CertificateDocument = ({ studentName, courseTitle, courseDuration, issueDate, verifyCode, instructorName }: any) => (
   <Document>
     <Page size="A4" orientation="landscape" style={styles.page}>
       <Text style={styles.logo}>ArefinLab</Text>
       <Text style={styles.title}>Certificate of Completion</Text>
       <Text style={styles.subtitle}>This is to certify that</Text>
       <Text style={styles.name}>{studentName}</Text>
-      <Text style={styles.subtitle}>has successfully completed the course</Text>
+      <Text style={styles.subtitle}>
+        has successfully completed the {courseDuration ? `${courseDuration} course` : 'course'}
+      </Text>
       <Text style={styles.course}>{courseTitle}</Text>
       
       <View style={styles.footer}>
@@ -124,7 +126,7 @@ export async function GET(
   // Fetch certificate details
   const { data: cert, error } = await supabase
     .from('certificates')
-    .select('*, courses(id, title), profiles(full_name)')
+    .select('*, courses(id, title, duration), profiles(full_name)')
     .eq('id', id)
     .single();
 
@@ -155,6 +157,7 @@ export async function GET(
     <CertificateDocument 
       studentName={cert.profiles?.full_name || 'Student'}
       courseTitle={cert.courses?.title || 'Course'}
+      courseDuration={cert.courses?.duration || null}
       issueDate={new Date(cert.issued_at).toLocaleDateString()}
       verifyCode={cert.verify_code}
       instructorName={instructorName}
