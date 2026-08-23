@@ -12,10 +12,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toggleStudentStatus } from './actions';
+import { Ban, CheckCircle } from 'lucide-react';
 
 export function StudentsTable({ data, currentPage, totalPages, initialSearch }: { data: any[], currentPage: number, totalPages: number, initialSearch: string }) {
   const router = useRouter();
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
+  const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +26,18 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
       router.push(`/admin/students?search=${encodeURIComponent(globalFilter)}`);
     } else {
       router.push(`/admin/students`);
+    }
+  };
+
+  const handleToggleStatus = async (studentId: string, currentStatus: string) => {
+    try {
+      setIsUpdating(studentId);
+      await toggleStudentStatus(studentId, currentStatus);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to update status");
+    } finally {
+      setIsUpdating(null);
     }
   };
 
@@ -54,6 +69,29 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
       accessorKey: 'created_at',
       header: 'Joined Date',
       cell: ({ row }) => new Date(row.getValue('created_at')).toLocaleDateString(),
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => {
+        const status = row.getValue('status') as string;
+        const studentId = row.original.id;
+        const isSuspended = status === 'suspended';
+        return (
+          <Button 
+            variant={isSuspended ? "outline" : "destructive"} 
+            size="sm" 
+            onClick={() => handleToggleStatus(studentId, status)}
+            disabled={isUpdating === studentId}
+          >
+            {isSuspended ? (
+              <><CheckCircle className="w-4 h-4 mr-2" /> Unsuspend</>
+            ) : (
+              <><Ban className="w-4 h-4 mr-2" /> Suspend</>
+            )}
+          </Button>
+        );
+      }
     }
   ];
 
