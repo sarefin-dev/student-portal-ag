@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { invalidateCourseCache } from '@/lib/redis/cache';
 import { redirect } from 'next/navigation';
 
 async function requireAuth() {
@@ -99,11 +100,15 @@ export async function publishCourse(formData: FormData) {
   const { supabase } = await requireAuth();
   const courseId = formData.get('courseId') as string;
 
+  const { data: course } = await supabase.from('courses').select('slug').eq('id', courseId).single();
+
   await supabase
     .from('courses')
     .update({ status: 'active' })
     .eq('id', courseId);
 
+  if (course?.slug) await invalidateCourseCache(course.slug);
+  
   revalidatePath(`/admin/courses/${courseId}/builder`);
   revalidatePath(`/courses`); // Public catalog
 }
@@ -112,10 +117,14 @@ export async function unpublishCourse(formData: FormData) {
   const { supabase } = await requireAuth();
   const courseId = formData.get('courseId') as string;
 
+  const { data: course } = await supabase.from('courses').select('slug').eq('id', courseId).single();
+
   await supabase
     .from('courses')
     .update({ status: 'draft' })
     .eq('id', courseId);
+
+  if (course?.slug) await invalidateCourseCache(course.slug);
 
   revalidatePath(`/admin/courses/${courseId}/builder`);
   revalidatePath(`/courses`); // Public catalog
@@ -128,11 +137,15 @@ export async function updatePrice(formData: FormData) {
   const compare_at_price_raw = formData.get('compare_at_price');
   const compare_at_price = compare_at_price_raw ? parseFloat(compare_at_price_raw as string) : null;
 
+  const { data: course } = await supabase.from('courses').select('slug').eq('id', courseId).single();
+
   const { error } = await supabase
     .from('courses')
     .update({ price_amount, compare_at_price })
     .eq('id', courseId);
 
   if (error) throw new Error("Error updating price");
+  
+  if (course?.slug) await invalidateCourseCache(course.slug);
   revalidatePath(`/admin/courses/${courseId}/builder`);
 }

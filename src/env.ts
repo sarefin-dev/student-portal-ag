@@ -12,6 +12,8 @@ const envSchema = z.object({
   BUNNY_STREAM_API_KEY: z.string().optional(),
   BUNNY_STREAM_CDN_HOSTNAME: z.string().optional(),
   SMS_WEBHOOK_SECRET: z.string().optional(),
+  UPSTASH_REDIS_REST_URL: z.string().url(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
 });
 
 const parsedEnv = envSchema.safeParse({
@@ -26,6 +28,8 @@ const parsedEnv = envSchema.safeParse({
   BUNNY_STREAM_API_KEY: process.env.BUNNY_STREAM_API_KEY,
   BUNNY_STREAM_CDN_HOSTNAME: process.env.BUNNY_STREAM_CDN_HOSTNAME,
   SMS_WEBHOOK_SECRET: process.env.SMS_WEBHOOK_SECRET,
+  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
 if (!parsedEnv.success) {
