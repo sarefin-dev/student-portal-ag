@@ -64,8 +64,8 @@ async function manualEnroll(formData: FormData) {
   redirect('/admin/ledger?success=true');
 }
 
-export default async function ManualLedgerPage({ searchParams }: { searchParams: Promise<{ success?: string }> }) {
-  const { success } = await searchParams;
+export default async function ManualLedgerPage({ searchParams }: { searchParams: Promise<{ success?: string, page?: string }> }) {
+  const { success, page: pageParam } = await searchParams;
   const supabase = await createClient();
 
   const supabaseAdmin = createSupabaseClient(
@@ -82,11 +82,19 @@ export default async function ManualLedgerPage({ searchParams }: { searchParams:
     .select('id, title')
     .order('created_at', { ascending: false });
 
+  const page = parseInt(pageParam as string) || 1;
+  const pageSize = 20;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
   // Fetch all payments for ledger, using admin to bypass RLS for joins easily
-  const { data: payments } = await supabaseAdmin
+  const { data: payments, count } = await supabaseAdmin
     .from('payments')
-    .select('*, orders(profiles(email))')
-    .order('created_at', { ascending: false });
+    .select('*, orders(profiles(email))', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(from, to);
+
+  const totalPages = count ? Math.ceil(count / pageSize) : 1;
 
   return (
     <div className="space-y-6">
@@ -149,7 +157,7 @@ export default async function ManualLedgerPage({ searchParams }: { searchParams:
         </div>
       )}
 
-      <LedgerTable data={payments || []} />
+      <LedgerTable data={payments || []} currentPage={page} totalPages={totalPages} />
     </div>
   );
 }

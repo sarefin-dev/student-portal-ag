@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   useReactTable,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   flexRender,
   ColumnDef,
@@ -14,7 +14,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-export function LedgerTable({ data }: { data: any[] }) {
+export function LedgerTable({ data, currentPage, totalPages }: { data: any[], currentPage: number, totalPages: number }) {
+  const router = useRouter();
   const [globalFilter, setGlobalFilter] = useState('');
 
   const columns: ColumnDef<any>[] = [
@@ -55,7 +56,6 @@ export function LedgerTable({ data }: { data: any[] }) {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     state: {
       globalFilter,
@@ -67,7 +67,7 @@ export function LedgerTable({ data }: { data: any[] }) {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Input
-          placeholder="Search by Trx ID, email, or phone..."
+          placeholder="Search current page..."
           value={globalFilter ?? ''}
           onChange={e => setGlobalFilter(e.target.value)}
           className="max-w-sm"
@@ -109,23 +109,28 @@ export function LedgerTable({ data }: { data: any[] }) {
         </Table>
       </div>
 
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
+      <div className="flex items-center justify-between py-4">
+        <div className="text-sm text-muted-foreground">
+          Page {currentPage} of {totalPages}
+        </div>
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push(`/admin/ledger?page=${currentPage - 1}`)}
+            disabled={currentPage <= 1}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push(`/admin/ledger?page=${currentPage + 1}`)}
+            disabled={currentPage >= totalPages}
+          >
+            Next
+          </Button>
+        </div>
       </div>
     </div>
   );
