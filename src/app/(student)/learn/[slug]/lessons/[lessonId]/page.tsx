@@ -1,6 +1,7 @@
 import { getLessonWithBlocks } from '@/db/queries/courses';
 import { createClient } from '@/lib/supabase/server';
 import { notFound, redirect } from 'next/navigation';
+import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import { VideoPlayer } from '@/components/video-player';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,38 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     .select('*, assessment_questions(*)')
     .eq('lesson_id', lessonId)
     .single();
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select(`
+      modules (
+        position,
+        submodules (
+          position,
+          lessons (id, title, position)
+        )
+      )
+    `)
+    .eq('slug', slug)
+    .single();
+
+  let allLessons: { id: string, title: string }[] = [];
+  if (course?.modules) {
+    course.modules.sort((a: any, b: any) => a.position - b.position);
+    course.modules.forEach((m: any) => {
+      m.submodules?.sort((a: any, b: any) => a.position - b.position);
+      m.submodules?.forEach((s: any) => {
+        s.lessons?.sort((a: any, b: any) => a.position - b.position);
+        s.lessons?.forEach((l: any) => {
+          allLessons.push({ id: l.id, title: l.title });
+        });
+      });
+    });
+  }
+
+  const currentIndex = allLessons.findIndex(l => l.id === lessonId);
+  const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
+  const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)]">
@@ -80,31 +113,50 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
 
       {/* Sticky Bottom Bar */}
       <div className="border-t bg-background p-4 flex items-center justify-between fixed bottom-0 left-0 right-0 md:left-[300px]">
-        <Button variant="outline" disabled>Previous Lesson</Button>
-        <form action={async () => {
-          'use server';
-          const supabase = await createClient();
-          const { data: { user } } = await supabase.auth.getUser();
-          
-          if (blockIds.length > 0) {
-            const payloads = blockIds.map((id: string) => ({
-              student_id: user!.id,
-              content_block_id: id,
-              status: 'completed'
-            }));
+        {prevLesson ? (
+          <Link href={`/learn/${slug}/lessons/${prevLesson.id}`}>
+            <Button variant="outline">Previous Lesson</Button>
+          </Link>
+        ) : (
+          <Button variant="outline" disabled>Previous Lesson</Button>
+        )}
+        
+        <div className="flex items-center gap-2">
+          <form action={async () => {
+            'use server';
+            const supabase = await createClient();
+            const { data: { user } } = await supabase.auth.getUser();
             
-            const { error } = await supabase
-              .from('block_progress')
-              .upsert(payloads, { onConflict: 'student_id,content_block_id' });
+            if (blockIds.length > 0) {
+              const payloads = blockIds.map((id: string) => ({
+                student_id: user!.id,
+                content_block_id: id,
+                status: 'completed'
+              }));
               
-            if (error) console.error("Error marking complete:", error);
-          }
-            
-          revalidatePath(`/learn/${slug}`);
-          redirect(`/learn/${slug}`);
-        }}>
-          <Button type="submit">Mark Complete & Continue</Button>
-        </form>
+              const { error } = await supabase
+                .from('block_progress')
+                .upsert(payloads, { onConflict: 'student_id,content_block_id' });
+                
+              if (error) console.error("Error marking complete:", error);
+            }
+              
+            revalidatePath(`/learn/${slug}`);
+            if (nextLesson) {
+              redirect(`/learn/${slug}/lessons/${nextLesson.id}`);
+            }
+          }}>
+            <Button type="submit" variant="secondary">Mark Complete</Button>
+          </form>
+
+          {nextLesson ? (
+            <Link href={`/learn/${slug}/lessons/${nextLesson.id}`}>
+              <Button variant="default">Next Lesson</Button>
+            </Link>
+          ) : (
+            <Button variant="default" disabled>Next Lesson</Button>
+          )}
+        </div>
       </div>
     </div>
   );

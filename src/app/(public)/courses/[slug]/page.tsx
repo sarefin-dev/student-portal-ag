@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getCourseBySlug } from '@/db/queries/courses';
 import { Button } from '@/components/ui/button';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
+import { WaitlistForm } from './waitlist-form';
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -40,10 +41,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           </div>
 
           {course.status === 'coming_soon' ? (
-            <div className="rounded-lg bg-primary/10 p-4 text-primary border border-primary/20 mb-4 text-center sm:text-left">
-              <h3 className="font-semibold text-xl">Coming Soon!</h3>
-              <p>Enrollment for this course will open soon. Stay tuned!</p>
-            </div>
+            <WaitlistForm courseId={course.id} slug={course.slug} />
           ) : isCutoffPassed ? (
             <div className="rounded-lg bg-destructive/10 p-4 text-destructive border border-destructive/20 mb-4">
               <h3 className="font-semibold text-lg">Enrollment Closed</h3>

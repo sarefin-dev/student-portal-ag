@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Menu, ArrowLeft } from 'lucide-react';
+import { Calendar, Menu, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 
@@ -41,9 +41,10 @@ function SyllabusContent({ course }: { course: any }) {
                       <li key={lesson.id}>
                         <Link 
                           href={`/learn/${course.slug}/lessons/${lesson.id}`}
-                          className="block rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-muted"
+                          className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-muted"
                         >
-                          {lesson.title}
+                          <span>{lesson.title}</span>
+                          {lesson.is_completed && <CheckCircle2 className="w-4 h-4 text-green-500" />}
                         </Link>
                       </li>
                     ))}
@@ -67,6 +68,7 @@ export default async function ClassroomLayout({
 }) {
   const { slug } = await params;
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   const { data: course } = await supabase
     .from('courses')
@@ -76,7 +78,10 @@ export default async function ClassroomLayout({
         id, title, position,
         submodules (
           id, title, position,
-          lessons (id, title, position)
+          lessons (
+            id, title, position,
+            content_blocks (id)
+          )
         )
       )
     `)
@@ -85,11 +90,28 @@ export default async function ClassroomLayout({
 
   if (!course) notFound();
 
+  // Fetch student progress
+  const { data: progressData } = await supabase
+    .from('block_progress')
+    .select('content_block_id, status')
+    .eq('student_id', user?.id || '')
+    .eq('status', 'completed');
+
+  const completedBlockIds = new Set(progressData?.map(p => p.content_block_id) || []);
+
   // Sort modules
   course.modules?.sort((a: any, b: any) => a.position - b.position);
   course.modules?.forEach((m: any) => {
     m.submodules?.sort((a: any, b: any) => a.position - b.position);
-    m.submodules?.forEach((s: any) => s.lessons?.sort((a: any, b: any) => a.position - b.position));
+    m.submodules?.forEach((s: any) => {
+      s.lessons?.sort((a: any, b: any) => a.position - b.position);
+      // Determine lesson completion: true if all blocks are completed, and there is at least one block
+      s.lessons?.forEach((l: any) => {
+        const totalBlocks = l.content_blocks?.length || 0;
+        const completedBlocks = l.content_blocks?.filter((b: any) => completedBlockIds.has(b.id)).length || 0;
+        l.is_completed = totalBlocks > 0 && totalBlocks === completedBlocks;
+      });
+    });
   });
 
   return (
