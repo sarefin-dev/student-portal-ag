@@ -64,8 +64,8 @@ async function manualEnroll(formData: FormData) {
   redirect('/admin/ledger?success=true');
 }
 
-export default async function ManualLedgerPage({ searchParams }: { searchParams: Promise<{ success?: string, page?: string }> }) {
-  const { success, page: pageParam } = await searchParams;
+export default async function ManualLedgerPage({ searchParams }: { searchParams: Promise<{ success?: string, page?: string, search?: string }> }) {
+  const { success, page: pageParam, search } = await searchParams;
   const supabase = await createClient();
 
   const supabaseAdmin = createSupabaseClient(
@@ -87,10 +87,31 @@ export default async function ManualLedgerPage({ searchParams }: { searchParams:
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  // Fetch all payments for ledger, using admin to bypass RLS for joins easily
-  const { data: payments, count } = await supabaseAdmin
+  let matchingOrderIds: string[] = [];
+  if (search) {
+    // Find matching emails first to support cross-table search
+    const { data: profiles } = await supabaseAdmin.from('profiles').select('id').ilike('email', `%${search}%`);
+    if (profiles && profiles.length > 0) {
+      const { data: orders } = await supabaseAdmin.from('orders').select('id').in('student_id', profiles.map(p => p.id));
+      if (orders) {
+        matchingOrderIds = orders.map(o => o.id);
+      }
+    }
+  }
+
+  let queryBuilder = supabaseAdmin
     .from('payments')
-    .select('*, orders(profiles(email))', { count: 'exact' })
+    .select('*, orders(profiles(email))', { count: 'exact' });
+
+  if (search) {
+    if (matchingOrderIds.length > 0) {
+      queryBuilder = queryBuilder.or(`trx_id.ilike.%${search}%,sender_msisdn.ilike.%${search}%,order_id.in.(${matchingOrderIds.join(',')})`);
+    } else {
+      queryBuilder = queryBuilder.or(`trx_id.ilike.%${search}%,sender_msisdn.ilike.%${search}%`);
+    }
+  }
+
+  const { data: payments, count } = await queryBuilder
     .order('created_at', { ascending: false })
     .range(from, to);
 
@@ -157,7 +178,7 @@ export default async function ManualLedgerPage({ searchParams }: { searchParams:
         </div>
       )}
 
-      <LedgerTable data={payments || []} currentPage={page} totalPages={totalPages} />
+      <LedgerTable data={payments || []} currentPage={page} totalPages={totalPages} initialSearch={search || ''} />
     </div>
   );
 }

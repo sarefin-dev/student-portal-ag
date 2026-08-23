@@ -14,9 +14,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-export function LedgerTable({ data, currentPage, totalPages }: { data: any[], currentPage: number, totalPages: number }) {
+export function LedgerTable({ data, currentPage, totalPages, initialSearch }: { data: any[], currentPage: number, totalPages: number, initialSearch: string }) {
   const router = useRouter();
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState(initialSearch);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (globalFilter) {
+      router.push(`/admin/ledger?search=${encodeURIComponent(globalFilter)}`);
+    } else {
+      router.push(`/admin/ledger`);
+    }
+  };
 
   const columns: ColumnDef<any>[] = [
     {
@@ -55,24 +64,19 @@ export function LedgerTable({ data, currentPage, totalPages }: { data: any[], cu
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    state: {
-      globalFilter,
-    },
-    onGlobalFilterChange: setGlobalFilter,
   });
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
+      <form onSubmit={handleSearch} className="flex items-center gap-2">
         <Input
-          placeholder="Search current page..."
-          value={globalFilter ?? ''}
+          placeholder="Search database..."
+          value={globalFilter}
           onChange={e => setGlobalFilter(e.target.value)}
           className="max-w-sm"
         />
-      </div>
+        <Button type="submit" variant="secondary">Search</Button>
+      </form>
 
       <div className="rounded-md border bg-card">
         <Table>
@@ -117,7 +121,7 @@ export function LedgerTable({ data, currentPage, totalPages }: { data: any[], cu
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push(`/admin/ledger?page=${currentPage - 1}`)}
+            onClick={() => router.push(`/admin/ledger?page=${currentPage - 1}${initialSearch ? `&search=${encodeURIComponent(initialSearch)}` : ''}`)}
             disabled={currentPage <= 1}
           >
             Previous
@@ -125,7 +129,7 @@ export function LedgerTable({ data, currentPage, totalPages }: { data: any[], cu
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push(`/admin/ledger?page=${currentPage + 1}`)}
+            onClick={() => router.push(`/admin/ledger?page=${currentPage + 1}${initialSearch ? `&search=${encodeURIComponent(initialSearch)}` : ''}`)}
             disabled={currentPage >= totalPages}
           >
             Next
