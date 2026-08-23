@@ -71,7 +71,7 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
           <h2 className="text-lg font-bold">Course Price Settings</h2>
           <p className="text-sm text-muted-foreground">Set the price for the public checkout page.</p>
         </div>
-        <form action={updatePrice} className="flex flex-col sm:flex-row items-end sm:items-center gap-4">
+        <form action={updatePrice} className="flex flex-col sm:flex-row items-end gap-4">
           <input type="hidden" name="courseId" value={course.id} />
           
           <div className="space-y-1">
@@ -90,7 +90,7 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
             </div>
           </div>
 
-          <Button variant="outline" type="submit" className="mb-[2px]">Update Price</Button>
+          <Button variant="outline" type="submit" className="h-10">Update Price</Button>
         </form>
       </div>
 
