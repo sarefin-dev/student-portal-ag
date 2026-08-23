@@ -14,6 +14,11 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
     notFound();
   }
 
+  // Check if enrollment is closed
+  const isCutoffPassed = course.type === 'live_cohort' && 
+                         course.enrollment_cutoff_date && 
+                         new Date(course.enrollment_cutoff_date) < new Date();
+
   return (
     <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
       {/* Hero Section */}
@@ -34,11 +39,18 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             <span>{course.currency} {course.price_amount}</span>
           </div>
 
-          <Link href={`/checkout?course=${course.id}`}>
-            <Button size="lg" className="w-full sm:w-auto">
-              Enroll Now
-            </Button>
-          </Link>
+          {isCutoffPassed ? (
+            <div className="rounded-lg bg-destructive/10 p-4 text-destructive border border-destructive/20 mb-4">
+              <h3 className="font-semibold text-lg">Enrollment Closed</h3>
+              <p>The enrollment cutoff date for this cohort has passed.</p>
+            </div>
+          ) : (
+            <Link href={`/checkout?course=${course.id}`}>
+              <Button size="lg" className="w-full sm:w-auto">
+                Enroll Now
+              </Button>
+            </Link>
+          )}
         </div>
         <div className="aspect-video overflow-hidden rounded-lg bg-muted shadow-lg">
           {course.thumbnail_url ? (

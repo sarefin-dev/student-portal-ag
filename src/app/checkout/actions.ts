@@ -18,8 +18,13 @@ export async function startCheckout(formData: FormData) {
   let itemType: 'course' | 'bundle' | 'resource' = 'course';
 
   if (courseId) {
-    const { data: course } = await supabase.from('courses').select('id, title, price_amount').eq('id', courseId).single();
+    const { data: course } = await supabase.from('courses').select('id, title, price_amount, type, enrollment_cutoff_date').eq('id', courseId).single();
     if (!course) throw new Error('Course not found');
+    
+    if (course.type === 'live_cohort' && course.enrollment_cutoff_date && new Date(course.enrollment_cutoff_date) < new Date()) {
+      redirect(`/courses?error=${encodeURIComponent('Enrollment for this cohort is closed')}`);
+    }
+
     itemTitle = course.title;
     itemPrice = course.price_amount;
   } else if (bundleId) {

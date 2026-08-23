@@ -57,6 +57,29 @@ export function CourseSettingsForm({ course }: { course: any }) {
         <textarea name="description" defaultValue={course.description || ''} rows={4} className="flex w-full rounded border border-input bg-background px-3 py-2 text-sm" />
       </div>
 
+      {course.type === 'live_cohort' && (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Cohort Start Date (Optional)</label>
+            <input 
+              type="datetime-local" 
+              name="start_date" 
+              defaultValue={course.start_date ? new Date(course.start_date).toISOString().slice(0,16) : ''} 
+              className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm" 
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Enrollment Cutoff Date (Optional)</label>
+            <input 
+              type="datetime-local" 
+              name="enrollment_cutoff_date" 
+              defaultValue={course.enrollment_cutoff_date ? new Date(course.enrollment_cutoff_date).toISOString().slice(0,16) : ''} 
+              className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm" 
+            />
+          </div>
+        </div>
+      )}
+
       <div className="space-y-4 pt-4 border-t">
         <label className="text-sm font-medium block">Course Thumbnail</label>
         

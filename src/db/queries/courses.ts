@@ -15,7 +15,9 @@ export async function getActiveCourses(supabase: SupabaseClient) {
         thumbnail_url,
         price_amount,
         compare_at_price,
-        currency
+        currency,
+        start_date,
+        enrollment_cutoff_date
       `)
       .eq('status', 'active')
       .is('deleted_at', null)
