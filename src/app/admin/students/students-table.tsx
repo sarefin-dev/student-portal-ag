@@ -50,11 +50,21 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
     {
       accessorKey: 'email',
       header: 'Email',
+      cell: ({ row }) => {
+        const email = row.getValue('email') as string;
+        return <a href={`mailto:${email}`} className="text-primary hover:underline">{email}</a>;
+      }
     },
     {
       accessorKey: 'phone',
       header: 'WhatsApp',
-      cell: ({ row }) => row.getValue('phone') || '-',
+      cell: ({ row }) => {
+        const phone = row.getValue('phone') as string;
+        if (!phone) return '-';
+        // Clean phone number for wa.me link (remove spaces, +, etc)
+        const cleanPhone = phone.replace(/\D/g, '');
+        return <a href={`https://wa.me/${cleanPhone}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{phone}</a>;
+      }
     },
     {
       accessorKey: 'status',
