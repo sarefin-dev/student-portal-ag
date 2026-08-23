@@ -70,33 +70,36 @@ export default async function ClassroomLayout({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: course } = await supabase
-    .from('courses')
-    .select(`
-      id, title, slug,
-      modules (
-        id, title, position,
-        submodules (
+  // Fetch course hierarchy and progress concurrently
+  const [courseRes, progressRes] = await Promise.all([
+    supabase
+      .from('courses')
+      .select(`
+        id, title, slug,
+        modules (
           id, title, position,
-          lessons (
+          submodules (
             id, title, position,
-            content_blocks (id)
+            lessons (
+              id, title, position,
+              content_blocks (id)
+            )
           )
         )
-      )
-    `)
-    .eq('slug', slug)
-    .single();
+      `)
+      .eq('slug', slug)
+      .single(),
+    user ? supabase
+      .from('block_progress')
+      .select('content_block_id, status')
+      .eq('student_id', user.id)
+      .eq('status', 'completed') : Promise.resolve({ data: [] })
+  ]);
 
+  const course = courseRes.data;
   if (!course) notFound();
 
-  // Fetch student progress
-  const { data: progressData } = await supabase
-    .from('block_progress')
-    .select('content_block_id, status')
-    .eq('student_id', user?.id || '')
-    .eq('status', 'completed');
-
+  const progressData = progressRes.data;
   const completedBlockIds = new Set(progressData?.map(p => p.content_block_id) || []);
 
   // Sort modules

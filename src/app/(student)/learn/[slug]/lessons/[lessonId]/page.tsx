@@ -13,30 +13,21 @@ import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 export default async function LessonPage({ params }: { params: Promise<{ slug: string, lessonId: string }> }) {
   const { slug, lessonId } = await params;
   const supabase = await createClient();
-  const lesson = await getLessonWithBlocks(supabase, lessonId).catch(() => null);
+  
+  // Parallel fetch independent data
+  const [lesson, assessmentRes, courseRes, userRes] = await Promise.all([
+    getLessonWithBlocks(supabase, lessonId).catch(() => null),
+    supabase.from('assessments').select('*, assessment_questions(*)').eq('lesson_id', lessonId).maybeSingle(),
+    supabase.from('courses').select(`modules (position, submodules (position, lessons (id, title, position)))`).eq('slug', slug).single(),
+    supabase.auth.getUser()
+  ]);
 
   if (!lesson) notFound();
 
   const blockIds = lesson.content_blocks?.map((b: any) => b.id) || [];
-  const { data: assessment } = await supabase
-    .from('assessments')
-    .select('*, assessment_questions(*)')
-    .eq('lesson_id', lessonId)
-    .single();
-
-  const { data: course } = await supabase
-    .from('courses')
-    .select(`
-      modules (
-        position,
-        submodules (
-          position,
-          lessons (id, title, position)
-        )
-      )
-    `)
-    .eq('slug', slug)
-    .single();
+  const assessment = assessmentRes.data;
+  const course = courseRes.data;
+  const user = userRes.data.user;
 
   let allLessons: { id: string, title: string }[] = [];
   if (course?.modules) {
@@ -55,8 +46,6 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   const currentIndex = allLessons.findIndex(l => l.id === lessonId);
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
   const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
-
-  const { data: { user } } = await supabase.auth.getUser();
 
   // Check if lesson is completed
   let isLessonCompleted = false;
