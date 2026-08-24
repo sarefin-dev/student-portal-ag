@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   }
 });
 
-const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseSummary, issueDate, verifyCode, instructorName, host, logoBase64, signatureBase64 }: any) => (
+const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseSummary, issueDate, verifyCode, instructorName, instructorTitle, host, logoBase64, signatureImage }: any) => (
   <Document>
     <Page size="A4" orientation="landscape" style={styles.page}>
       <View style={styles.outerBorder}>
@@ -155,14 +155,14 @@ const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseS
             </View>
 
             <View style={styles.footerBlock}>
-              {signatureBase64 ? (
-                <Image src={signatureBase64} style={styles.signatureImage} />
+              {signatureImage ? (
+                <Image src={signatureImage} style={styles.signatureImage} />
               ) : (
                 <Text style={{ fontSize: 24, fontFamily: 'Times-Italic', marginBottom: 10, color: '#1e293b' }}>{instructorName}</Text>
               )}
               <View style={styles.signatureLine} />
               <Text style={styles.signatureText}>{instructorName}</Text>
-              <Text style={styles.signatureTitle}>Instructor, ArefinLab</Text>
+              <Text style={styles.signatureTitle}>{instructorTitle || 'Instructor, ArefinLab'}</Text>
             </View>
           </View>
 
@@ -184,9 +184,9 @@ export async function GET(
   const host = req.headers.get('host') || 'arefinlab.com';
   const protocol = host.includes('localhost') ? 'http' : 'https';
 
-  // Check for logo.png in public folder
+  // Check for local logo.png and signature.png as fallbacks
   let logoBase64 = null;
-  let signatureBase64 = null;
+  let localSignatureBase64 = null;
   try {
     const logoPath = path.join(process.cwd(), 'public', 'logo.png');
     if (fs.existsSync(logoPath)) {
@@ -197,7 +197,7 @@ export async function GET(
     const signaturePath = path.join(process.cwd(), 'public', 'signature.png');
     if (fs.existsSync(signaturePath)) {
       const sigBuffer = fs.readFileSync(signaturePath);
-      signatureBase64 = `data:image/png;base64,${sigBuffer.toString('base64')}`;
+      localSignatureBase64 = `data:image/png;base64,${sigBuffer.toString('base64')}`;
     }
   } catch (err) {
     console.error("Could not load local images:", err);
@@ -214,12 +214,15 @@ export async function GET(
     return new NextResponse('Certificate not found', { status: 404 });
   }
 
-  // Fetch instructor name
+  // Fetch instructor credentials
   let instructorName = "ArefinLab Team";
+  let instructorTitle = "Instructor, ArefinLab";
+  let finalSignature = localSignatureBase64;
+
   if (cert.courses.id) {
     const { data: assignment } = await supabase
       .from('instructor_assignments')
-      .select('profiles(full_name)')
+      .select('profiles(full_name, instructor_title, signature_url)')
       .eq('course_id', cert.courses.id)
       .limit(1)
       .maybeSingle();
@@ -228,6 +231,12 @@ export async function GET(
       const profile = Array.isArray(assignment.profiles) ? assignment.profiles[0] : assignment.profiles;
       if (profile?.full_name) {
         instructorName = profile.full_name;
+      }
+      if (profile?.instructor_title) {
+        instructorTitle = profile.instructor_title;
+      }
+      if (profile?.signature_url) {
+        finalSignature = profile.signature_url;
       }
     }
   }
@@ -242,9 +251,10 @@ export async function GET(
       issueDate={new Date(cert.issued_at).toLocaleDateString()}
       verifyCode={cert.verify_code}
       instructorName={instructorName}
+      instructorTitle={instructorTitle}
       host={`${protocol}://${host}`}
       logoBase64={logoBase64}
-      signatureBase64={signatureBase64}
+      signatureImage={finalSignature}
     />
   );
 

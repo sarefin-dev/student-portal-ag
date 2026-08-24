@@ -32,3 +32,56 @@ export async function updatePassword(formData: FormData) {
 
   revalidatePath("/dashboard/settings");
 }
+
+export async function updateInstructorProfile(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Unauthorized");
+
+  const instructorTitle = formData.get("instructor_title") as string;
+  const signatureImage = formData.get("signature_image") as File | null;
+  
+  const updates: any = {};
+  if (instructorTitle !== undefined) {
+    updates.instructor_title = instructorTitle;
+  }
+
+  // Handle signature upload bypassing RLS with service role key if needed, or if RLS allows it (we didn't allow instructors in RLS for storage directly yet, so we will use the admin supabase client to upload securely).
+  // Wait, I will use a separate admin client just to be safe, since storage RLS is restricted to is_admin().
+  if (signatureImage && signatureImage.size > 0) {
+    const fileExt = signatureImage.name.split('.').pop();
+    const filePath = `signatures/${user.id}-${Date.now()}.${fileExt}`;
+    
+    // We use service role to bypass storage RLS
+    const { createClient: createAdminClient } = await import('@supabase/supabase-js');
+    const adminSupabase = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    
+    const { data: uploadData, error: uploadError } = await adminSupabase
+      .storage
+      .from('public_media')
+      .upload(filePath, signatureImage, { contentType: signatureImage.type, upsert: true });
+
+    if (uploadError) {
+      console.error("Upload error", uploadError);
+      throw new Error("Failed to upload signature");
+    }
+
+    const { data: publicUrlData } = adminSupabase.storage.from('public_media').getPublicUrl(filePath);
+    updates.signature_url = publicUrlData.publicUrl;
+  }
+
+  if (Object.keys(updates).length > 0) {
+    const { error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id);
+
+    if (error) throw new Error(error.message);
+  }
+
+  revalidatePath("/dashboard/settings");
+}
