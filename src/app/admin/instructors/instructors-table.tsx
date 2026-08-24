@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import {
   useReactTable,
   getCoreRowModel,
@@ -87,7 +88,11 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch,
     {
       accessorKey: 'full_name',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
-      cell: ({ row }) => <span className="font-medium">{row.getValue('full_name')}</span>,
+      cell: ({ row }) => (
+        <Link href={`/admin/instructors/${row.original.id}`} className="font-medium text-primary hover:underline">
+          {row.getValue('full_name')}
+        </Link>
+      ),
     },
     {
       accessorKey: 'role',
