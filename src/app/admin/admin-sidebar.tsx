@@ -28,7 +28,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 
-const navGroups = [
+const adminNavGroups = [
   {
     items: [
       { label: "Overview", href: "/admin", icon: LayoutDashboard },
@@ -54,14 +54,33 @@ const navGroups = [
     items: [
       { label: "Testimonials", href: "/admin/testimonials", icon: MessageSquare },
       { label: "Audit Log", href: "/admin/audit-log", icon: ScrollText },
-      { label: "Admin Settings", href: "/admin/settings", icon: Settings },
+      { label: "Settings", href: "/admin/settings", icon: Settings },
     ],
   },
 ];
 
-export function AdminSidebar({ logoutAction }: { logoutAction: () => void }) {
+const instructorNavGroups = [
+  {
+    items: [
+      { label: "Overview", href: "/admin", icon: LayoutDashboard },
+      { label: "Courses", href: "/admin/courses", icon: BookOpen },
+      { label: "Resources", href: "/admin/resources", icon: FileText },
+    ],
+  },
+  {
+    title: "Settings",
+    items: [
+      { label: "Testimonials", href: "/admin/testimonials", icon: MessageSquare },
+      { label: "Instructor Profile", href: "/admin/settings", icon: Settings },
+    ],
+  },
+];
+
+export function AdminSidebar({ logoutAction, role }: { logoutAction: () => void; role?: string }) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+
+  const navGroups = role === 'instructor' ? instructorNavGroups : adminNavGroups;
 
   const NavContent = () => (
     <>

@@ -12,8 +12,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { toggleStudentStatus } from './actions';
+import { toggleStudentStatus, changeUserRole } from './actions';
 import { Ban, CheckCircle } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function StudentsTable({ data, currentPage, totalPages, initialSearch }: { data: any[], currentPage: number, totalPages: number, initialSearch: string }) {
   const router = useRouter();
@@ -41,11 +48,49 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
     }
   };
 
+  const handleRoleChange = async (studentId: string, newRole: 'student' | 'instructor' | 'admin') => {
+    try {
+      setIsUpdating(studentId);
+      await changeUserRole(studentId, newRole);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to change role");
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: 'full_name',
       header: 'Name',
       cell: ({ row }) => <span className="font-medium">{row.getValue('full_name')}</span>,
+    },
+    {
+      accessorKey: 'role',
+      header: 'Role',
+      cell: ({ row }) => {
+        const role = row.getValue('role') as string;
+        const studentId = row.original.id;
+        const isCurrentUpdating = isUpdating === studentId;
+        
+        return (
+          <Select
+            disabled={isCurrentUpdating}
+            defaultValue={role}
+            onValueChange={(val: any) => handleRoleChange(studentId, val)}
+          >
+            <SelectTrigger className="w-[120px] h-8 text-xs">
+              <SelectValue placeholder="Role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="student">Student</SelectItem>
+              <SelectItem value="instructor">Instructor</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+            </SelectContent>
+          </Select>
+        );
+      }
     },
     {
       accessorKey: 'email',
