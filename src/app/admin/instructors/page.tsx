@@ -23,9 +23,8 @@ export default async function AdminInstructorsPage({ searchParams }: { searchPar
   const to = from + pageSize - 1;
 
   let queryBuilder = supabaseAdmin
-    .from('admin_student_profiles_view')
-    .select('*', { count: 'estimated' })
-    .neq('role', 'student');
+    .from('admin_staff_profiles_view')
+    .select('*', { count: 'estimated' });
 
   if (search) {
     queryBuilder = queryBuilder.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
