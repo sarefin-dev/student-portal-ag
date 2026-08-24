@@ -16,6 +16,7 @@ export async function addModule(formData: FormData) {
   const { supabase } = await requireAuth();
   const courseId = formData.get('courseId') as string;
   const title = formData.get('title') as string || 'New Module';
+  const guestInstructorId = formData.get('guestInstructorId') as string;
   
   // Get current max position to append to the end
   const { data: existing } = await supabase
@@ -32,7 +33,8 @@ export async function addModule(formData: FormData) {
     .insert({
       course_id: courseId,
       title,
-      position: newPosition
+      position: newPosition,
+      guest_instructor_id: guestInstructorId || null
     });
 
   if (error) console.error("Error adding module:", error);

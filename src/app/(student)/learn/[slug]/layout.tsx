@@ -2,9 +2,11 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Menu, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Calendar, Menu, ArrowLeft, CheckCircle2, User } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 function SyllabusContent({ course }: { course: any }) {
   return (
@@ -32,7 +34,20 @@ function SyllabusContent({ course }: { course: any }) {
         <div className="space-y-6">
           {course.modules?.map((mod: any) => (
             <div key={mod.id}>
-              <h3 className="font-semibold">{mod.title}</h3>
+              <div className="flex flex-col mb-1 gap-1.5">
+                <h3 className="font-semibold leading-tight">{mod.title}</h3>
+                {mod.guest_instructor_id && mod.profiles && (
+                  <div className="flex items-center gap-2 mb-1">
+                    <Avatar className="w-5 h-5 border">
+                      <AvatarImage src={mod.profiles.avatar_url} />
+                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                        {mod.profiles.full_name?.charAt(0) || 'S'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs font-medium text-muted-foreground">Guest: {mod.profiles.full_name}</span>
+                  </div>
+                )}
+              </div>
               {mod.submodules?.map((sub: any) => (
                 <div key={sub.id} className="mt-2 ml-2">
                   <h4 className="text-sm font-medium text-muted-foreground">{sub.title}</h4>
@@ -77,7 +92,7 @@ export default async function ClassroomLayout({
       .select(`
         id, title, slug,
         modules (
-          id, title, position,
+          id, title, position, guest_instructor_id, profiles(full_name, avatar_url),
           submodules (
             id, title, position,
             lessons (

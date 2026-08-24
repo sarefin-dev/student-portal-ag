@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { addModule, addSubmodule, addLesson, publishCourse, unpublishCourse, updatePrice, setComingSoon } from './actions';
+import { User } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 export default async function CourseBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -15,7 +17,7 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
     .select(`
       *,
       modules (
-        id, title, position,
+        id, title, position, guest_instructor_id, profiles(full_name),
         submodules (
           id, title, position,
           lessons (
@@ -30,6 +32,11 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
   if (!course) {
     notFound();
   }
+
+  // Fetch available instructors for the dropdown
+  const { data: instructors } = await supabase
+    .from('admin_staff_profiles_view')
+    .select('id, full_name');
 
   // Sort modules
   course.modules?.sort((a: any, b: any) => a.position - b.position);
@@ -105,9 +112,15 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
       <div className="rounded border bg-card p-6 shadow-none">
         <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
           <h2 className="text-xl font-bold">Curriculum</h2>
-          <form action={addModule} className="flex items-center gap-2">
+          <form action={addModule} className="flex flex-wrap items-center gap-2">
             <input type="hidden" name="courseId" value={course.id} />
             <Input name="title" placeholder="New Module Title" className="h-9 w-48" required />
+            <select name="guestInstructorId" className="h-9 rounded-md border border-input bg-background px-3 py-2 text-sm max-w-[150px]">
+              <option value="">No Guest (Default)</option>
+              {instructors?.map(inst => (
+                <option key={inst.id} value={inst.id}>{inst.full_name}</option>
+              ))}
+            </select>
             <Button size="sm" type="submit">+ Add Module</Button>
           </form>
         </div>
@@ -121,7 +134,15 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
             {course.modules.map((module: any) => (
               <div key={module.id} className="rounded-lg border bg-muted/10 p-4 shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-2 mb-4">
-                  <h3 className="text-lg font-bold">Module {module.position}: {module.title}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-bold">Module {module.position}: {module.title}</h3>
+                    {module.guest_instructor_id && (
+                      <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                        <User className="w-3 h-3" />
+                        Guest: {module.profiles?.full_name || 'Unknown'}
+                      </Badge>
+                    )}
+                  </div>
                   <form action={addSubmodule} className="flex items-center gap-2">
                     <input type="hidden" name="courseId" value={course.id} />
                     <input type="hidden" name="moduleId" value={module.id} />
@@ -143,15 +164,13 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
                         </form>
                       </div>
 
-                      <div className="space-y-2 pl-4">
+                      <div className="space-y-2 mt-3">
                         {sub.lessons?.map((lesson: any) => (
-                          <div key={lesson.id} className="flex items-center justify-between rounded-md border border-dashed p-2 text-sm">
+                          <div key={lesson.id} className="flex items-center justify-between p-2 rounded-sm bg-muted/50 text-sm">
                             <span>Lesson {lesson.position}: {lesson.title}</span>
-                            <div className="flex gap-2">
-                              <Link href={`/admin/courses/${course.id}/builder/lessons/${lesson.id}`}>
-                                <Button variant="ghost" size="sm" className="h-6 text-xs text-primary">Edit Content</Button>
-                              </Link>
-                            </div>
+                            <Link href={`/admin/courses/${course.id}/builder/lessons/${lesson.id}`}>
+                              <Button variant="ghost" size="sm" className="h-7 text-xs text-primary">Edit Content</Button>
+                            </Link>
                           </div>
                         ))}
                       </div>
