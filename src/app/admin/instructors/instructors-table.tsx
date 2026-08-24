@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
-export function InstructorsTable({ data, currentPage, totalPages, initialSearch }: { data: any[], currentPage: number, totalPages: number, initialSearch: string }) {
+export function InstructorsTable({ data, currentPage, totalPages, initialSearch, currentUserId }: { data: any[], currentPage: number, totalPages: number, initialSearch: string, currentUserId: string }) {
   const router = useRouter();
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
@@ -43,9 +43,9 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch 
     try {
       setIsUpdating(staffId);
       await toggleStaffStatus(staffId, currentStatus);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to update status");
+      alert(error.message || "Failed to update status");
     } finally {
       setIsUpdating(null);
     }
@@ -109,12 +109,14 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch 
         const status = row.getValue('status') as string;
         const staffId = row.original.id;
         const isSuspended = status === 'suspended';
+        const isSelf = staffId === currentUserId;
+        
         return (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => handleToggleStatus(staffId, status)}
-            disabled={isUpdating === staffId}
+            disabled={isUpdating === staffId || isSelf}
             className={isSuspended ? 'text-success hover:text-success' : 'text-destructive hover:text-destructive'}
           >
             {isSuspended ? <CheckCircle className="w-4 h-4 mr-1" /> : <Ban className="w-4 h-4 mr-1" />}

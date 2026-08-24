@@ -46,6 +46,7 @@ export default async function AdminInstructorsPage({ searchParams }: { searchPar
         currentPage={page} 
         totalPages={totalPages}
         initialSearch={search || ''}
+        currentUserId={user.id}
       />
     </div>
   );

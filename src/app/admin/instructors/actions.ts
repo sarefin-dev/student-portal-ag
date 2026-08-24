@@ -20,6 +20,10 @@ export async function toggleStaffStatus(staffId: string, currentStatus: string) 
     throw new Error('Unauthorized: Admin access required');
   }
 
+  if (staffId === user.id) {
+    throw new Error('You cannot suspend your own account.');
+  }
+
   const supabaseAdmin = createSupabaseClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.SUPABASE_SERVICE_ROLE_KEY
