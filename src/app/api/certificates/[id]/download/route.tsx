@@ -1,70 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import ReactPDF, { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
-import { generateText } from 'ai';
-import { google } from '@ai-sdk/google';
+import ReactPDF, { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
 
+// Register standard fonts is not strictly needed for Times, it's built-in, but we must explicitly use it in styles.
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#ffffff',
-    padding: 60,
+    padding: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    border: '10pt solid #1e293b'
+  },
+  outerBorder: {
+    border: '4pt solid #0f172a',
+    padding: 6,
+    width: '100%',
+    height: '100%',
+  },
+  innerBorder: {
+    border: '1pt solid #0f172a',
+    padding: 40,
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fafafa',
   },
   logo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2563eb',
+    fontSize: 28,
+    fontFamily: 'Times-Bold',
+    color: '#0f172a',
     marginBottom: 40,
     textTransform: 'uppercase',
-    letterSpacing: 2
+    letterSpacing: 4
   },
   title: {
-    fontSize: 42,
-    fontWeight: 'bold',
+    fontSize: 48,
+    fontFamily: 'Times-Bold',
     marginBottom: 20,
-    color: '#0f172a'
+    color: '#0f172a',
+    textTransform: 'uppercase'
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
+    fontFamily: 'Times-Italic',
     marginBottom: 30,
-    color: '#64748b'
+    color: '#334155'
   },
   name: {
-    fontSize: 36,
-    fontWeight: 'bold',
+    fontSize: 42,
+    fontFamily: 'Times-Bold',
     marginBottom: 30,
     color: '#1e293b',
     borderBottom: '2pt solid #1e293b',
     paddingBottom: 10,
-    paddingHorizontal: 20
+    paddingHorizontal: 40
   },
   course: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontFamily: 'Times-Bold',
     marginBottom: 20,
     color: '#0f172a',
     textAlign: 'center',
-    maxWidth: '80%'
+    maxWidth: '85%'
   },
   summary: {
-    fontSize: 12,
+    fontSize: 14,
+    fontFamily: 'Times-Roman',
     color: '#334155',
     textAlign: 'center',
-    maxWidth: '70%',
-    lineHeight: 1.5,
+    maxWidth: '75%',
+    lineHeight: 1.6,
     marginBottom: 50,
-    fontStyle: 'italic'
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
     position: 'absolute',
-    bottom: 60,
-    paddingHorizontal: 60
+    bottom: 80,
+    paddingHorizontal: 80
   },
   footerBlock: {
     flexDirection: 'column',
@@ -78,55 +93,61 @@ const styles = StyleSheet.create({
   },
   signatureText: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Times-Bold',
     color: '#1e293b'
   },
   signatureTitle: {
     fontSize: 12,
+    fontFamily: 'Times-Roman',
     color: '#64748b'
   },
   metadata: {
-    fontSize: 10,
-    color: '#94a3b8',
+    fontSize: 11,
+    fontFamily: 'Times-Roman',
+    color: '#64748b',
     position: 'absolute',
-    bottom: 20,
+    bottom: 30,
     width: '100%',
     textAlign: 'center'
   }
 });
 
-const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseSummary, issueDate, verifyCode, instructorName }: any) => (
+const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseSummary, issueDate, verifyCode, instructorName, host }: any) => (
   <Document>
     <Page size="A4" orientation="landscape" style={styles.page}>
-      <Text style={styles.logo}>ArefinLab</Text>
-      <Text style={styles.title}>Certificate of Completion</Text>
-      <Text style={styles.subtitle}>This is to certify that</Text>
-      <Text style={styles.name}>{studentName}</Text>
-      <Text style={styles.subtitle}>
-        has successfully completed the {courseDuration ? `${courseDuration} course` : 'course'}
-      </Text>
-      <Text style={styles.course}>{courseTitle}</Text>
-      
-      {courseSummary ? (
-        <Text style={styles.summary}>Covering: {courseSummary}</Text>
-      ) : null}
-      
-      <View style={styles.footer}>
-        <View style={styles.footerBlock}>
-          <Text style={{ fontSize: 16, marginBottom: 15, color: '#1e293b' }}>{issueDate}</Text>
-          <View style={styles.signatureLine} />
-          <Text style={styles.signatureText}>Date of Issue</Text>
-        </View>
+      <View style={styles.outerBorder}>
+        <View style={styles.innerBorder}>
+          <Text style={styles.logo}>ArefinLab</Text>
+          <Text style={styles.title}>Certificate of Completion</Text>
+          <Text style={styles.subtitle}>This is to certify that</Text>
+          <Text style={styles.name}>{studentName}</Text>
+          <Text style={styles.subtitle}>
+            has successfully completed the {courseDuration ? `${courseDuration} course` : 'course'}
+          </Text>
+          <Text style={styles.course}>{courseTitle}</Text>
+          
+          {courseSummary ? (
+            <Text style={styles.summary}>Covering: {courseSummary}</Text>
+          ) : null}
+          
+          <View style={styles.footer}>
+            <View style={styles.footerBlock}>
+              <Text style={{ fontSize: 18, fontFamily: 'Times-Roman', marginBottom: 15, color: '#1e293b' }}>{issueDate}</Text>
+              <View style={styles.signatureLine} />
+              <Text style={styles.signatureText}>Date of Issue</Text>
+            </View>
 
-        <View style={styles.footerBlock}>
-          <Text style={{ fontSize: 18, fontFamily: 'Times-Italic', marginBottom: 15, color: '#1e293b' }}>{instructorName}</Text>
-          <View style={styles.signatureLine} />
-          <Text style={styles.signatureText}>{instructorName}</Text>
-          <Text style={styles.signatureTitle}>Instructor, ArefinLab.com</Text>
+            <View style={styles.footerBlock}>
+              <Text style={{ fontSize: 24, fontFamily: 'Times-Italic', marginBottom: 10, color: '#1e293b' }}>{instructorName}</Text>
+              <View style={styles.signatureLine} />
+              <Text style={styles.signatureText}>{instructorName}</Text>
+              <Text style={styles.signatureTitle}>Instructor, ArefinLab</Text>
+            </View>
+          </View>
+
+          <Text style={styles.metadata}>Verify at {host}/verify/{verifyCode} • ID: {verifyCode}</Text>
         </View>
       </View>
-
-      <Text style={styles.metadata}>Verify at arefinlab.com/verify/{verifyCode} • ID: {verifyCode}</Text>
     </Page>
   </Document>
 );
@@ -137,6 +158,10 @@ export async function GET(
 ) {
   const { id } = await params;
   const supabase = await createClient();
+
+  // Get host for verification URL
+  const host = req.headers.get('host') || 'arefinlab.com';
+  const protocol = host.includes('localhost') ? 'http' : 'https';
 
   // Fetch certificate details
   const { data: cert, error } = await supabase
@@ -177,6 +202,7 @@ export async function GET(
       issueDate={new Date(cert.issued_at).toLocaleDateString()}
       verifyCode={cert.verify_code}
       instructorName={instructorName}
+      host={`${protocol}://${host}`}
     />
   );
 
