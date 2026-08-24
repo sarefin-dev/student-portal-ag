@@ -56,8 +56,12 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch 
     try {
       setIsCreating(true);
       const formData = new FormData(e.currentTarget);
-      await createStaff(formData);
-      setIsDialogOpen(false);
+      const result = await createStaff(formData);
+      if (result && result.error) {
+        alert(result.error);
+      } else {
+        setIsDialogOpen(false);
+      }
     } catch (error: any) {
       console.error(error);
       alert(error.message || "Failed to create staff member");

@@ -78,7 +78,10 @@ export async function createStaff(formData: FormData) {
   });
 
   if (authError) {
-    throw new Error(authError.message);
+    if (authError.message.includes('already been registered')) {
+      return { error: 'An account with this email already exists. As per strict role policies, existing students cannot be promoted to staff. Please use a different email address.' };
+    }
+    return { error: authError.message };
   }
 
   // 2. Update their role in profiles (the trigger already created the profile row with role='student')
@@ -88,8 +91,9 @@ export async function createStaff(formData: FormData) {
     .eq('id', newAuthUser.user.id);
 
   if (profileError) {
-    throw new Error(profileError.message);
+    return { error: profileError.message };
   }
 
   revalidatePath('/admin/instructors');
+  return { success: true };
 }
