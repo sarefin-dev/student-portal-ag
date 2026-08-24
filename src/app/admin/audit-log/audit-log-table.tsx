@@ -18,7 +18,9 @@ import { LocalTime } from '@/components/local-time';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Eye } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableFilter } from "@/components/data-table/data-table-filter";
 
 function JsonDiffViewer({ before, after }: { before: any, after: any }) {
   // A simple nice rendering of JSON diff
@@ -46,11 +48,12 @@ function JsonDiffViewer({ before, after }: { before: any, after: any }) {
 
 export function AuditLogTable({ data, currentPage, totalPages }: { data: any[], currentPage: number, totalPages: number }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const columns = [
     {
       accessorKey: "created_at",
-      header: "Timestamp",
+      header: ({ column }: any) => <DataTableColumnHeader column={column} title="Timestamp" />,
       cell: ({ row }: any) => <LocalTime isoString={row.getValue("created_at")} />
     },
     {
@@ -70,7 +73,7 @@ export function AuditLogTable({ data, currentPage, totalPages }: { data: any[], 
     },
     {
       accessorKey: "action",
-      header: "Action",
+      header: ({ column }: any) => <DataTableColumnHeader column={column} title="Action" />,
       cell: ({ row }: any) => {
         const action = row.getValue("action") as string;
         const color = action === 'INSERT' ? 'bg-success/10 text-success' : action === 'DELETE' ? 'bg-destructive/10 text-destructive' : 'bg-warning/10 text-warning';
@@ -79,36 +82,30 @@ export function AuditLogTable({ data, currentPage, totalPages }: { data: any[], 
     },
     {
       accessorKey: "entity_type",
-      header: "Entity",
+      header: ({ column }: any) => <DataTableColumnHeader column={column} title="Entity" />,
       cell: ({ row }: any) => (
         <div>
           <div className="font-medium capitalize">{row.getValue("entity_type")}</div>
-          <div className="text-xs text-muted-foreground font-mono">{row.original.entity_id.substring(0,8)}...</div>
+          <div className="text-xs text-muted-foreground font-mono truncate max-w-[200px]">{row.original.entity_id}</div>
         </div>
       )
     },
     {
-      id: "details",
-      header: "Details",
+      id: "actions",
       cell: ({ row }: any) => (
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <Eye className="w-4 h-4 mr-2" /> View Changes
+            <Button variant="ghost" size="icon">
+              <Eye className="w-4 h-4" />
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="capitalize">{row.original.action} {row.original.entity_type}</DialogTitle>
+              <DialogTitle className="capitalize">
+                {row.getValue("action")} {row.getValue("entity_type")}
+              </DialogTitle>
             </DialogHeader>
-            <div className="mt-4">
-              <div className="grid grid-cols-3 gap-2 text-xs font-bold text-muted-foreground mb-2 pb-2 border-b">
-                <div>Field</div>
-                <div>Before</div>
-                <div>After</div>
-              </div>
-              <JsonDiffViewer before={row.original.before} after={row.original.after} />
-            </div>
+            <JsonDiffViewer before={row.original.old_data} after={row.original.new_data} />
           </DialogContent>
         </Dialog>
       )
@@ -121,78 +118,107 @@ export function AuditLogTable({ data, currentPage, totalPages }: { data: any[], 
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const createPageUrl = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", newPage.toString());
+    return `/admin/audit-log?${params.toString()}`;
+  };
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
         <CardTitle>System Audit Log</CardTitle>
+        <div className="flex flex-wrap items-center gap-2">
+          <DataTableFilter 
+            filterKey="action"
+            title="Action"
+            options={[
+              { label: 'INSERT', value: 'INSERT' },
+              { label: 'UPDATE', value: 'UPDATE' },
+              { label: 'DELETE', value: 'DELETE' },
+            ]}
+          />
+          <DataTableFilter 
+            filterKey="entity_type"
+            title="Entity Type"
+            options={[
+              { label: 'Courses', value: 'courses' },
+              { label: 'Enrollments', value: 'enrollments' },
+              { label: 'Payments', value: 'payments' },
+              { label: 'Profiles', value: 'profiles' },
+            ]}
+          />
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
+        <div className="space-y-4">
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
                     ))}
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No logs found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex items-center justify-between py-4">
-          <div className="text-sm text-muted-foreground">
-            Page {currentPage} of {totalPages}
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow key={row.id}>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      No logs found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </div>
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(`/admin/audit-log?page=${currentPage - 1}`)}
-              disabled={currentPage <= 1}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(`/admin/audit-log?page=${currentPage + 1}`)}
-              disabled={currentPage >= totalPages}
-            >
-              Next
-            </Button>
+          <div className="flex items-center justify-between space-x-2">
+            <div className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages || 1}
+            </div>
+            <div className="space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={currentPage <= 1}
+                onClick={() => router.push(createPageUrl(currentPage - 1))}
+              >
+                Previous
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                disabled={currentPage >= totalPages}
+                onClick={() => router.push(createPageUrl(currentPage + 1))}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>
