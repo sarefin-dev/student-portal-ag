@@ -44,35 +44,4 @@ export async function toggleStudentStatus(studentId: string, currentStatus: stri
   revalidatePath('/admin/students');
 }
 
-export async function changeUserRole(studentId: string, newRole: 'student' | 'instructor' | 'admin') {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthorized');
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (profile?.role !== 'admin') {
-    throw new Error('Unauthorized: Admin access required');
-  }
-
-  const supabaseAdmin = createSupabaseClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.SUPABASE_SERVICE_ROLE_KEY
-  );
-
-  const { error } = await supabaseAdmin
-    .from('profiles')
-    .update({ role: newRole })
-    .eq('id', studentId);
-
-  if (error) {
-    console.error('Error changing user role:', error);
-    throw new Error('Failed to change user role');
-  }
-
-  revalidatePath('/admin/students');
-}

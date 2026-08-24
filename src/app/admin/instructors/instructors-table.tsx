@@ -151,6 +151,12 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch,
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const createPageUrl = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", newPage.toString());
+    return `/admin/instructors?${params.toString()}`;
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
@@ -221,71 +227,81 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch,
                 </select>
               </div>
               <Button type="submit" disabled={isCreating} className="w-full">
-                {isCreating ? 'Creating...' : 'Create Staff Member'}
+                {isCreating ? 'Creating...' : 'Create Staff'}
               </Button>
             </form>
           </DialogContent>
         </Dialog>
       </CardHeader>
       
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </TableHead>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="rounded-md border bg-card">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      )
+                    })}
+                  </TableRow>
                 ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                      No results.
                     </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No staff members found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        
-        <div className="flex items-center justify-between p-4 border-t">
-          <div className="text-sm text-muted-foreground">
-            Page {currentPage} of {totalPages || 1}
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              disabled={currentPage <= 1}
-              onClick={() => router.push(`/admin/instructors?page=${currentPage - 1}${globalFilter ? `&search=${globalFilter}` : ''}`)}
-            >
-              Previous
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              disabled={currentPage >= totalPages}
-              onClick={() => router.push(`/admin/instructors?page=${currentPage + 1}${globalFilter ? `&search=${globalFilter}` : ''}`)}
-            >
-              Next
-            </Button>
+          <div className="flex items-center justify-between space-x-2">
+            <div className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages || 1}
+            </div>
+            <div className="space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={currentPage <= 1}
+                onClick={() => router.push(createPageUrl(currentPage - 1))}
+              >
+                Previous
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                disabled={currentPage >= totalPages}
+                onClick={() => router.push(createPageUrl(currentPage + 1))}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>

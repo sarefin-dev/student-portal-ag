@@ -84,6 +84,12 @@ export function LedgerTable({ data, currentPage, totalPages, initialSearch }: { 
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const createPageUrl = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", newPage.toString());
+    return `/admin/ledger?${params.toString()}`;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -113,21 +119,31 @@ export function LedgerTable({ data, currentPage, totalPages, initialSearch }: { 
       <div className="rounded-md border bg-card">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
+            {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map(row => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map(cell => (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
@@ -145,24 +161,24 @@ export function LedgerTable({ data, currentPage, totalPages, initialSearch }: { 
         </Table>
       </div>
 
-      <div className="flex items-center justify-between py-4">
+      <div className="flex items-center justify-between space-x-2">
         <div className="text-sm text-muted-foreground">
-          Page {currentPage} of {totalPages}
+          Page {currentPage} of {totalPages || 1}
         </div>
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push(`/admin/ledger?page=${currentPage - 1}${initialSearch ? `&search=${encodeURIComponent(initialSearch)}` : ''}`)}
+        <div className="space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
             disabled={currentPage <= 1}
+            onClick={() => router.push(createPageUrl(currentPage - 1))}
           >
             Previous
           </Button>
-          <Button
-            variant="outline"
+          <Button 
+            variant="outline" 
             size="sm"
-            onClick={() => router.push(`/admin/ledger?page=${currentPage + 1}${initialSearch ? `&search=${encodeURIComponent(initialSearch)}` : ''}`)}
             disabled={currentPage >= totalPages}
+            onClick={() => router.push(createPageUrl(currentPage + 1))}
           >
             Next
           </Button>
