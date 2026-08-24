@@ -22,6 +22,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function InstructorsTable({ data, currentPage, totalPages, initialSearch, currentUserId }: { data: any[], currentPage: number, totalPages: number, initialSearch: string, currentUserId: string }) {
   const router = useRouter();
@@ -147,9 +153,18 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch,
         </form>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button><Plus className="w-4 h-4 mr-2" /> Add Staff</Button>
-          </DialogTrigger>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DialogTrigger asChild>
+                  <Button size="icon"><Plus className="w-4 h-4" /></Button>
+                </DialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Add Staff Member</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create Staff Member</DialogTitle>
