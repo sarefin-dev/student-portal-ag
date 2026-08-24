@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import ReactPDF, { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import ReactPDF, { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
+import fs from 'fs';
+import path from 'path';
 
 // Register standard fonts is not strictly needed for Times, it's built-in, but we must explicitly use it in styles.
 const styles = StyleSheet.create({
@@ -26,13 +28,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fafafa',
   },
-  logo: {
+  logoText: {
     fontSize: 28,
     fontFamily: 'Times-Bold',
     color: '#0f172a',
     marginBottom: 40,
     textTransform: 'uppercase',
     letterSpacing: 4
+  },
+  logoImage: {
+    height: 45,
+    marginBottom: 40,
+    objectFit: 'contain'
   },
   title: {
     fontSize: 48,
@@ -112,12 +119,17 @@ const styles = StyleSheet.create({
   }
 });
 
-const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseSummary, issueDate, verifyCode, instructorName, host }: any) => (
+const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseSummary, issueDate, verifyCode, instructorName, host, logoBase64 }: any) => (
   <Document>
     <Page size="A4" orientation="landscape" style={styles.page}>
       <View style={styles.outerBorder}>
         <View style={styles.innerBorder}>
-          <Text style={styles.logo}>ArefinLab</Text>
+          {logoBase64 ? (
+            <Image src={logoBase64} style={styles.logoImage} />
+          ) : (
+            <Text style={styles.logoText}>ArefinLab</Text>
+          )}
+          
           <Text style={styles.title}>Certificate of Completion</Text>
           <Text style={styles.subtitle}>This is to certify that</Text>
           <Text style={styles.name}>{studentName}</Text>
@@ -163,6 +175,18 @@ export async function GET(
   const host = req.headers.get('host') || 'arefinlab.com';
   const protocol = host.includes('localhost') ? 'http' : 'https';
 
+  // Check for logo.png in public folder
+  let logoBase64 = null;
+  try {
+    const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+    if (fs.existsSync(logoPath)) {
+      const logoBuffer = fs.readFileSync(logoPath);
+      logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`;
+    }
+  } catch (err) {
+    console.error("Could not load logo:", err);
+  }
+
   // Fetch certificate details
   const { data: cert, error } = await supabase
     .from('certificates')
@@ -203,6 +227,7 @@ export async function GET(
       verifyCode={cert.verify_code}
       instructorName={instructorName}
       host={`${protocol}://${host}`}
+      logoBase64={logoBase64}
     />
   );
 
