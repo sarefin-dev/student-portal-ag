@@ -22,18 +22,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { useSearchParams } from 'next/navigation';
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableFilter } from "@/components/data-table/data-table-filter";
+
 export function StudentsTable({ data, currentPage, totalPages, initialSearch }: { data: any[], currentPage: number, totalPages: number, initialSearch: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", "1");
     if (globalFilter) {
-      router.push(`/admin/students?search=${encodeURIComponent(globalFilter)}`);
+      params.set("search", globalFilter);
     } else {
-      router.push(`/admin/students`);
+      params.delete("search");
     }
+    router.push(`/admin/students?${params.toString()}`);
   };
 
   const handleToggleStatus = async (studentId: string, currentStatus: string) => {
@@ -63,12 +71,12 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: 'full_name',
-      header: 'Name',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
       cell: ({ row }) => <span className="font-medium">{row.getValue('full_name')}</span>,
     },
     {
       accessorKey: 'email',
-      header: 'Email',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
       cell: ({ row }) => {
         const email = row.getValue('email') as string;
         return <a href={`mailto:${email}`} className="text-primary hover:underline">{email}</a>;
@@ -76,7 +84,7 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
     },
     {
       accessorKey: 'phone',
-      header: 'WhatsApp',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="WhatsApp" />,
       cell: ({ row }) => {
         const phone = row.getValue('phone') as string;
         if (!phone) return '-';
@@ -87,7 +95,7 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
       cell: ({ row }) => {
         const status = row.getValue('status') as string;
         const color = status === 'active' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive';
@@ -96,12 +104,12 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
     },
     {
       accessorKey: 'created_at',
-      header: 'Joined Date',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Joined Date" />,
       cell: ({ row }) => new Date(row.getValue('created_at')).toLocaleDateString(),
     },
     {
       accessorKey: 'last_sign_in_at',
-      header: 'Last Access',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Last Access" />,
       cell: ({ row }) => {
         const lastSignIn = row.getValue('last_sign_in_at');
         return lastSignIn ? new Date(lastSignIn as string).toLocaleDateString() : <span className="text-muted-foreground italic">Never</span>;
@@ -116,20 +124,18 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
         const isSuspended = status === 'suspended';
         return (
           <Button 
-            variant={isSuspended ? "outline" : "destructive"} 
+            variant="ghost" 
             size="sm" 
             onClick={() => handleToggleStatus(studentId, status)}
             disabled={isUpdating === studentId}
+            className={isSuspended ? 'text-success hover:text-success' : 'text-destructive hover:text-destructive'}
           >
-            {isSuspended ? (
-              <><CheckCircle className="w-4 h-4 mr-2" /> Unsuspend</>
-            ) : (
-              <><Ban className="w-4 h-4 mr-2" /> Suspend</>
-            )}
+            {isSuspended ? <CheckCircle className="w-4 h-4 mr-1" /> : <Ban className="w-4 h-4 mr-1" />}
+            {isSuspended ? 'Reactivate' : 'Suspend'}
           </Button>
         );
       }
-    }
+    },
   ];
 
   const table = useReactTable({
@@ -140,21 +146,31 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Students</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <form onSubmit={handleSearch} className="flex items-center gap-2">
-            <Input
-              placeholder="Search by name, email, or phone..."
+      <CardHeader className="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-wrap items-center gap-2 flex-1">
+          <form onSubmit={handleSearch} className="flex gap-2 max-w-sm w-full md:w-auto">
+            <Input 
+              placeholder="Search name, email, or phone..." 
               value={globalFilter}
-              onChange={e => setGlobalFilter(e.target.value)}
-              className="max-w-sm"
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              className="w-full"
             />
             <Button type="submit" variant="secondary">Search</Button>
           </form>
+          
+          <DataTableFilter 
+            filterKey="status"
+            title="Status"
+            options={[
+              { label: 'Active', value: 'active' },
+              { label: 'Suspended', value: 'suspended' },
+            ]}
+          />
+        </div>
+      </CardHeader>
 
+      <CardContent>
+        <div className="space-y-4">
           <div className="rounded-md border bg-card">
             <Table>
               <TableHeader>

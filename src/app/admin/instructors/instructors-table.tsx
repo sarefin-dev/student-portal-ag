@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   useReactTable,
   getCoreRowModel,
@@ -29,8 +29,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableFilter } from "@/components/data-table/data-table-filter";
+
 export function InstructorsTable({ data, currentPage, totalPages, initialSearch, currentUserId }: { data: any[], currentPage: number, totalPages: number, initialSearch: string, currentUserId: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -38,11 +42,14 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch,
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", "1");
     if (globalFilter) {
-      router.push(`/admin/instructors?search=${encodeURIComponent(globalFilter)}`);
+      params.set("search", globalFilter);
     } else {
-      router.push(`/admin/instructors`);
+      params.delete("search");
     }
+    router.push(`/admin/instructors?${params.toString()}`);
   };
 
   const handleToggleStatus = async (staffId: string, currentStatus: string) => {
@@ -79,12 +86,12 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch,
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: 'full_name',
-      header: 'Name',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
       cell: ({ row }) => <span className="font-medium">{row.getValue('full_name')}</span>,
     },
     {
       accessorKey: 'role',
-      header: 'Role',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
       cell: ({ row }) => {
         const role = row.getValue('role') as string;
         const color = role === 'admin' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-primary/10 text-primary';
@@ -93,7 +100,7 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch,
     },
     {
       accessorKey: 'email',
-      header: 'Email',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
       cell: ({ row }) => {
         const email = row.getValue('email') as string;
         return <a href={`mailto:${email}`} className="text-primary hover:underline">{email}</a>;
@@ -101,7 +108,7 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch,
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
       cell: ({ row }) => {
         const status = row.getValue('status') as string;
         const color = status === 'active' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive';
@@ -141,16 +148,35 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch,
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between py-4">
-        <form onSubmit={handleSearch} className="flex gap-2 max-w-sm w-full">
-          <Input 
-            placeholder="Search name or email..." 
-            value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            className="w-full"
+      <CardHeader className="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-wrap items-center gap-2 flex-1">
+          <form onSubmit={handleSearch} className="flex gap-2 max-w-sm w-full md:w-auto">
+            <Input 
+              placeholder="Search name or email..." 
+              value={globalFilter}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              className="w-full"
+            />
+            <Button type="submit" variant="secondary">Search</Button>
+          </form>
+          
+          <DataTableFilter 
+            filterKey="role"
+            title="Role"
+            options={[
+              { label: 'Instructor', value: 'instructor' },
+              { label: 'Admin', value: 'admin' },
+            ]}
           />
-          <Button type="submit" variant="secondary">Search</Button>
-        </form>
+          <DataTableFilter 
+            filterKey="status"
+            title="Status"
+            options={[
+              { label: 'Active', value: 'active' },
+              { label: 'Suspended', value: 'suspended' },
+            ]}
+          />
+        </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <TooltipProvider>

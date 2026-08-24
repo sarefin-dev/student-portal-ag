@@ -4,8 +4,8 @@ import { redirect } from 'next/navigation';
 import { InstructorsTable } from './instructors-table';
 import { env } from '@/env';
 
-export default async function AdminInstructorsPage({ searchParams }: { searchParams: Promise<{ page?: string, search?: string }> }) {
-  const { page: pageParam, search } = await searchParams;
+export default async function AdminInstructorsPage({ searchParams }: { searchParams: Promise<{ page?: string, search?: string, sort?: string, order?: string, role?: string, status?: string }> }) {
+  const { page: pageParam, search, sort, order, role, status } = await searchParams;
   const supabase = await createClient();
 
   const supabaseAdmin = createSupabaseClient(
@@ -29,9 +29,24 @@ export default async function AdminInstructorsPage({ searchParams }: { searchPar
   if (search) {
     queryBuilder = queryBuilder.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
   }
+  
+  if (role) {
+    queryBuilder = queryBuilder.eq('role', role);
+  }
+  
+  if (status) {
+    queryBuilder = queryBuilder.eq('status', status);
+  }
+
+  // Handle sorting safely
+  const allowedSortColumns = ['full_name', 'role', 'email', 'status', 'created_at'];
+  if (sort && allowedSortColumns.includes(sort)) {
+    queryBuilder = queryBuilder.order(sort, { ascending: order === 'asc' });
+  } else {
+    queryBuilder = queryBuilder.order('created_at', { ascending: false });
+  }
 
   const { data: instructors, count } = await queryBuilder
-    .order('created_at', { ascending: false })
     .range(from, to);
 
   const totalPages = count ? Math.ceil(count / pageSize) : 1;

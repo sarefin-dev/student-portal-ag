@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   useReactTable,
   getCoreRowModel,
@@ -13,34 +13,40 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableFilter } from "@/components/data-table/data-table-filter";
 
 export function LedgerTable({ data, currentPage, totalPages, initialSearch }: { data: any[], currentPage: number, totalPages: number, initialSearch: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", "1");
     if (globalFilter) {
-      router.push(`/admin/ledger?search=${encodeURIComponent(globalFilter)}`);
+      params.set("search", globalFilter);
     } else {
-      router.push(`/admin/ledger`);
+      params.delete("search");
     }
+    router.push(`/admin/ledger?${params.toString()}`);
   };
 
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: 'trx_id',
-      header: 'Trx ID',
+      header: 'Trx ID', // Don't sort by trx_id usually
       cell: ({ row }) => <span className="font-mono font-medium">{row.getValue('trx_id')}</span>,
     },
     {
       accessorKey: 'amount',
-      header: 'Amount',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
       cell: ({ row }) => <span>Tk {row.getValue('amount')}</span>,
     },
     {
       accessorKey: 'method',
-      header: 'Method',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Method" />,
       cell: ({ row }) => <span className="capitalize">{row.getValue('method')}</span>,
     },
     {
@@ -49,14 +55,26 @@ export function LedgerTable({ data, currentPage, totalPages, initialSearch }: { 
       cell: ({ row }) => row.getValue('sender_msisdn') || '-',
     },
     {
-      accessorKey: 'student_email',
-      header: 'Student',
-      cell: ({ row }) => row.original.orders?.profiles?.email || 'Unknown',
+      accessorKey: 'orders',
+      header: 'Student Email',
+      cell: ({ row }) => {
+        const order = row.original.orders;
+        return order?.profiles?.email || '-';
+      },
+    },
+    {
+      accessorKey: 'status',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+      cell: ({ row }) => {
+        const status = row.getValue('status') as string;
+        const color = status === 'completed' ? 'text-success bg-success/10' : status === 'pending' ? 'text-warning bg-warning/10' : 'text-destructive bg-destructive/10';
+        return <span className={`capitalize text-xs font-semibold px-2 py-0.5 rounded ${color}`}>{status}</span>;
+      }
     },
     {
       accessorKey: 'created_at',
-      header: 'Date',
-      cell: ({ row }) => new Date(row.getValue('created_at')).toLocaleDateString(),
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
+      cell: ({ row }) => new Date(row.getValue('created_at')).toLocaleString(),
     }
   ];
 
@@ -68,15 +86,29 @@ export function LedgerTable({ data, currentPage, totalPages, initialSearch }: { 
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleSearch} className="flex items-center gap-2">
-        <Input
-          placeholder="Search database..."
-          value={globalFilter}
-          onChange={e => setGlobalFilter(e.target.value)}
-          className="max-w-sm"
-        />
-        <Button type="submit" variant="secondary">Search</Button>
-      </form>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-wrap items-center gap-2 flex-1">
+          <form onSubmit={handleSearch} className="flex gap-2 max-w-sm w-full md:w-auto">
+            <Input 
+              placeholder="Search TrxID, phone, email..." 
+              value={globalFilter}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              className="w-full"
+            />
+            <Button type="submit" variant="secondary">Search</Button>
+          </form>
+
+          <DataTableFilter 
+            filterKey="method"
+            title="Method"
+            options={[
+              { label: 'bKash', value: 'bkash' },
+              { label: 'Nagad', value: 'nagad' },
+              { label: 'Manual', value: 'manual' },
+            ]}
+          />
+        </div>
+      </div>
 
       <div className="rounded-md border bg-card">
         <Table>

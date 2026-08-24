@@ -64,8 +64,8 @@ async function manualEnroll(formData: FormData) {
   redirect('/admin/ledger?success=true');
 }
 
-export default async function ManualLedgerPage({ searchParams }: { searchParams: Promise<{ success?: string, page?: string, search?: string }> }) {
-  const { success, page: pageParam, search } = await searchParams;
+export default async function ManualLedgerPage({ searchParams }: { searchParams: Promise<{ success?: string, page?: string, search?: string, sort?: string, order?: string, method?: string }> }) {
+  const { success, page: pageParam, search, sort, order, method } = await searchParams;
   const supabase = await createClient();
 
   const supabaseAdmin = createSupabaseClient(
@@ -110,9 +110,20 @@ export default async function ManualLedgerPage({ searchParams }: { searchParams:
       queryBuilder = queryBuilder.or(`trx_id.ilike.%${search}%,sender_msisdn.ilike.%${search}%`);
     }
   }
+  
+  if (method) {
+    queryBuilder = queryBuilder.eq('method', method);
+  }
+
+  // Handle sorting safely
+  const allowedSortColumns = ['amount', 'method', 'status', 'created_at'];
+  if (sort && allowedSortColumns.includes(sort)) {
+    queryBuilder = queryBuilder.order(sort, { ascending: order === 'asc', nullsFirst: false });
+  } else {
+    queryBuilder = queryBuilder.order('created_at', { ascending: false });
+  }
 
   const { data: payments, count } = await queryBuilder
-    .order('created_at', { ascending: false })
     .range(from, to);
 
   const totalPages = count ? Math.ceil(count / pageSize) : 1;

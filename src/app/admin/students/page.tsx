@@ -4,8 +4,8 @@ import { redirect } from 'next/navigation';
 import { StudentsTable } from './students-table';
 import { env } from '@/env';
 
-export default async function AdminStudentsPage({ searchParams }: { searchParams: Promise<{ page?: string, search?: string }> }) {
-  const { page: pageParam, search } = await searchParams;
+export default async function AdminStudentsPage({ searchParams }: { searchParams: Promise<{ page?: string, search?: string, sort?: string, order?: string, status?: string }> }) {
+  const { page: pageParam, search, sort, order, status } = await searchParams;
   const supabase = await createClient();
 
   const supabaseAdmin = createSupabaseClient(
@@ -31,8 +31,19 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
     queryBuilder = queryBuilder.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
   }
 
+  if (status) {
+    queryBuilder = queryBuilder.eq('status', status);
+  }
+
+  // Handle sorting safely
+  const allowedSortColumns = ['full_name', 'email', 'phone', 'status', 'created_at', 'last_sign_in_at'];
+  if (sort && allowedSortColumns.includes(sort)) {
+    queryBuilder = queryBuilder.order(sort, { ascending: order === 'asc', nullsFirst: false });
+  } else {
+    queryBuilder = queryBuilder.order('created_at', { ascending: false });
+  }
+
   const { data: students, count } = await queryBuilder
-    .order('created_at', { ascending: false })
     .range(from, to);
 
   const totalPages = count ? Math.ceil(count / pageSize) : 1;
