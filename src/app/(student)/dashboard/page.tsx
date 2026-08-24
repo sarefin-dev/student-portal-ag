@@ -6,41 +6,47 @@ export default async function StudentDashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: enrollments } = await supabase
-    .from('enrollments')
-    .select(`
-      completion_percent,
-      course_id,
-      courses (
-        title,
-        slug,
-        thumbnail_url
-      )
-    `)
-    .eq('student_id', user?.id)
-    .eq('status', 'active');
+  // Fetch independent data concurrently
+  const [enrollmentsRes, certificatesRes, paymentsRes] = await Promise.all([
+    supabase
+      .from('enrollments')
+      .select(`
+        completion_percent,
+        course_id,
+        courses (
+          title,
+          slug,
+          thumbnail_url
+        )
+      `)
+      .eq('student_id', user?.id)
+      .eq('status', 'active'),
+    supabase
+      .from('certificates')
+      .select('*, courses(title)')
+      .eq('student_id', user?.id)
+      .order('issued_at', { ascending: false }),
+    supabase
+      .from('installments')
+      .select('*, orders!inner(courses(title))')
+      .eq('orders.student_id', user?.id)
+      .eq('status', 'pending')
+      .lte('due_date', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
+      .order('due_date', { ascending: true })
+      .limit(3)
+  ]);
 
-  const { data: certificates } = await supabase
-    .from('certificates')
-    .select('*, courses(title)')
-    .eq('student_id', user?.id)
-    .order('issued_at', { ascending: false });
+  const enrollments = enrollmentsRes.data;
+  const certificates = certificatesRes.data;
+  const payments = paymentsRes.data;
 
+  // Fetch dependent data
   const { data: upcomingSessions } = await supabase
     .from('live_sessions')
     .select('id, title, start_time, courses!inner(title, slug)')
     .in('course_id', enrollments?.map(e => e.course_id) || [])
     .gte('start_time', new Date().toISOString())
     .order('start_time', { ascending: true })
-    .limit(3);
-
-  const { data: payments } = await supabase
-    .from('installments')
-    .select('*, orders!inner(courses(title))')
-    .eq('orders.student_id', user?.id)
-    .eq('status', 'pending')
-    .lte('due_date', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
-    .order('due_date', { ascending: true })
     .limit(3);
 
   return (

@@ -14,7 +14,7 @@ async function verifyStaff() {
 
 export async function markAttendance(sessionId: string, courseId: string, studentId: string, present: boolean) {
   const user = await verifyStaff();
-  if (!user) return { success: false, error: "Unauthorized" };
+  if (!user) throw new Error("Unauthorized");
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -29,9 +29,8 @@ export async function markAttendance(sessionId: string, courseId: string, studen
 
   if (error) {
     console.error("Failed to mark attendance", error);
-    return { success: false, error: "Failed to mark attendance" };
+    throw new Error("Failed to mark attendance");
   }
 
   revalidatePath(`/admin/courses/${courseId}/live/${sessionId}`);
-  return { success: true };
 }

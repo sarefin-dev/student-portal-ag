@@ -60,20 +60,14 @@ export default async function AttendancePage({ params }: { params: Promise<{ id:
                       <span className="text-destructive text-xs font-semibold bg-destructive/10 px-2 py-1 rounded">Absent</span>
                     )}
                   </td>
-                  <td className="py-2 px-4 text-right space-x-2">
-                    <form action={async () => {
-                      'use server';
-                      await markAttendance(sessionId, id, enr.student_id, true);
-                    }} className="inline">
-                      <Button variant="outline" size="sm" className="text-success border-success/30 hover:bg-success/10 hover:text-success">
+                  <td className="py-2 px-4 text-right space-x-2 flex justify-end">
+                    <form action={markAttendance.bind(null, sessionId, id, enr.student_id, true)}>
+                      <Button variant="outline" size="sm" type="submit" className="text-success border-success/30 hover:bg-success/10 hover:text-success mr-2">
                         Present
                       </Button>
                     </form>
-                    <form action={async () => {
-                      'use server';
-                      await markAttendance(sessionId, id, enr.student_id, false);
-                    }} className="inline">
-                      <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive">
+                    <form action={markAttendance.bind(null, sessionId, id, enr.student_id, false)}>
+                      <Button variant="outline" size="sm" type="submit" className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive">
                         Absent
                       </Button>
                     </form>
