@@ -32,6 +32,7 @@ export function EnrollmentsTable({ data, currentPage, totalPages, initialSearch 
       )
     },
     {
+      id: 'status',
       header: ({ column }: any) => <DataTableColumnHeader column={column} title="Account Status" />,
       accessorFn: row => row.profiles.status,
       cell: ({ row }) => {
