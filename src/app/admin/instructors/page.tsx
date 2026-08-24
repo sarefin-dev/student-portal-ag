@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
-import { StudentsTable } from './students-table';
+import { InstructorsTable } from './instructors-table';
 import { env } from '@/env';
 
-export default async function AdminStudentsPage({ searchParams }: { searchParams: Promise<{ page?: string, search?: string }> }) {
+export default async function AdminInstructorsPage({ searchParams }: { searchParams: Promise<{ page?: string, search?: string }> }) {
   const { page: pageParam, search } = await searchParams;
   const supabase = await createClient();
 
@@ -25,30 +25,28 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
   let queryBuilder = supabaseAdmin
     .from('admin_student_profiles_view')
     .select('*', { count: 'estimated' })
-    .eq('role', 'student');
+    .neq('role', 'student');
 
   if (search) {
     queryBuilder = queryBuilder.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
   }
 
-  const { data: students, count } = await queryBuilder
+  const { data: instructors, count } = await queryBuilder
     .order('created_at', { ascending: false })
     .range(from, to);
 
   const totalPages = count ? Math.ceil(count / pageSize) : 1;
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Students Directory</h1>
-        <p className="text-muted-foreground">Manage all registered students in the platform.</p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Manage Staff</h1>
       </div>
-
-      <StudentsTable 
-        data={students || []} 
+      <InstructorsTable 
+        data={instructors || []} 
         currentPage={page} 
-        totalPages={totalPages} 
-        initialSearch={search || ''} 
+        totalPages={totalPages}
+        initialSearch={search || ''}
       />
     </div>
   );

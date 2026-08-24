@@ -67,32 +67,6 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
       cell: ({ row }) => <span className="font-medium">{row.getValue('full_name')}</span>,
     },
     {
-      accessorKey: 'role',
-      header: 'Role',
-      cell: ({ row }) => {
-        const role = row.getValue('role') as string;
-        const studentId = row.original.id;
-        const isCurrentUpdating = isUpdating === studentId;
-        
-        return (
-          <Select
-            disabled={isCurrentUpdating}
-            defaultValue={role}
-            onValueChange={(val: any) => handleRoleChange(studentId, val)}
-          >
-            <SelectTrigger className="w-[120px] h-8 text-xs">
-              <SelectValue placeholder="Role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="student">Student</SelectItem>
-              <SelectItem value="instructor">Instructor</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-            </SelectContent>
-          </Select>
-        );
-      }
-    },
-    {
       accessorKey: 'email',
       header: 'Email',
       cell: ({ row }) => {

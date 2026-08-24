@@ -43,6 +43,7 @@ const adminNavGroups = [
     title: "Operations",
     items: [
       { label: "Students", href: "/admin/students", icon: Users },
+      { label: "Instructors", href: "/admin/instructors", icon: Users },
       { label: "Enrollments", href: "/admin/enrollments", icon: BookOpen },
       { label: "Manual Enroll", href: "/admin/enroll-manual", icon: UserPlus },
       { label: "Verification Queue", href: "/admin/queue", icon: ListChecks },
