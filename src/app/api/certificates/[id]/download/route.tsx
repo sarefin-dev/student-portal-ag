@@ -98,6 +98,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#1e293b',
     marginBottom: 10
   },
+  signatureImage: {
+    height: 40,
+    marginBottom: 5,
+    objectFit: 'contain'
+  },
   signatureText: {
     fontSize: 14,
     fontFamily: 'Times-Bold',
@@ -119,7 +124,7 @@ const styles = StyleSheet.create({
   }
 });
 
-const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseSummary, issueDate, verifyCode, instructorName, host, logoBase64 }: any) => (
+const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseSummary, issueDate, verifyCode, instructorName, host, logoBase64, signatureBase64 }: any) => (
   <Document>
     <Page size="A4" orientation="landscape" style={styles.page}>
       <View style={styles.outerBorder}>
@@ -150,7 +155,11 @@ const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseS
             </View>
 
             <View style={styles.footerBlock}>
-              <Text style={{ fontSize: 24, fontFamily: 'Times-Italic', marginBottom: 10, color: '#1e293b' }}>{instructorName}</Text>
+              {signatureBase64 ? (
+                <Image src={signatureBase64} style={styles.signatureImage} />
+              ) : (
+                <Text style={{ fontSize: 24, fontFamily: 'Times-Italic', marginBottom: 10, color: '#1e293b' }}>{instructorName}</Text>
+              )}
               <View style={styles.signatureLine} />
               <Text style={styles.signatureText}>{instructorName}</Text>
               <Text style={styles.signatureTitle}>Instructor, ArefinLab</Text>
@@ -177,14 +186,21 @@ export async function GET(
 
   // Check for logo.png in public folder
   let logoBase64 = null;
+  let signatureBase64 = null;
   try {
     const logoPath = path.join(process.cwd(), 'public', 'logo.png');
     if (fs.existsSync(logoPath)) {
       const logoBuffer = fs.readFileSync(logoPath);
       logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`;
     }
+    
+    const signaturePath = path.join(process.cwd(), 'public', 'signature.png');
+    if (fs.existsSync(signaturePath)) {
+      const sigBuffer = fs.readFileSync(signaturePath);
+      signatureBase64 = `data:image/png;base64,${sigBuffer.toString('base64')}`;
+    }
   } catch (err) {
-    console.error("Could not load logo:", err);
+    console.error("Could not load local images:", err);
   }
 
   // Fetch certificate details
@@ -228,6 +244,7 @@ export async function GET(
       instructorName={instructorName}
       host={`${protocol}://${host}`}
       logoBase64={logoBase64}
+      signatureBase64={signatureBase64}
     />
   );
 
