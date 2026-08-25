@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateAdminPassword } from "./actions";
+import { updateAdminPassword, updateAIGateway } from "./actions";
 import { createClient } from "@/lib/supabase/server";
 import { updateInstructorProfile } from "@/app/(student)/dashboard/settings/actions";
+import { Sparkles } from "lucide-react";
 
 export default async function AdminSettingsPage() {
   const supabase = await createClient();
@@ -15,7 +16,16 @@ export default async function AdminSettingsPage() {
     .eq('id', user?.id)
     .single();
 
+  const { data: aiSetting } = await supabase
+    .from('system_settings')
+    .select('value')
+    .eq('key', 'ai_gateway')
+    .single();
+    
+  const currentGateway = aiSetting?.value || 'https://openrouter.ai/api/v1';
+
   const isInstructorOrAdmin = profile?.role === 'instructor' || profile?.role === 'admin';
+  const isAdmin = profile?.role === 'admin';
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -23,6 +33,37 @@ export default async function AdminSettingsPage() {
         <h1 className="text-3xl font-bold tracking-tight">Admin & Instructor Settings</h1>
         <p className="text-muted-foreground mt-2">Manage your account security and professional profile.</p>
       </div>
+
+      {isAdmin && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-primary" />
+            <h2 className="text-xl font-semibold text-primary">AI Gateway Configuration</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Switch between Cloud AI providers. This affects the AI Quiz Generator, AI Chatbot, and Course Importer.
+          </p>
+          <form action={async (fd) => { "use server"; await updateAIGateway(fd); }} className="space-y-4 max-w-sm">
+            <div className="space-y-2">
+              <Label htmlFor="gatewayUrl">Gateway API URL</Label>
+              <Input 
+                id="gatewayUrl" 
+                name="gatewayUrl" 
+                placeholder="https://openrouter.ai/api/v1" 
+                defaultValue={currentGateway} 
+                required 
+              />
+              <p className="text-xs text-muted-foreground">
+                Examples:<br/>
+                • OpenRouter: <code>https://openrouter.ai/api/v1</code><br/>
+                • AgentRouter: <code>https://agentrouter.org/v1</code>
+              </p>
+            </div>
+            
+            <Button type="submit" variant="default">Save AI Config</Button>
+          </form>
+        </div>
+      )}
 
       {isInstructorOrAdmin && (
         <div className="rounded-lg border bg-card p-6 shadow-sm">
@@ -58,7 +99,7 @@ export default async function AdminSettingsPage() {
 
       <div className="rounded-lg border bg-card p-6 shadow-sm">
         <h2 className="text-xl font-semibold mb-4">Change Password</h2>
-        <form action={updateAdminPassword} className="space-y-4 max-w-sm">
+        <form action={async (fd) => { "use server"; await updateAdminPassword(fd); }} className="space-y-4 max-w-sm">
           <div className="space-y-2">
             <Label htmlFor="new_password">New Password</Label>
             <Input id="new_password" name="new_password" type="password" required minLength={6} />

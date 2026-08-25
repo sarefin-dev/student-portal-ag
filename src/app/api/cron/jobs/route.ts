@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { env } from '@/env';
 import { generateObject } from 'ai';
-import { openrouter, FREE_MODELS } from '@/lib/ai/openrouter';
+import { getCloudAI, FREE_MODELS } from '@/lib/ai/openrouter';
 import { z } from 'zod';
 
 export async function POST(req: Request) {
@@ -88,11 +88,11 @@ export async function POST(req: Request) {
 
             let result;
             try {
-              result = await aiCall(openrouter(FREE_MODELS.coder));
+              result = await aiCall((await getCloudAI())(FREE_MODELS.coder));
               aiProvider = 'openrouter_primary';
             } catch (err) {
               console.log("OpenRouter primary failed, trying fallback...", err);
-              result = await aiCall(openrouter(FREE_MODELS.fallback));
+              result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
               aiProvider = 'openrouter_fallback';
             }
 

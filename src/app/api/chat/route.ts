@@ -1,5 +1,5 @@
 import { streamText } from 'ai';
-import { openrouter, FREE_MODELS } from '@/lib/ai/openrouter';
+import { getCloudAI, FREE_MODELS } from '@/lib/ai/openrouter';
 import { ollama } from 'ai-sdk-ollama';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
@@ -40,14 +40,14 @@ ${lessonContext || 'No specific lesson context provided.'}
     } catch (e) {
       try {
         const result = await streamText({
-          model: openrouter(FREE_MODELS.chat),
+          model: (await getCloudAI())(FREE_MODELS.chat),
           messages,
           system: systemPrompt,
         });
         return result.toTextStreamResponse();
       } catch (e2) {
         const result = await streamText({
-          model: openrouter(FREE_MODELS.fallback),
+          model: (await getCloudAI())(FREE_MODELS.fallback),
           messages,
           system: systemPrompt,
         });

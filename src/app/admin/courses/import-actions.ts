@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { generateObject } from 'ai';
-import { openrouter, FREE_MODELS } from '@/lib/ai/openrouter';
+import { getCloudAI, FREE_MODELS } from '@/lib/ai/openrouter';
 import { ollama } from 'ai-sdk-ollama';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
@@ -61,11 +61,11 @@ ${syllabusText}
       console.log("Ollama failed, falling back to OpenRouter free models...", localErr);
       try {
         // 2. Try OpenRouter Llama 3
-        result = await aiCall(openrouter(FREE_MODELS.chat));
+        result = await aiCall((await getCloudAI())(FREE_MODELS.chat));
       } catch (orErr) {
         console.log("OpenRouter primary failed, trying fallback...", orErr);
         // 3. Try OpenRouter Gemini Fallback
-        result = await aiCall(openrouter(FREE_MODELS.fallback));
+        result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
       }
     }
 

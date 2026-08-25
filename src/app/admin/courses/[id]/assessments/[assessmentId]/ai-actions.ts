@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { generateObject } from 'ai';
-import { openrouter, FREE_MODELS } from '@/lib/ai/openrouter';
+import { getCloudAI, FREE_MODELS } from '@/lib/ai/openrouter';
 import { ollama } from 'ai-sdk-ollama';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
@@ -41,9 +41,9 @@ Ensure there is exactly one correct answer per question, and provide a helpful e
       result = await aiCall(ollama('llama3.3'));
     } catch (localErr) {
       try {
-        result = await aiCall(openrouter(FREE_MODELS.chat));
+        result = await aiCall((await getCloudAI())(FREE_MODELS.chat));
       } catch (geminiErr) {
-        result = await aiCall(openrouter(FREE_MODELS.fallback));
+        result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
       }
     }
 

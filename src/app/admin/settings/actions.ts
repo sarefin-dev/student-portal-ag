@@ -1,45 +1,35 @@
-"use server";
+'use server';
 
-import { createClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
+import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function updateAdminPassword(formData: FormData) {
-  const newPassword = formData.get("new_password") as string;
-  const confirmPassword = formData.get("confirm_password") as string;
-
-  if (!newPassword || newPassword.length < 6) {
-    throw new Error("Password must be at least 6 characters.");
+  const password = formData.get('password') as string;
+  const supabase = await createClient();
+  
+  const { error } = await supabase.auth.updateUser({ password });
+  
+  if (error) {
+    return { error: error.message };
   }
   
-  if (newPassword !== confirmPassword) {
-    throw new Error("Passwords do not match.");
-  }
+  return { success: true };
+}
+
+export async function updateAIGateway(formData: FormData) {
+  const url = formData.get('gatewayUrl') as string;
+  if (!url) return { error: "URL is required" };
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
-
-  // Double check admin role
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (profile?.role !== "admin") {
-    throw new Error("Unauthorized");
-  }
-
-  const { error } = await supabase.auth.updateUser({
-    password: newPassword
-  });
-
+  
+  const { error } = await supabase
+    .from('system_settings')
+    .upsert({ key: 'ai_gateway', value: url });
+    
   if (error) {
-    throw new Error(error.message);
+    return { error: error.message };
   }
-
-  revalidatePath("/admin/settings");
+  
+  revalidatePath('/admin/settings');
+  return { success: true };
 }
