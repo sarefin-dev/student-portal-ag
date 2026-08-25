@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2 } from 'lucide-react';
 import { addQuestion, deleteQuestion } from '../actions';
+import { AiGeneratorDialog } from './ai-generator-dialog';
 
 export default async function AssessmentEditorPage({ params }: { params: Promise<{ id: string, assessmentId: string }> }) {
   const { id: courseId, assessmentId } = await params;
@@ -80,6 +81,12 @@ export default async function AssessmentEditorPage({ params }: { params: Promise
 
         {/* Add Question Sidebar */}
         <div className="space-y-6">
+          <div className="rounded-lg border bg-primary/5 border-primary/20 p-4 shadow-sm space-y-4">
+            <h3 className="font-semibold text-primary">Generate with AI</h3>
+            <p className="text-sm text-muted-foreground">Automatically generate multiple-choice questions for this assessment.</p>
+            <AiGeneratorDialog courseId={courseId} assessmentId={assessmentId} />
+          </div>
+
           <div className="rounded-lg border bg-card p-4 shadow-sm space-y-4">
             <h3 className="font-semibold border-b pb-2">Add MCQ</h3>
             <form action={addQuestion} className="space-y-3">

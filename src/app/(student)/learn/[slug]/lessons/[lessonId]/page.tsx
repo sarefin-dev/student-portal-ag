@@ -11,6 +11,7 @@ import { NavigationButton } from '@/components/ui/navigation-button';
 import { AssessmentTaker } from './assessment-taker';
 import { env } from '@/env';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
+import { AiTutorChat } from '@/components/ai-tutor-chat';
 
 export default async function LessonPage({ params }: { params: Promise<{ slug: string, lessonId: string }> }) {
   const { slug, lessonId } = await params;
@@ -56,13 +57,19 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
       .from('block_progress')
       .select('content_block_id')
       .eq('student_id', user.id)
-      .in('content_block_id', blockIds)
       .eq('status', 'completed');
       
     if (progress && progress.length === blockIds.length) {
       isLessonCompleted = true;
     }
   }
+
+  // Calculate context for AI Tutor
+  const lessonContext = lesson.content_blocks?.map((b: any) => {
+    if (b.block_type === 'text') return b.payload.content_markdown || '';
+    if (b.block_type === 'video') return 'Video Lesson. ' + (b.payload.description || '');
+    return '';
+  }).join('\n\n') || '';
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)]">
@@ -133,9 +140,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
           <NavigationButton href={`/learn/${slug}/lessons/${prevLesson.id}`} variant="outline">
             <ChevronLeft className="w-4 h-4 mr-2" /> Previous Lesson
           </NavigationButton>
-        ) : (
-          <Button variant="outline" disabled><ChevronLeft className="w-4 h-4 mr-2" /> Previous Lesson</Button>
-        )}
+        ) : <div />}
         
         <div className="flex items-center gap-2">
           {isLessonCompleted && (
@@ -144,16 +149,12 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
               const supabase = await createClient();
               const { data: { user } } = await supabase.auth.getUser();
               if (blockIds.length > 0) {
-                await supabase
-                  .from('block_progress')
-                  .delete()
-                  .eq('student_id', user!.id)
-                  .in('content_block_id', blockIds);
+                await supabase.from('block_progress').delete().eq('student_id', user?.id).in('content_block_id', blockIds);
               }
-              revalidatePath(`/learn/${slug}`);
+              revalidatePath(`/learn/${slug}/lessons/${lessonId}`);
             }}>
-              <SubmitButton variant="ghost" className="text-muted-foreground hover:text-foreground" pendingText="Resetting...">
-                <RotateCcw className="w-4 h-4 mr-2" /> Reset Progress
+              <SubmitButton variant="outline" size="icon" title="Reset Progress" className="text-muted-foreground">
+                <RotateCcw className="w-4 h-4" />
               </SubmitButton>
             </form>
           )}
@@ -163,21 +164,16 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
             const supabase = await createClient();
             const { data: { user } } = await supabase.auth.getUser();
             
+            // Mark all blocks in this lesson as completed
             if (blockIds.length > 0) {
-              const payloads = blockIds.map((id: string) => ({
-                student_id: user!.id,
+              const upserts = blockIds.map(id => ({
+                student_id: user?.id,
                 content_block_id: id,
                 status: 'completed'
               }));
-              
-              const { error } = await supabase
-                .from('block_progress')
-                .upsert(payloads, { onConflict: 'student_id,content_block_id' });
-                
-              if (error) console.error("Error marking complete:", error);
+              await supabase.from('block_progress').upsert(upserts, { onConflict: 'student_id, content_block_id' });
             }
-              
-            revalidatePath(`/learn/${slug}`);
+            revalidatePath(`/learn/${slug}/lessons/${lessonId}`);
             if (nextLesson) {
               redirect(`/learn/${slug}/lessons/${nextLesson.id}`);
             }
@@ -188,7 +184,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
               </Button>
             ) : (
               <SubmitButton variant="secondary" pendingText="Marking...">
-                <CheckCircle2 className="w-4 h-4 mr-2" /> Mark Complete
+                <CheckCircle2 className="w-4 h-4 mr-2" /> Mark Completed
               </SubmitButton>
             )}
           </form>
@@ -197,11 +193,11 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
             <NavigationButton href={`/learn/${slug}/lessons/${nextLesson.id}`} variant="default">
               Next Lesson <ChevronRight className="w-4 h-4 ml-2" />
             </NavigationButton>
-          ) : (
-            <Button variant="default" disabled>Next Lesson <ChevronRight className="w-4 h-4 ml-2" /></Button>
-          )}
+          ) : <div />}
         </div>
       </div>
+
+      <AiTutorChat lessonContext={lessonContext} />
     </div>
   );
 }
