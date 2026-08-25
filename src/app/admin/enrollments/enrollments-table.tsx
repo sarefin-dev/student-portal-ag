@@ -16,6 +16,17 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { DataTableFilter } from "@/components/data-table/data-table-filter";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BookX, BookOpen, UserX, UserCheck } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function EnrollmentsTable({ data, currentPage, totalPages, initialSearch }: { data: any[], currentPage: number, totalPages: number, initialSearch: string }) {
   const router = useRouter();
@@ -78,43 +89,91 @@ export function EnrollmentsTable({ data, currentPage, totalPages, initialSearch 
         return (
           <div className="text-right space-x-2 flex justify-end">
             <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={async () => {
-                      await setEnrollmentStatus(enr.student_id, enr.course_id, enr.status === 'active' ? 'banned' : 'active');
-                    }}
-                  >
-                    {enr.status === 'active' ? <BookX className="h-4 w-4" /> : <BookOpen className="h-4 w-4 text-success" />}
-                    <span className="sr-only">{enr.status === 'active' ? 'Ban from Course' : 'Unban from Course'}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{enr.status === 'active' ? 'Ban from Course' : 'Unban from Course'}</p>
-                </TooltipContent>
-              </Tooltip>
+              
+              <AlertDialog>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        className="h-8 w-8"
+                      >
+                        {enr.status === 'active' ? <BookX className="h-4 w-4" /> : <BookOpen className="h-4 w-4 text-success" />}
+                        <span className="sr-only">{enr.status === 'active' ? 'Ban from Course' : 'Unban from Course'}</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{enr.status === 'active' ? 'Ban from Course' : 'Unban from Course'}</p>
+                  </TooltipContent>
+                </Tooltip>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{enr.status === 'active' ? 'Ban Student' : 'Unban Student'}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {enr.status === 'active' 
+                        ? `Are you sure you want to ban ${enr.profiles.full_name} from this course? They will lose access to all content immediately.`
+                        : `Are you sure you want to restore ${enr.profiles.full_name}'s access to this course?`
+                      }
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      className={enr.status === 'active' ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+                      onClick={async () => {
+                        await setEnrollmentStatus(enr.student_id, enr.course_id, enr.status === 'active' ? 'banned' : 'active');
+                      }}
+                    >
+                      Confirm
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant={enr.profiles.status === 'active' ? 'destructive' : 'secondary'} 
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={async () => {
-                      await setAccountStatus(enr.student_id, enr.profiles.status === 'active' ? 'suspended' : 'active');
-                    }}
-                  >
-                    {enr.profiles.status === 'active' ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                    <span className="sr-only">{enr.profiles.status === 'active' ? 'Suspend Account' : 'Unsuspend Account'}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{enr.profiles.status === 'active' ? 'Suspend Account' : 'Unsuspend Account'}</p>
-                </TooltipContent>
-              </Tooltip>
+              <AlertDialog>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant={enr.profiles.status === 'active' ? 'destructive' : 'secondary'} 
+                        size="icon"
+                        className="h-8 w-8"
+                      >
+                        {enr.profiles.status === 'active' ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                        <span className="sr-only">{enr.profiles.status === 'active' ? 'Suspend Account' : 'Unsuspend Account'}</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{enr.profiles.status === 'active' ? 'Suspend Account' : 'Unsuspend Account'}</p>
+                  </TooltipContent>
+                </Tooltip>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{enr.profiles.status === 'active' ? 'Suspend Account' : 'Restore Account'}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {enr.profiles.status === 'active' 
+                        ? `Are you sure you want to completely suspend ${enr.profiles.full_name}? They will not be able to log in to the portal at all.`
+                        : `Are you sure you want to restore ${enr.profiles.full_name}'s global account access?`
+                      }
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      className={enr.profiles.status === 'active' ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+                      onClick={async () => {
+                        await setAccountStatus(enr.student_id, enr.profiles.status === 'active' ? 'suspended' : 'active');
+                      }}
+                    >
+                      Confirm
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
             </TooltipProvider>
           </div>
         );
