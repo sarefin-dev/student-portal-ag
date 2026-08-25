@@ -10,8 +10,11 @@ export default async function EnrollmentsPage({
   const resolvedParams = await searchParams;
   
   const page = parseInt(resolvedParams.page as string) || 1;
-  const status = resolvedParams.status as string;
+  const status = resolvedParams.status as string; // account status
+  const enrollmentStatus = resolvedParams.enrollment_status as string;
   const search = resolvedParams.search as string;
+  const sort = resolvedParams.sort as string || 'created_at';
+  const order = resolvedParams.order as string || 'desc';
   
   const pageSize = 10;
   const from = (page - 1) * pageSize;
@@ -19,10 +22,14 @@ export default async function EnrollmentsPage({
 
   let queryBuilder = supabase
     .from('enrollments')
-    .select('*, profiles!enrollments_student_id_fkey!inner(id, full_name, email, status), courses(title)', { count: 'exact' });
+    .select('*, profiles!enrollments_student_id_fkey!inner(id, full_name, email, status), courses!inner(title)', { count: 'exact' });
 
   if (status) {
     queryBuilder = queryBuilder.eq('profiles.status', status);
+  }
+  
+  if (enrollmentStatus) {
+    queryBuilder = queryBuilder.eq('status', enrollmentStatus);
   }
 
   if (search) {
@@ -30,7 +37,7 @@ export default async function EnrollmentsPage({
   }
 
   const { data: enrollments, count } = await queryBuilder
-    .order('created_at', { ascending: false })
+    .order(sort, { ascending: order === 'asc' })
     .range(from, to);
 
   const totalPages = count ? Math.ceil(count / pageSize) : 1;

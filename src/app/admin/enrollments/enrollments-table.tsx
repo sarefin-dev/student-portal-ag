@@ -24,7 +24,8 @@ export function EnrollmentsTable({ data, currentPage, totalPages, initialSearch 
 
   const columns: ColumnDef<any>[] = [
     {
-      header: 'Student',
+      id: 'student',
+      header: ({ column }: any) => <DataTableColumnHeader column={column} title="Student" />,
       accessorFn: row => `${row.profiles.full_name} ${row.profiles.email}`,
       cell: ({ row }) => (
         <div>
@@ -47,17 +48,18 @@ export function EnrollmentsTable({ data, currentPage, totalPages, initialSearch 
       }
     },
     {
-      header: 'Course',
+      id: 'course',
+      header: ({ column }: any) => <DataTableColumnHeader column={column} title="Course" />,
       accessorFn: row => row.courses.title,
       cell: ({ row }) => row.original.courses.title
     },
     {
-      header: 'Progress',
+      header: ({ column }: any) => <DataTableColumnHeader column={column} title="Progress" />,
       accessorKey: 'completion_percent',
       cell: ({ row }) => `${row.getValue('completion_percent')}%`
     },
     {
-      header: 'Enrollment Status',
+      header: ({ column }: any) => <DataTableColumnHeader column={column} title="Enrollment Status" />,
       accessorKey: 'status',
       cell: ({ row }) => {
         const status = row.getValue('status') as string;
@@ -158,6 +160,14 @@ export function EnrollmentsTable({ data, currentPage, totalPages, initialSearch 
         </form>
 
         <div className="flex flex-wrap items-center gap-2">
+          <DataTableFilter 
+            filterKey="enrollment_status"
+            title="Enrollment Status"
+            options={[
+              { label: 'Active', value: 'active' },
+              { label: 'Banned', value: 'banned' },
+            ]}
+          />
           <DataTableFilter 
             filterKey="status"
             title="Account Status"
