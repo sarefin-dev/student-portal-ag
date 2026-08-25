@@ -19,7 +19,7 @@ export default async function EnrollmentsPage({
 
   let queryBuilder = supabase
     .from('enrollments')
-    .select('*, profiles!inner(id, full_name, email, status), courses(title)', { count: 'exact' });
+    .select('*, profiles!enrollments_student_id_fkey!inner(id, full_name, email, status), courses(title)', { count: 'exact' });
 
   if (status) {
     queryBuilder = queryBuilder.eq('profiles.status', status);
