@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { updateProduct } from './actions';
+import { ProductItemManager } from './product-item-manager';
 
 export default async function ProductDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -17,6 +18,29 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
     .single();
 
   if (!product) notFound();
+
+  // Fetch product items
+  const { data: productItems } = await supabase
+    .from('product_items')
+    .select('*')
+    .eq('product_id', id);
+
+  // Fetch available resources to link
+  const { data: courses } = await supabase.from('courses').select('id, title').eq('status', 'active');
+  const { data: services } = await supabase.from('services').select('id, title').is('deleted_at', null);
+
+  // Map titles to the raw items
+  const mappedItems = (productItems || []).map(item => {
+    if (item.item_type === 'course') {
+      const course = courses?.find(c => c.id === item.item_id);
+      return { ...item, title: course?.title || 'Unknown Course' };
+    }
+    if (item.item_type === 'service') {
+      const service = services?.find(s => s.id === item.item_id);
+      return { ...item, title: service?.title || 'Unknown Service' };
+    }
+    return { ...item, title: 'Unknown Item' };
+  });
 
   return (
     <div className="space-y-6">
@@ -98,11 +122,12 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
         </div>
 
         <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="text-xl font-bold mb-4">Product Contents</h2>
-          <div className="text-sm text-muted-foreground">
-            <p>Product type: <strong>{product.kind}</strong></p>
-            <p className="mt-4">Content mapping management (linking this product to courses, services, or digital assets) will be available here soon.</p>
-          </div>
+          <ProductItemManager 
+            product={product} 
+            items={mappedItems} 
+            availableCourses={courses || []} 
+            availableServices={services || []} 
+          />
         </div>
       </div>
     </div>
