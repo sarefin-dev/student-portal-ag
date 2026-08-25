@@ -49,3 +49,13 @@ export async function deleteLead(id: string) {
   revalidatePath('/admin/leads');
 }
 
+
+export async function createLeadsBulk(leads: any[]) {
+  const supabase = await createClient();
+  const { error } = await supabase.from('leads').insert(leads);
+  if (error) {
+    console.error('Bulk insert error:', error);
+    throw new Error('Failed to bulk insert leads');
+  }
+  revalidatePath('/admin/leads');
+}

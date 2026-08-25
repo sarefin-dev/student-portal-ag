@@ -36,6 +36,8 @@ import {
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableFilter } from "@/components/data-table/data-table-filter";
 
+import { CsvUploadButton } from './csv-upload-button';
+
 export function LeadsTable({ data, currentPage, totalPages, initialSearch }: { data: any[], currentPage: number, totalPages: number, initialSearch: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -178,19 +180,22 @@ export function LeadsTable({ data, currentPage, totalPages, initialSearch }: { d
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold">Leads</h2>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size="icon" className="h-9 w-9" onClick={() => setIsCreating(!isCreating)}>
-                {isCreating ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-                <span className="sr-only">{isCreating ? 'Cancel' : 'Add New Lead'}</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{isCreating ? 'Cancel' : 'Add New Lead'}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <div className="flex items-center gap-2">
+          <CsvUploadButton />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon" className="h-9 w-9" onClick={() => setIsCreating(!isCreating)}>
+                  {isCreating ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+                  <span className="sr-only">{isCreating ? 'Cancel' : 'Add New Lead'}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isCreating ? 'Cancel' : 'Add New Lead'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </div>
 
       {isCreating && (
