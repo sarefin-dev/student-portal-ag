@@ -125,6 +125,7 @@ export function LeadsTable({ data, currentPage, totalPages, initialSearch }: { d
               <SelectItem value="qualified">Qualified</SelectItem>
               <SelectItem value="converted">Converted</SelectItem>
               <SelectItem value="lost">Lost</SelectItem>
+              <SelectItem value="bad">Bad / Junk</SelectItem>
             </SelectContent>
           </Select>
         );
@@ -251,6 +252,7 @@ export function LeadsTable({ data, currentPage, totalPages, initialSearch }: { d
                 { label: 'Qualified', value: 'qualified' },
                 { label: 'Converted', value: 'converted' },
                 { label: 'Lost', value: 'lost' },
+                { label: 'Bad', value: 'bad' },
               ]}
             />
           </div>

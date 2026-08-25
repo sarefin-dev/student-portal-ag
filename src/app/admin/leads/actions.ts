@@ -52,7 +52,10 @@ export async function deleteLead(id: string) {
 
 export async function createLeadsBulk(leads: any[]) {
   const supabase = await createClient();
-  const { error } = await supabase.from('leads').insert(leads);
+  const { error } = await supabase.from('leads').upsert(leads, { 
+    onConflict: 'phone, interested_in',
+    ignoreDuplicates: true 
+  });
   if (error) {
     console.error('Bulk insert error:', error);
     throw new Error('Failed to bulk insert leads');
