@@ -101,6 +101,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
                   <TableHeader>
                     <TableRow>
                       <TableHead>Course</TableHead>
+                      <TableHead>Progress</TableHead>
                       <TableHead>Source</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
@@ -110,6 +111,14 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
                     {enrollments.map((enr: any) => (
                       <TableRow key={enr.id}>
                         <TableCell className="font-medium">{enr.courses?.title || 'Unknown Course'}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-16 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-primary" style={{ width: `${enr.completion_percent || 0}%` }} />
+                            </div>
+                            <span className="text-xs text-muted-foreground w-8">{enr.completion_percent || 0}%</span>
+                          </div>
+                        </TableCell>
                         <TableCell><Badge variant="outline">{enr.source}</Badge></TableCell>
                         <TableCell>
                           <Badge variant={enr.status === 'banned' ? 'destructive' : 'default'}>
