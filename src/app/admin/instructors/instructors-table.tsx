@@ -16,6 +16,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toggleStaffStatus, createStaff } from './actions';
 import { Ban, CheckCircle, Plus } from 'lucide-react';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -130,16 +141,38 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch,
         const isSelf = staffId === currentUserId;
         
         return (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleToggleStatus(staffId, status)}
-            disabled={isUpdating === staffId || isSelf}
-            className={isSuspended ? 'text-success hover:text-success' : 'text-destructive hover:text-destructive'}
-          >
-            {isSuspended ? <CheckCircle className="w-4 h-4 mr-1" /> : <Ban className="w-4 h-4 mr-1" />}
-            {isSuspended ? 'Reactivate' : 'Suspend'}
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isUpdating === staffId || isSelf}
+                className={isSuspended ? 'text-success hover:text-success' : 'text-destructive hover:text-destructive'}
+              >
+                {isSuspended ? <CheckCircle className="w-4 h-4 mr-1" /> : <Ban className="w-4 h-4 mr-1" />}
+                {isSuspended ? 'Reactivate' : 'Suspend'}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{isSuspended ? 'Reactivate Instructor?' : 'Suspend Instructor?'}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {isSuspended 
+                    ? 'Are you sure you want to reactivate this instructor? They will regain access to their account.'
+                    : 'Are you sure you want to suspend this instructor? They will lose access to the portal until reactivated.'}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => handleToggleStatus(staffId, status)}
+                  className={isSuspended ? "bg-success text-success-foreground hover:bg-success/90" : "bg-destructive text-destructive-foreground hover:bg-destructive/90"}
+                >
+                  Confirm {isSuspended ? 'Reactivation' : 'Suspension'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         );
       }
     },

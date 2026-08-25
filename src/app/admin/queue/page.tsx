@@ -2,6 +2,17 @@ import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { approvePendingVerification, rejectPendingVerification } from './actions';
 import { Check, X } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default async function VerificationQueuePage() {
   const supabase = await createClient();
@@ -59,10 +70,30 @@ export default async function VerificationQueuePage() {
                     <input type="hidden" name="pendingId" value={p.id} />
                     <Button variant="default" className="w-full bg-success hover:bg-success/90 text-success-foreground" type="submit">Approve (Override)</Button>
                   </form>
-                  <form action={rejectPendingVerification}>
-                    <input type="hidden" name="pendingId" value={p.id} />
-                    <Button variant="outline" className="w-full text-destructive hover:text-destructive hover:bg-destructive/10" type="submit">Reject</Button>
-                  </form>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" className="w-full text-destructive hover:text-destructive hover:bg-destructive/10">
+                        Reject
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Reject Verification?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to reject this verification? This will deny the payment.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <form action={rejectPendingVerification}>
+                          <input type="hidden" name="pendingId" value={p.id} />
+                          <AlertDialogAction type="submit" className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Confirm Rejection
+                          </AlertDialogAction>
+                        </form>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             ))}
