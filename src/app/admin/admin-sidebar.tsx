@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -11,7 +11,7 @@ import {
   Tag,
   Users,
   UserPlus,
-  ListChecks,
+  ListChecks, DollarSign,
   FileSpreadsheet,
   MessageSquare,
   ScrollText,
@@ -46,7 +46,7 @@ const baseAdminNavGroups = [
       { label: "Students", href: "/admin/students", icon: Users },
       { label: "Instructors/Staff Member", href: "/admin/instructors", icon: Users },
       { label: "Enrollments", href: "/admin/enrollments", icon: BookOpen },
-      { label: "Verification Queue", href: "/admin/queue", icon: ListChecks },
+      { label: "Verification Queue", href: "/admin/queue", icon: ListChecks },{ label: "Instructor Payouts", href: "/admin/payouts", icon: DollarSign },
       { label: "Ledger", href: "/admin/ledger", icon: FileSpreadsheet }, // Restricted
     ],
   },
