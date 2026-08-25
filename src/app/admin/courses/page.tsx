@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { CreateCourseDialog } from './create-course-dialog';
+import { AiImportDialog } from './ai-import-dialog';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -15,7 +16,10 @@ export default async function AdminCoursesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Manage Courses</h1>
-        <CreateCourseDialog />
+        <div className="flex items-center gap-3">
+          <AiImportDialog />
+          <CreateCourseDialog />
+        </div>
       </div>
 
       <div className="rounded-md border">
