@@ -33,6 +33,12 @@ export function AiTutorChat({ lessonContext }: { lessonContext: string }) {
         body: JSON.stringify({ messages: [...messages, userMsg], lessonContext })
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        setMessages(prev => [...prev, { role: 'assistant', content: `🚨 ${errorText}`, id: Date.now() + 1 }]);
+        return;
+      }
+
       if (!response.body) throw new Error('No response body');
 
       const reader = response.body.getReader();

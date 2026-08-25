@@ -20,6 +20,12 @@ export async function POST(req: Request) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
+    // 1. Enforce Daily Limit (20 messages/day)
+    const { data: canProceed, error: limitErr } = await supabase.rpc('increment_ai_usage', { p_student_id: user.id });
+    if (limitErr || !canProceed) {
+      return new NextResponse('Daily AI Chat limit reached. Please try again tomorrow.', { status: 429 });
+    }
+
     const { messages, lessonContext } = await req.json();
 
     const systemPrompt = `You are an expert AI teaching assistant for an LMS platform. 
