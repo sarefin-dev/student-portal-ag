@@ -1,4 +1,4 @@
-import { streamText } from 'ai';
+﻿import { streamText } from 'ai';
 import { getCloudAI, FREE_MODELS } from '@/lib/ai/openrouter';
 import { ollama } from 'ai-sdk-ollama';
 import { createClient as createServerClient } from '@/lib/supabase/server';

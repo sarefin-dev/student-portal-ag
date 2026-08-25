@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+ï»¿import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateAdminPassword, updateAIGateway } from "./actions";
@@ -55,8 +55,8 @@ export default async function AdminSettingsPage() {
               />
               <p className="text-xs text-muted-foreground">
                 Examples:<br/>
-                • OpenRouter: <code>https://openrouter.ai/api/v1</code><br/>
-                • AgentRouter: <code>https://agentrouter.org/v1</code>
+                â€¢ OpenRouter: <code>https://openrouter.ai/api/v1</code><br/>
+                â€¢ AgentRouter: <code>https://agentrouter.org/v1</code>
               </p>
             </div>
             
