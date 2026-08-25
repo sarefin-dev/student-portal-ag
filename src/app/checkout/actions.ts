@@ -124,6 +124,8 @@ export async function startCheckout(formData: FormData) {
   }
 
   // Create order item
+  const routineId = formData.get('routineId') as string | null;
+  
   await supabaseAdmin
     .from('order_items')
     .insert({
@@ -132,6 +134,7 @@ export async function startCheckout(formData: FormData) {
       course_id: itemType === 'course' ? courseId : null,
       bundle_id: itemType === 'bundle' ? bundleId : null,
       resource_id: itemType === 'resource' ? resourceId : null,
+      routine_id: routineId || null,
       unit_price_amount: itemPrice
     });
 

@@ -55,3 +55,67 @@ export async function deleteLiveSession(courseId: string, sessionId: string) {
   revalidatePath(`/admin/courses/${courseId}/live`);
   return { success: true };
 }
+
+export async function createRoutine(courseId: string, name: string) {
+  const user = await verifyStaff();
+  if (!user) return { success: false, error: "Unauthorized" };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('routines')
+    .insert({
+      course_id: courseId,
+      name
+    });
+
+  if (error) return { success: false, error: error.message };
+  revalidatePath(`/admin/courses/${courseId}/live`);
+  return { success: true };
+}
+
+export async function bulkGenerateLiveSessions(
+  courseId: string,
+  routineId: string,
+  startDateStr: string, // '2026-03-01T20:00'
+  daysOfWeek: number[], // [0, 3, 5] for Sun, Wed, Fri
+  durationMinutes: number,
+  totalClasses: number,
+  meetingUrl: string
+) {
+  const user = await verifyStaff();
+  if (!user) return { success: false, error: "Unauthorized" };
+
+  // Parse start date in local time
+  let currentDate = new Date(startDateStr);
+  const sessions = [];
+  let classCount = 0;
+
+  // Safety net to prevent infinite loops if daysOfWeek is empty
+  if (!daysOfWeek || daysOfWeek.length === 0) {
+    return { success: false, error: "Must select at least one day of the week" };
+  }
+
+  while (classCount < totalClasses && sessions.length < 365) {
+    // getDay() returns 0 (Sun) to 6 (Sat)
+    if (daysOfWeek.includes(currentDate.getDay())) {
+      classCount++;
+      sessions.push({
+        course_id: courseId,
+        routine_id: routineId,
+        title: `Class ${classCount}`,
+        scheduled_at: currentDate.toISOString(),
+        duration_minutes: durationMinutes,
+        meeting_url: meetingUrl
+      });
+    }
+    // Add 1 day
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from('live_sessions').insert(sessions);
+
+  if (error) return { success: false, error: error.message };
+  revalidatePath(`/admin/courses/${courseId}/live`);
+  return { success: true };
+}

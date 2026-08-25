@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { startCheckout, submitTrxId } from './actions';
 import Link from 'next/link';
 import { AlertCircle, Copy, HelpCircle } from 'lucide-react';
+import { RoutineSelector } from './routine-selector';
 
 export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ course?: string, bundle?: string, resource?: string, orderId?: string, step?: string, method?: string, error?: string }> }) {
   const params = await searchParams;
@@ -26,11 +27,15 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
     let itemTitle = '';
     let itemPrice = 0;
     let itemCurrency = 'BDT';
+    let routines: any[] = [];
 
     if (courseId) {
       const { data } = await supabase.from('courses').select('*').eq('id', courseId).single();
       if (!data) notFound();
       itemTitle = data.title; itemPrice = data.price_amount; itemCurrency = data.currency;
+      
+      const { data: routineData } = await supabase.from('routines').select('*').eq('course_id', courseId).eq('status', 'active');
+      if (routineData) routines = routineData;
     } else if (bundleId) {
       const { data } = await supabase.from('bundles').select('*').eq('id', bundleId).single();
       if (!data) notFound();
@@ -45,9 +50,11 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
       <div className="container mx-auto py-6 md:py-12 px-4 max-w-lg">
         <div className="rounded border bg-card p-8 shadow-none space-y-6">
           <h1 className="text-2xl font-bold">Review Your Order</h1>
-          <div className="rounded border bg-muted/50 p-4 flex justify-between items-center">
-            <span className="font-semibold">{itemTitle}</span>
-            <span>{itemCurrency} {itemPrice}</span>
+          <div className="rounded border bg-muted/50 p-4 flex flex-col gap-2">
+            <div className="flex justify-between items-center">
+              <span className="font-semibold">{itemTitle}</span>
+              <span>{itemCurrency} {itemPrice}</span>
+            </div>
           </div>
           
           <div className="border-t pt-4 flex justify-between items-center font-bold text-lg">
@@ -59,6 +66,8 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
             {courseId && <input type="hidden" name="courseId" value={courseId} />}
             {bundleId && <input type="hidden" name="bundleId" value={bundleId} />}
             {resourceId && <input type="hidden" name="resourceId" value={resourceId} />}
+            
+            {routines.length > 0 && <RoutineSelector routines={routines} />}
             
             {!user && (
               <div className="space-y-4 rounded border bg-muted/20 p-4">

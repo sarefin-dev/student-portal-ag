@@ -21,9 +21,9 @@ export async function POST(req: Request) {
 
   const { data: sessions } = await supabaseAdmin
     .from('live_sessions')
-    .select('id, course_id, title, start_time, courses(title)')
-    .gte('start_time', lowerBound)
-    .lte('start_time', upperBound)
+    .select('id, course_id, title, scheduled_at, courses(title)')
+    .gte('scheduled_at', lowerBound)
+    .lte('scheduled_at', upperBound)
     .is('deleted_at', null);
 
   if (!sessions || sessions.length === 0) {

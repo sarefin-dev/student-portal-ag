@@ -13,6 +13,7 @@ export default async function StudentDashboardPage() {
       .select(`
         completion_percent,
         course_id,
+        routine_id,
         courses (
           title,
           slug,
@@ -41,12 +42,14 @@ export default async function StudentDashboardPage() {
   const payments = paymentsRes.data;
 
   // Fetch dependent data
+  const enrolledRoutineIds = enrollments?.map(e => e.routine_id).filter(Boolean) || [];
+  
   const { data: upcomingSessions } = await supabase
     .from('live_sessions')
-    .select('id, title, start_time, courses!inner(title, slug)')
-    .in('course_id', enrollments?.map(e => e.course_id) || [])
-    .gte('start_time', new Date().toISOString())
-    .order('start_time', { ascending: true })
+    .select('id, title, scheduled_at, duration_minutes, meeting_url, courses!inner(title, slug)')
+    .in('routine_id', enrolledRoutineIds)
+    .gte('scheduled_at', new Date().toISOString())
+    .order('scheduled_at', { ascending: true })
     .limit(3);
 
   return (
@@ -58,17 +61,22 @@ export default async function StudentDashboardPage() {
           {upcomingSessions && upcomingSessions.length > 0 && (
             <div className="bg-primary/5 border border-primary/20 rounded-lg p-5">
               <h3 className="font-semibold text-primary mb-3 flex items-center gap-2">Upcoming Classes</h3>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {upcomingSessions.map((session: any) => (
-                  <div key={session.id} className="flex justify-between items-center bg-background p-3 rounded shadow-sm text-sm">
+                  <div key={session.id} className="flex justify-between items-center p-3 rounded bg-muted/50 border">
                     <div>
-                      <div className="font-medium">{session.title}</div>
-                      <div className="text-xs text-muted-foreground">{session.courses.title}</div>
+                      <div className="font-semibold">{session.title}</div>
+                      <div className="text-sm text-muted-foreground flex gap-2 mt-1">
+                        <span>{session.courses?.title}</span>
+                        <span>•</span>
+                        <span>{new Date(session.scheduled_at).toLocaleString()}</span>
+                        <span>•</span>
+                        <span>{session.duration_minutes} min</span>
+                      </div>
                     </div>
-                    <div className="text-right whitespace-nowrap ml-4">
-                      <div className="font-semibold text-primary">{new Date(session.start_time).toLocaleDateString()}</div>
-                      <div className="text-xs text-muted-foreground">{new Date(session.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                    </div>
+                    <Link href={session.meeting_url || "#"} target="_blank" rel="noopener noreferrer">
+                      <Button size="sm">Join</Button>
+                    </Link>
                   </div>
                 ))}
               </div>

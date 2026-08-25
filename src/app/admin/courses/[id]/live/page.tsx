@@ -5,6 +5,12 @@ export default async function LiveSessionsPage({ params }: { params: Promise<{ i
   const { id } = await params;
   const supabase = await createClient();
 
+  const { data: routines } = await supabase
+    .from('routines')
+    .select('*')
+    .eq('course_id', id)
+    .order('created_at', { ascending: true });
+
   const { data: sessions } = await supabase
     .from('live_sessions')
     .select('*')
@@ -12,5 +18,5 @@ export default async function LiveSessionsPage({ params }: { params: Promise<{ i
     .is('deleted_at', null)
     .order('scheduled_at', { ascending: true });
 
-  return <LiveSessionsManager id={id} sessions={sessions || []} />;
+  return <LiveSessionsManager id={id} sessions={sessions || []} routines={routines || []} />;
 }
