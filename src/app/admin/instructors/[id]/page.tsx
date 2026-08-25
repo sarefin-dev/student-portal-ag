@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, User, Mail, Phone, Calendar, Briefcase } from 'lucide-react';
 import Link from 'next/link';
 import { PayoutForm } from './payout-form';
+import { KysForm } from './kys-form';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default async function InstructorProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -137,6 +138,16 @@ export default async function InstructorProfilePage({ params }: { params: Promis
           </CardHeader>
           <CardContent>
             <PayoutForm instructorId={id} currentPayout={instructor.payout_percentage} />
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-3">
+          <CardHeader>
+            <CardTitle>Know Your Staff (KYS) Profile</CardTitle>
+            <CardDescription>Detailed background, identity, and expertise information.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <KysForm instructor={instructor} />
           </CardContent>
         </Card>
 
