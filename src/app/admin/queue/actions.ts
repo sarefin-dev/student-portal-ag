@@ -21,12 +21,17 @@ async function requireAdmin() {
 export async function approvePendingVerification(formData: FormData) {
   const pendingId = formData.get('pendingId') as string;
   const receivedTxId = formData.get('receivedTxId') as string; // Optional, if they match it manually
+  const createInstallment = formData.get('createInstallment') === 'true';
+  const dueDays = parseInt(formData.get('dueDays') as string || '30', 10);
+  
   const supabase = await requireAdmin();
 
   // Call the atomic manual override RPC
   const { error } = await supabase.rpc('force_approve_pending_verification', { 
     p_pending_id: pendingId, 
-    p_received_tx_id: receivedTxId || null 
+    p_received_tx_id: receivedTxId || null,
+    p_create_installment: createInstallment,
+    p_due_days: dueDays
   });
 
   if (error) {

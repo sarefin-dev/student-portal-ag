@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { approvePendingVerification, rejectPendingVerification } from './actions';
+import { ApprovePaymentModal } from './approve-modal';
 import { Check, X } from 'lucide-react';
 import {
   AlertDialog,
@@ -68,19 +69,10 @@ export default async function VerificationQueuePage() {
                 </div>
                 <div className="flex gap-2 w-full md:w-auto justify-end">
                   <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <form action={approvePendingVerification}>
-                          <input type="hidden" name="pendingId" value={p.id} />
-                          <Button variant="default" size="icon" className="bg-success hover:bg-success/90 text-success-foreground h-10 w-10" type="submit">
-                            <Check className="h-5 w-5" />
-                            <span className="sr-only">Approve</span>
-                          </Button>
-                        </form>
-                      </TooltipTrigger>
-                      <TooltipContent>Approve Payment</TooltipContent>
-                    </Tooltip>
-
+                    <ApprovePaymentModal 
+                      pendingId={p.id} 
+                      shortfall={Number(p.orders?.total_amount || 0) - Number(p.submitted_amount || 0)} 
+                    />
                     <AlertDialog>
                       <Tooltip>
                         <TooltipTrigger asChild>
