@@ -131,7 +131,7 @@ export function ManualEnrollForm({ courses }: { courses: any[] }) {
                                 {course.status || 'draft'}
                               </Badge>
                             </TableCell>
-                            <TableCell>{course.price > 0 ? `$${course.price}` : 'Free'}</TableCell>
+                            <TableCell>{course.price_amount > 0 ? `$${course.price_amount}` : 'Free'}</TableCell>
                             <TableCell className="text-right">
                               <Button 
                                 variant="secondary" 
