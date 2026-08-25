@@ -10,6 +10,7 @@ import {
 } from '@tanstack/react-table';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { updateLeadStatus, deleteLead, createLead } from './actions';
@@ -201,32 +202,42 @@ export function LeadsTable({ data, currentPage, totalPages, initialSearch }: { d
 
       {isCreating && (
         <form action={async (fd) => {
-          await createLead(fd);
-          setIsCreating(false);
+          try {
+            const result = await createLead(fd);
+            if (!result.success) {
+              alert(result.error || 'Failed to create lead');
+              return;
+            }
+            setIsCreating(false);
+          } catch (err) {
+            alert('Failed to create lead');
+          }
         }} className="space-y-4 bg-muted/50 p-4 rounded-lg border">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Name *</label>
-              <input name="name" required className="flex h-10 w-full rounded border px-3 py-2 text-sm bg-background" placeholder="John Doe" />
+              <label htmlFor="name" className="text-sm font-medium">Name *</label>
+              <Input id="name" name="name" required placeholder="John Doe" className="bg-background" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Phone</label>
-              <input name="phone" className="flex h-10 w-full rounded border px-3 py-2 text-sm bg-background" placeholder="01XXXXXXXXX" />
+              <label htmlFor="phone" className="text-sm font-medium">Phone</label>
+              <Input id="phone" name="phone" placeholder="01XXXXXXXXX" className="bg-background" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
-              <input name="email" type="email" className="flex h-10 w-full rounded border px-3 py-2 text-sm bg-background" placeholder="john@example.com" />
+              <label htmlFor="email" className="text-sm font-medium">Email</label>
+              <Input id="email" name="email" type="email" placeholder="john@example.com" className="bg-background" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Interest</label>
-              <input name="interested_in" className="flex h-10 w-full rounded border px-3 py-2 text-sm bg-background" placeholder="e.g. Next.js Course" />
+              <label htmlFor="interested_in" className="text-sm font-medium">Interest</label>
+              <Input id="interested_in" name="interested_in" placeholder="e.g. Next.js Course" className="bg-background" />
             </div>
             <div className="space-y-2 col-span-2">
-              <label className="text-sm font-medium">Notes</label>
-              <input name="notes" className="flex h-10 w-full rounded border px-3 py-2 text-sm bg-background" placeholder="Optional notes..." />
+              <label htmlFor="notes" className="text-sm font-medium">Notes</label>
+              <Textarea id="notes" name="notes" placeholder="Optional notes..." className="bg-background min-h-[80px]" />
             </div>
           </div>
-          <Button type="submit">Create Lead</Button>
+          <div className="flex justify-end gap-2">
+            <Button type="submit">Create Lead</Button>
+          </div>
         </form>
       )}
 

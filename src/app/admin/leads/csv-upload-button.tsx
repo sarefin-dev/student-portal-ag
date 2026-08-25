@@ -51,12 +51,13 @@ export function CsvUploadButton() {
       const rows = parseCSV(text);
       if (rows.length < 2) throw new Error('CSV is empty or missing headers');
 
-      const headers = rows[0].map((h: string) => h.toLowerCase());
+      const headers = rows[0].map((h: string) => h.trim().toLowerCase().replace(/^\uFEFF/, ''));
       
       const leads = [];
       for (let i = 1; i < rows.length; i++) {
         const values = rows[i];
-        const lead: any = { status: 'new' };
+        
+        const lead: any = { status: 'new', name: '', email: null, phone: null, source: 'Manual', interested_in: null, notes: null };
         
         headers.forEach((header: string, index: number) => {
           let val = values[index];
@@ -76,8 +77,12 @@ export function CsvUploadButton() {
       }
 
       if (leads.length > 0) {
-        await createLeadsBulk(leads);
-        alert(`Successfully imported ${leads.length} leads!`);
+        const result = await createLeadsBulk(leads);
+        if (result.success) {
+          alert("Successfully imported ${leads.length} leads!");
+        } else {
+          alert("Import failed: ${result.error}");
+        }
       } else {
         alert("No valid leads found. Please ensure the CSV has a 'Name' or 'FULL_NAME' column.");
       }

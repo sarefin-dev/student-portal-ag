@@ -98,31 +98,26 @@ export function ServiceManager({ initialServices }: { initialServices: any[] }) 
             <div className="mt-4 pt-4 border-t flex justify-end">
               <TooltipProvider>
                 <AlertDialog>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8">
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete Service</span>
-                        </Button>
-                      </AlertDialogTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>Delete Service</TooltipContent>
-                  </Tooltip>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Service?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to permanently delete this service? This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <Button variant="destructive" onClick={() => deleteService(service.id)}>
-                        Delete Service
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8" title="Delete Service">
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete Service</span>
                       </Button>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Service?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to permanently delete this service? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteService(service.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
                 </AlertDialog>
               </TooltipProvider>
             </div>

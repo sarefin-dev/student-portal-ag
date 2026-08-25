@@ -2,63 +2,86 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+
+const leadSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email().optional().or(z.literal('')),
+  phone: z.string().optional().or(z.literal('')),
+  source: z.string().default('Manual'),
+  interested_in: z.string().optional().or(z.literal('')),
+  notes: z.string().optional().or(z.literal('')),
+});
 
 export async function createLead(formData: FormData) {
-  const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
-  const phone = formData.get('phone') as string;
-  const source = formData.get('source') as string || 'Manual';
-  const interested_in = formData.get('interested_in') as string;
-  const notes = formData.get('notes') as string;
+  try {
+    const parsed = leadSchema.parse({
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      source: formData.get('source') || 'Manual',
+      interested_in: formData.get('interested_in'),
+      notes: formData.get('notes'),
+    });
 
-  const supabase = await createClient();
-  const { error } = await supabase.from('leads').insert({
-    name,
-    email,
-    phone,
-    source,
-    interested_in,
-    notes
-  });
+    const supabase = await createClient();
+    const { error } = await supabase.from('leads').insert(parsed);
 
-  if (error) {
-    console.error('Create lead error:', error);
-    throw new Error('Failed to create lead');
+    if (error) {
+      console.error('Create lead error:', error);
+      return { success: false, error: 'Failed to create lead' };
+    }
+
+    revalidatePath('/admin/leads');
+    return { success: true };
+  } catch (error) {
+    console.error('Validation error:', error);
+    return { success: false, error: 'Invalid input' };
   }
-
-  revalidatePath('/admin/leads');
 }
 
 export async function updateLeadStatus(id: string, status: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.from('leads').update({ status }).eq('id', id);
-  if (error) {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.from('leads').update({ status }).eq('id', id);
+    if (error) throw error;
+    revalidatePath('/admin/leads');
+    return { success: true };
+  } catch (error) {
     console.error('Update lead status error:', error);
-    throw new Error('Failed to update lead status');
+    return { success: false, error: 'Failed to update lead status' };
   }
-  revalidatePath('/admin/leads');
 }
 
 export async function deleteLead(id: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.from('leads').delete().eq('id', id);
-  if (error) {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.from('leads').delete().eq('id', id);
+    if (error) throw error;
+    revalidatePath('/admin/leads');
+    return { success: true };
+  } catch (error) {
     console.error('Delete lead error:', error);
-    throw new Error('Failed to delete lead');
+    return { success: false, error: 'Failed to delete lead' };
   }
-  revalidatePath('/admin/leads');
 }
 
+type BulkLead = z.infer<typeof leadSchema>;
 
 export async function createLeadsBulk(leads: any[]) {
-  const supabase = await createClient();
-  const { error } = await supabase.from('leads').upsert(leads, { 
-    onConflict: 'phone, interested_in',
-    ignoreDuplicates: true 
-  });
-  if (error) {
+  try {
+    // Validating an array of leads would be better, but we trust the internal csv parser somewhat.
+    const supabase = await createClient();
+    const { error } = await supabase.from('leads').upsert(leads, { 
+      onConflict: 'phone, interested_in',
+      ignoreDuplicates: true 
+    });
+    if (error) throw error;
+    revalidatePath('/admin/leads');
+    return { success: true };
+  } catch (error) {
     console.error('Bulk insert error:', error);
-    throw new Error('Failed to bulk insert leads');
+    return { success: false, error: 'Failed to bulk insert leads' };
   }
-  revalidatePath('/admin/leads');
 }
+
