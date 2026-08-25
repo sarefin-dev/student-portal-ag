@@ -31,7 +31,8 @@ export default function NewCoursePage() {
             required
           >
             <option value="recorded">Recorded Video</option>
-            <option value="live_cohort">Live Cohort</option>
+            <option value="live_cohort">Live Cohort (Online)</option>
+            <option value="in_person">In-Person (Classroom)</option>
             <option value="text_based">Text Based</option>
             <option value="mixed">Mixed Format</option>
           </select>

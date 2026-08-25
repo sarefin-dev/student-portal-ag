@@ -15,8 +15,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
     notFound();
   }
 
-  // Check if enrollment is closed
-  const isCutoffPassed = course.type === 'live_cohort' && 
+  const isCutoffPassed = ['live_cohort', 'in_person'].includes(course.type) && 
                          course.enrollment_cutoff_date && 
                          new Date(course.enrollment_cutoff_date) < new Date();
 
@@ -138,8 +137,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
               <li className="flex items-center gap-2"><span>📱</span> Access on mobile and desktop</li>
               <li className="flex items-center gap-2"><span>♾️</span> Perpetual access to materials</li>
               <li className="flex items-center gap-2"><span>🏆</span> Certificate of completion</li>
-              {course.type === 'live_cohort' && (
-                <li className="flex items-center gap-2"><span>👥</span> Live cohort sessions</li>
+              {['live_cohort', 'in_person'].includes(course.type) && (
+                <li className="flex items-center gap-2"><span>👥</span> {course.type === 'in_person' ? 'Physical classroom sessions' : 'Live cohort sessions'}</li>
               )}
             </ul>
           </div>

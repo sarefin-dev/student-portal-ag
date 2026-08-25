@@ -119,7 +119,7 @@ export function CourseSettingsForm({ course }: { course: any }) {
         <p className="text-xs text-muted-foreground">This 1-sentence summary is printed on the student's PDF certificate.</p>
       </div>
 
-      {course.type === 'live_cohort' && (
+      {['live_cohort', 'in_person'].includes(course.type) && (
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Cohort Start Date (Optional)</label>

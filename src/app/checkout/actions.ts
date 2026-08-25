@@ -25,7 +25,7 @@ export async function startCheckout(formData: FormData) {
       redirect(`/courses?error=${encodeURIComponent('This course is coming soon and not open for enrollment yet.')}`);
     }
 
-    if (course.type === 'live_cohort' && course.enrollment_cutoff_date && new Date(course.enrollment_cutoff_date) < new Date()) {
+    if (['live_cohort', 'in_person'].includes(course.type) && course.enrollment_cutoff_date && new Date(course.enrollment_cutoff_date) < new Date()) {
       redirect(`/courses?error=${encodeURIComponent('Enrollment for this cohort is closed')}`);
     }
 
