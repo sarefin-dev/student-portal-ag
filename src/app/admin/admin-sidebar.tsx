@@ -42,6 +42,7 @@ const adminNavGroups = [
   {
     title: "Operations",
     items: [
+      { label: "Leads (CRM)", href: "/admin/leads", icon: Users },
       { label: "Students", href: "/admin/students", icon: Users },
       { label: "Instructors", href: "/admin/instructors", icon: Users },
       { label: "Enrollments", href: "/admin/enrollments", icon: BookOpen },
