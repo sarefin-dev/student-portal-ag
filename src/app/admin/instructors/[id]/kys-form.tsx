@@ -86,6 +86,10 @@ export function KysForm({ instructor }: { instructor: any }) {
         </div>
 
         <div className="flex-1 w-full space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="full_name">Full Name</Label>
+            <Input id="full_name" name="full_name" defaultValue={instructor.full_name || ''} placeholder="Instructor Name" required />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="address">Physical Address</Label>
@@ -137,7 +141,39 @@ export function KysForm({ instructor }: { instructor: any }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-4">
+      <div className="pt-4 border-t space-y-4">
+        <h3 className="text-sm font-semibold">Payout Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="payout_method">Preferred Payout Method</Label>
+            <select 
+              id="payout_method" 
+              name="payout_method" 
+              defaultValue={instructor.payout_method || ''} 
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="">Select Method...</option>
+              <option value="bkash">bKash</option>
+              <option value="nagad">Nagad</option>
+              <option value="bank">Bank Account</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="payout_bkash">bKash Number</Label>
+            <Input id="payout_bkash" name="payout_bkash" defaultValue={instructor.payout_bkash || ''} placeholder="e.g. 017..." />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="payout_nagad">Nagad Number</Label>
+            <Input id="payout_nagad" name="payout_nagad" defaultValue={instructor.payout_nagad || ''} placeholder="e.g. 017..." />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="payout_bank">Bank Account Details</Label>
+            <Input id="payout_bank" name="payout_bank" defaultValue={instructor.payout_bank || ''} placeholder="Bank Name, Acct No, Branch" />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-4 border-t">
         <div>
           {message.text && (
             <p className={message.type === 'error' ? 'text-sm text-destructive' : 'text-sm text-success'}>

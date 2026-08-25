@@ -58,6 +58,7 @@ export async function updateKysAction(instructorId: string, formData: FormData) 
   const supabaseAdmin = createSupabaseClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
 
   const updates = {
+    full_name: formData.get('full_name') as string,
     phone: formData.get('phone') as string,
     avatar_url: formData.get('avatar_url') as string,
     address: formData.get('address') as string,
@@ -69,6 +70,10 @@ export async function updateKysAction(instructorId: string, formData: FormData) 
     social_x: formData.get('social_x') as string,
     social_linkedin: formData.get('social_linkedin') as string,
     social_github: formData.get('social_github') as string,
+    payout_method: (formData.get('payout_method') as string) || null,
+    payout_bkash: formData.get('payout_bkash') as string,
+    payout_nagad: formData.get('payout_nagad') as string,
+    payout_bank: formData.get('payout_bank') as string,
   };
 
   const { error } = await supabaseAdmin.from('profiles').update(updates).eq('id', instructorId);
