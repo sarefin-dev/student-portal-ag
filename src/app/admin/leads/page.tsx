@@ -14,7 +14,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
 
   let query = supabase
     .from('leads')
-    .select('*', { count: 'estimated' })
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false });
 
   if (search) {
@@ -27,7 +27,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   const { data: leads, count, error } = await query.range((page - 1) * limit, page * limit - 1);
 
   if (error) {
-    console.error('Fetch leads error:', error);
+    console.error('Fetch leads error:', JSON.stringify(error, null, 2));
   }
 
   return (
