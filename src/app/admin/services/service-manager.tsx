@@ -4,8 +4,19 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { createService, deleteService } from './actions';
 
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function ServiceManager({ initialServices }: { initialServices: any[] }) {
   const [isCreating, setIsCreating] = useState(false);
@@ -85,7 +96,35 @@ export function ServiceManager({ initialServices }: { initialServices: any[] }) 
               <p className="text-sm line-clamp-2">{service.description}</p>
             </div>
             <div className="mt-4 pt-4 border-t flex justify-end">
-              <Button variant="destructive" size="sm" onClick={() => deleteService(service.id)}>Delete</Button>
+              <TooltipProvider>
+                <AlertDialog>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete Service</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Delete Service</TooltipContent>
+                  </Tooltip>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Service?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to permanently delete this service? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <Button variant="destructive" onClick={() => deleteService(service.id)}>
+                        Delete Service
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </TooltipProvider>
             </div>
           </div>
         ))}
