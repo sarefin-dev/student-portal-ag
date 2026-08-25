@@ -1,6 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createCourse } from '../actions';
 
 export default function NewCoursePage() {
@@ -24,18 +31,18 @@ export default function NewCoursePage() {
 
         <div className="space-y-2">
           <Label htmlFor="type">Course Type</Label>
-          <select 
-            id="type" 
-            name="type" 
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            required
-          >
-            <option value="recorded">Recorded Video</option>
-            <option value="live_cohort">Live Cohort (Online)</option>
-            <option value="in_person">In-Person (Classroom)</option>
-            <option value="text_based">Text Based</option>
-            <option value="mixed">Mixed Format</option>
-          </select>
+          <Select name="type" defaultValue="recorded" required>
+            <SelectTrigger id="type">
+              <SelectValue placeholder="Select course type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recorded">Recorded Video</SelectItem>
+              <SelectItem value="live_cohort">Live Cohort (Online)</SelectItem>
+              <SelectItem value="in_person">In-Person (Classroom)</SelectItem>
+              <SelectItem value="text_based">Text Based</SelectItem>
+              <SelectItem value="mixed">Mixed Format</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <Button type="submit" className="w-full">Create Draft</Button>
