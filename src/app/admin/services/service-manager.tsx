@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { createService, deleteService } from './actions';
 
+import { Plus, X } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 export function ServiceManager({ initialServices }: { initialServices: any[] }) {
   const [isCreating, setIsCreating] = useState(false);
 
@@ -11,9 +14,19 @@ export function ServiceManager({ initialServices }: { initialServices: any[] }) 
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold">Services</h2>
-        <Button onClick={() => setIsCreating(!isCreating)}>
-          {isCreating ? 'Cancel' : 'Add New Service'}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" className="h-9 w-9" onClick={() => setIsCreating(!isCreating)}>
+                {isCreating ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+                <span className="sr-only">{isCreating ? 'Cancel' : 'Add New Service'}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isCreating ? 'Cancel' : 'Add New Service'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {isCreating && (

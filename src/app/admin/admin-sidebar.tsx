@@ -86,11 +86,11 @@ export function AdminSidebar({ logoutAction, role }: { logoutAction: () => void;
   const NavContent = () => (
     <>
       {navGroups.map((group, i) => (
-        <div key={i} className="mb-2">
+        <div key={i} className="mb-1">
           {group.title && (
             <div
               className={cn(
-                "mb-1 px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider transition-all",
+                "mb-1 px-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider transition-all",
                 collapsed ? "opacity-0 h-0 overflow-hidden" : "opacity-100"
               )}
             >
@@ -104,7 +104,7 @@ export function AdminSidebar({ logoutAction, role }: { logoutAction: () => void;
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-1.5 text-sm font-medium transition-colors mb-0.5",
+                  "flex items-center gap-3 rounded-md px-2 py-1 text-sm font-medium transition-colors",
                   isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
@@ -119,11 +119,11 @@ export function AdminSidebar({ logoutAction, role }: { logoutAction: () => void;
           })}
         </div>
       ))}
-      <div className="mt-4">
+      <div className="mt-2 border-t border-sidebar-border pt-2">
         <Link
           href="/"
           className={cn(
-            "flex items-center gap-3 rounded-md px-3 py-1.5 text-sm font-medium transition-colors mb-0.5 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+            "flex items-center gap-3 rounded-md px-2 py-1 text-sm font-medium transition-colors text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
             collapsed && "justify-center px-0"
           )}
           title={collapsed ? "Back to Site" : undefined}
