@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { env } from '@/env';
 import { generateObject } from 'ai';
-import { google } from '@ai-sdk/google';
-import { createDeepSeek } from '@ai-sdk/deepseek';
+import { openrouter, FREE_MODELS } from '@/lib/ai/openrouter';
 import { z } from 'zod';
 
 export async function POST(req: Request) {
@@ -27,7 +26,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'No jobs' });
   }
 
-  const deepseek = createDeepSeek({ apiKey: env.DEEPSEEK_API_KEY });
+  
 
   for (const job of jobs) {
     await supabaseAdmin.from('jobs').update({ status: 'processing' }).eq('id', job.id);
@@ -89,12 +88,12 @@ export async function POST(req: Request) {
 
             let result;
             try {
-              result = await aiCall(google('gemini-2.5-flash'));
-              aiProvider = 'gemini';
+              result = await aiCall(openrouter(FREE_MODELS.coder));
+              aiProvider = 'openrouter_primary';
             } catch (err) {
-              console.log("Gemini failed, falling back to DeepSeek...", err);
-              result = await aiCall(deepseek('deepseek-chat'));
-              aiProvider = 'deepseek';
+              console.log("OpenRouter primary failed, trying fallback...", err);
+              result = await aiCall(openrouter(FREE_MODELS.fallback));
+              aiProvider = 'openrouter_fallback';
             }
 
             scorePercent = result.object.scorePercent;

@@ -2,15 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { generateObject } from 'ai';
-import { google } from '@ai-sdk/google';
-import { createDeepSeek } from '@ai-sdk/deepseek';
+import { openrouter, FREE_MODELS } from '@/lib/ai/openrouter';
 import { ollama } from 'ai-sdk-ollama';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-
-const deepseek = createDeepSeek({
-  apiKey: process.env.DEEPSEEK_API_KEY || '',
-});
 
 const CourseSchema = z.object({
   title: z.string(),
@@ -62,18 +57,15 @@ ${syllabusText}
     try {
       // 1. Try Localhost First (Free)
       result = await aiCall(ollama('llama3.3'));
-      console.log("Course imported successfully using Local Ollama");
     } catch (localErr) {
-      console.log("Ollama failed, falling back to Gemini...", localErr);
+      console.log("Ollama failed, falling back to OpenRouter free models...", localErr);
       try {
-        // 2. Try Gemini
-        result = await aiCall(google('gemini-2.5-pro'));
-        console.log("Course imported successfully using Gemini");
-      } catch (geminiErr) {
-        console.log("Gemini failed, falling back to DeepSeek...", geminiErr);
-        // 3. Try Deepseek
-        result = await aiCall(deepseek('deepseek-chat'));
-        console.log("Course imported successfully using DeepSeek");
+        // 2. Try OpenRouter Llama 3
+        result = await aiCall(openrouter(FREE_MODELS.chat));
+      } catch (orErr) {
+        console.log("OpenRouter primary failed, trying fallback...", orErr);
+        // 3. Try OpenRouter Gemini Fallback
+        result = await aiCall(openrouter(FREE_MODELS.fallback));
       }
     }
 

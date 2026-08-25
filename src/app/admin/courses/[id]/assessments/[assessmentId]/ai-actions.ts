@@ -2,15 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { generateObject } from 'ai';
-import { google } from '@ai-sdk/google';
-import { createDeepSeek } from '@ai-sdk/deepseek';
+import { openrouter, FREE_MODELS } from '@/lib/ai/openrouter';
 import { ollama } from 'ai-sdk-ollama';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-
-const deepseek = createDeepSeek({
-  apiKey: process.env.DEEPSEEK_API_KEY || '',
-});
 
 const QuizSchema = z.object({
   questions: z.array(z.object({
@@ -46,9 +41,9 @@ Ensure there is exactly one correct answer per question, and provide a helpful e
       result = await aiCall(ollama('llama3.3'));
     } catch (localErr) {
       try {
-        result = await aiCall(google('gemini-2.5-pro'));
+        result = await aiCall(openrouter(FREE_MODELS.chat));
       } catch (geminiErr) {
-        result = await aiCall(deepseek('deepseek-chat'));
+        result = await aiCall(openrouter(FREE_MODELS.fallback));
       }
     }
 

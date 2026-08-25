@@ -1,15 +1,8 @@
 import { streamText } from 'ai';
-import { google } from '@ai-sdk/google';
-import { createDeepSeek } from '@ai-sdk/deepseek';
+import { openrouter, FREE_MODELS } from '@/lib/ai/openrouter';
 import { ollama } from 'ai-sdk-ollama';
-import { createClient } from '@supabase/supabase-js';
-import { env } from '@/env';
-import { NextResponse } from 'next/server';
 import { createClient as createServerClient } from '@/lib/supabase/server';
-
-const deepseek = createDeepSeek({
-  apiKey: process.env.DEEPSEEK_API_KEY || '',
-});
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
@@ -37,40 +30,24 @@ CURRENT LESSON CONTEXT:
 ${lessonContext || 'No specific lesson context provided.'}
 """`;
 
-    // Try Local, then Gemini, then Deepseek
-    let model = ollama('llama3.3');
-    // For streaming, fallbacks are natively supported via ai provider utils but we can just use gemini for chat if we want stable streaming.
-    // However, the user asked for local -> gemini -> deepseek.
-    // ai sdk streamText doesn't expose a simple try/catch fallback because it streams.
-    // Actually, `fallback()` from `ai` works for `streamText` as well! But wait, `fallback` is not exported in 7.0.68.
-    // If it's not exported, we can just use Gemini for streaming chat, or try/catch manually before streaming?
-    // You can't try/catch streamText easily without buffering if the stream starts. But if it fails to connect, it throws immediately.
-    // So we can try to connect. If it fails, fallback. But let's just use Google Gemini here since it's most reliable for streaming.
-    
-    // Wait, the user specifically requested local first. Let's try manual fallback for the connection phase.
-    
-    // But since it streams, let's just use Gemini. I will tell the user that for real-time streaming chat we default to Gemini.
-    // Wait, I can just use `try/catch` and if the local model fails to *initialize* the stream, it catches and falls back.
-    
     try {
       const result = await streamText({
         model: ollama('llama3.3'),
         messages,
         system: systemPrompt,
       });
-      // If we got here, connection succeeded, return stream
       return result.toTextStreamResponse();
     } catch (e) {
       try {
         const result = await streamText({
-          model: google('gemini-2.5-flash'), // Flash is better for chat
+          model: openrouter(FREE_MODELS.chat),
           messages,
           system: systemPrompt,
         });
         return result.toTextStreamResponse();
       } catch (e2) {
         const result = await streamText({
-          model: deepseek('deepseek-chat'),
+          model: openrouter(FREE_MODELS.fallback),
           messages,
           system: systemPrompt,
         });
