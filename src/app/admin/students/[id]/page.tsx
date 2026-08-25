@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
-import { ArrowLeft, User, BookOpen, CreditCard, Activity } from 'lucide-react';
+import { ArrowLeft, User, BookOpen, CreditCard, Download } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -40,6 +40,13 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
     .select('*, orders!inner(id, student_id)')
     .eq('orders.student_id', id)
     .order('created_at', { ascending: false });
+
+  // Fetch certificates
+  const { data: certificates } = await supabaseAdmin
+    .from('certificates')
+    .select('id, course_id')
+    .eq('student_id', id);
+  const certMap = new Map(certificates?.map((c: any) => [c.course_id, c.id]) || []);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -102,6 +109,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
                     <TableRow>
                       <TableHead>Course</TableHead>
                       <TableHead>Progress</TableHead>
+                      <TableHead>Certificate</TableHead>
                       <TableHead>Source</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
@@ -118,6 +126,20 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
                             </div>
                             <span className="text-xs text-muted-foreground w-8">{enr.completion_percent || 0}%</span>
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          {enr.completion_percent === 100 && certMap.has(enr.course_id) ? (
+                            <Button variant="outline" size="sm" className="h-8 gap-1" asChild>
+                              <a href={`/api/certificates/${certMap.get(enr.course_id)}/download`} target="_blank" rel="noopener noreferrer">
+                                <Download className="w-3 h-3" />
+                                PDF
+                              </a>
+                            </Button>
+                          ) : enr.completion_percent === 100 ? (
+                            <span className="text-xs text-muted-foreground italic">Generating...</span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">-</span>
+                          )}
                         </TableCell>
                         <TableCell><Badge variant="outline">{enr.source}</Badge></TableCell>
                         <TableCell>
