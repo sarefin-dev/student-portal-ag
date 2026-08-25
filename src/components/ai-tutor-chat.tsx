@@ -1,6 +1,5 @@
 'use client';
 
-import { useChat } from '@ai-sdk/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Bot, Send, User, X, MessageCircle } from 'lucide-react';
@@ -9,13 +8,8 @@ import { useState, useEffect, useRef } from 'react';
 export function AiTutorChat({ lessonContext }: { lessonContext: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputStr, setInputStr] = useState('');
-  
-  const { messages, append, status } = useChat({
-    api: '/api/chat',
-    body: { lessonContext }
-  });
-  
-  const isLoading = status === 'submitted' || status === 'streaming';
+  const [messages, setMessages] = useState<{role: string, content: string, id: number}[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -23,11 +17,52 @@ export function AiTutorChat({ lessonContext }: { lessonContext: string }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputStr.trim() || isLoading) return;
-    append({ role: 'user', content: inputStr });
+    
+    const userMsg = { role: 'user', content: inputStr, id: Date.now() };
+    setMessages(prev => [...prev, userMsg]);
     setInputStr('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [...messages, userMsg], lessonContext })
+      });
+
+      if (!response.body) throw new Error('No response body');
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      
+      const aiMsg = { role: 'assistant', content: '', id: Date.now() + 1 };
+      setMessages(prev => [...prev, aiMsg]);
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        
+        // Vercel AI SDK streams text as `0:"chunk"\n`
+        const textLines = chunk.split('\n');
+        for (const line of textLines) {
+          if (line.startsWith('0:')) {
+            try {
+              const text = JSON.parse(line.substring(2));
+              aiMsg.content += text;
+              setMessages(prev => [...prev.slice(0, -1), { ...aiMsg }]);
+            } catch (e) {}
+          }
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!isOpen) {
