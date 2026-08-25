@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { updateLeadStatus, deleteLead, createLead, promoteLeadToStudent } from './actions';
-import { Plus, X, Trash2, UserPlus } from 'lucide-react';
+import { Plus, X, Trash2, UserPlus, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Select,
@@ -233,6 +233,12 @@ export function LeadsTable({ data, currentPage, totalPages, initialSearch }: { d
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold">Leads</h2>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <a href="/api/admin/export-contacts">
+              <Download className="w-4 h-4 mr-2" />
+              Export Contacts
+            </a>
+          </Button>
           <CsvUploadButton />
           <TooltipProvider>
             <Tooltip>

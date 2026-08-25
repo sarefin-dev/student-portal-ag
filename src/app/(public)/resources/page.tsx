@@ -44,7 +44,7 @@ export default async function ResourcesCatalogPage() {
               <h3 className="font-semibold text-xl mb-2">{resource.title}</h3>
               <p className="text-sm text-muted-foreground mb-6 flex-1">{resource.description}</p>
               
-              <Link href={resource.is_free ? `/api/resources/${resource.id}/download` : `/checkout/resource/${resource.id}`} className="w-full">
+              <Link href={resource.is_free ? `/api/resources/${resource.id}/download` : `/checkout?resource=${resource.id}`} className="w-full">
                 <Button className="w-full" variant={resource.is_free ? 'outline' : 'default'}>
                   <Download className="w-4 h-4 mr-2" />
                   {resource.is_free ? 'Download Now' : 'Purchase Access'}

@@ -13,8 +13,10 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    const returnPath = courseId ? `?course=${courseId}` : bundleId ? `?bundle=${bundleId}` : `?resource=${resourceId}`;
-    redirect(`/login?redirectTo=/checkout${returnPath}`);
+    if (!resourceId && !orderId) {
+      const returnPath = courseId ? `?course=${courseId}` : bundleId ? `?bundle=${bundleId}` : ``;
+      redirect(`/login?redirectTo=${encodeURIComponent('/checkout' + returnPath)}`);
+    }
   }
 
   // STEP 1: REVIEW
@@ -58,6 +60,20 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
             {bundleId && <input type="hidden" name="bundleId" value={bundleId} />}
             {resourceId && <input type="hidden" name="resourceId" value={resourceId} />}
             
+            {!user && (
+              <div className="space-y-4 rounded border bg-muted/20 p-4">
+                <p className="text-sm text-muted-foreground font-medium">Guest Checkout</p>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Full Name <span className="text-destructive">*</span></label>
+                  <input name="guestName" required placeholder="John Doe" className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Email Address <span className="text-destructive">*</span></label>
+                  <input name="guestEmail" type="email" required placeholder="john@example.com" className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm" />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Coupon Code (Optional)</label>
               <input name="couponCode" placeholder="e.g. DISCOUNT20" className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm uppercase" />

@@ -8,10 +8,43 @@ export async function startCheckout(formData: FormData) {
   const bundleId = formData.get('bundleId') as string | null;
   const resourceId = formData.get('resourceId') as string | null;
   const couponCode = (formData.get('couponCode') as string || '').trim().toUpperCase();
+  const guestName = (formData.get('guestName') as string || '').trim();
+  const guestEmail = (formData.get('guestEmail') as string || '').trim();
   
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
+  let { data: { user } } = await supabase.auth.getUser();
+  
+  let targetUserId = user?.id;
+
+  if (!targetUserId) {
+    if (!resourceId) {
+      redirect('/login');
+    }
+    if (!guestEmail || !guestName) {
+      throw new Error('Name and Email are required for guest checkout');
+    }
+
+    // Shadow Account Flow
+    const { env } = await import('@/env');
+    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+    const supabaseAdmin = createSupabaseClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+
+    // Check if user already exists
+    const { data: existingProfile } = await supabaseAdmin.from('profiles').select('id').eq('email', guestEmail).maybeSingle();
+    
+    if (existingProfile) {
+      targetUserId = existingProfile.id;
+    } else {
+      // Create shadow account
+      const { data: inviteData, error: inviteErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(guestEmail, {
+        data: { full_name: guestName }
+      });
+      if (inviteErr || !inviteData.user) {
+        throw new Error('Failed to create guest account: ' + (inviteErr?.message || 'Unknown error'));
+      }
+      targetUserId = inviteData.user.id;
+    }
+  }
 
   let itemTitle = '';
   let itemPrice = 0;
@@ -78,7 +111,7 @@ export async function startCheckout(formData: FormData) {
   const { data: order, error } = await supabaseAdmin
     .from('orders')
     .insert({
-      student_id: user.id,
+      student_id: targetUserId,
       subtotal_amount: itemPrice,
       total_amount: finalAmount,
       status: 'pending'
@@ -106,7 +139,7 @@ export async function startCheckout(formData: FormData) {
     await supabaseAdmin.from('coupon_redemptions').insert({
       coupon_id: couponId,
       order_id: order.id,
-      student_id: user.id
+      student_id: targetUserId
     });
   }
 
@@ -122,8 +155,6 @@ export async function submitTrxId(formData: FormData) {
   );
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthorized');
 
   const orderId = formData.get('orderId') as string;
   const provider = formData.get('provider') as string;
@@ -131,8 +162,8 @@ export async function submitTrxId(formData: FormData) {
   const amount = parseFloat(formData.get('amount') as string);
   const senderNumber = formData.get('senderNumber') as string;
 
-  // Verify the order belongs to the user
-  const { data: order } = await supabase
+  // Use admin client so guests can submit payment for their unguessable UUID order
+  const { data: order } = await supabaseAdmin
     .from('orders')
     .select('id')
     .eq('id', orderId)
@@ -160,8 +191,8 @@ export async function submitTrxId(formData: FormData) {
     .is('consumed_by_pending_verification_id', null)
     .single();
     
-  // Insert the pending verification securely
-  const { data: pending, error } = await supabase
+  // Insert the pending verification securely using admin to allow guests
+  const { data: pending, error } = await supabaseAdmin
     .from('pending_verifications')
     .insert({
       order_id: orderId,
