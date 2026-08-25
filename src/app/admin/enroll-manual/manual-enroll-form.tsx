@@ -22,18 +22,19 @@ export function ManualEnrollForm({ courses }: { courses: any[] }) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget;
     if (!selectedCourseId) {
       alert("Please select a course");
       return;
     }
     setIsSubmitting(true);
-    const formData = new FormData(e.currentTarget);
+    const formData = new FormData(form);
     formData.set("courseId", selectedCourseId);
     const res = await manualEnroll(formData);
     setIsSubmitting(false);
     if (res.success) {
       alert("Successfully enrolled student!");
-      e.currentTarget.reset();
+      form.reset();
       setSelectedCourseId('');
     } else {
       alert(res.error);
