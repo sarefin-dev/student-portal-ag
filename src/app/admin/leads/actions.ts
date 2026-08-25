@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 const leadSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -85,3 +86,40 @@ export async function createLeadsBulk(leads: any[]) {
   }
 }
 
+
+export async function promoteLeadToStudent(leadId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: lead } = await supabase.from('leads').select('*').eq('id', leadId).single();
+  if (!lead) return { success: false, error: 'Lead not found' };
+  if (!lead.email) return { success: false, error: 'Lead must have an email address to create a student account' };
+
+  const supabaseAdmin = createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+  // Check if user already exists
+  const { data: existingProfile } = await supabaseAdmin.from('profiles').select('id').eq('email', lead.email).single();
+  
+  if (existingProfile) {
+    // Just mark lead as converted
+    await supabase.from('leads').update({ status: 'converted' }).eq('id', leadId);
+    revalidatePath('/admin/leads');
+    return { success: true, message: 'Account already exists. Lead marked as converted.' };
+  }
+
+  // Create account via invite (auto-sends magic link)
+  const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(lead.email, {
+    data: { full_name: lead.name }
+  });
+
+  if (inviteError) {
+    return { success: false, error: inviteError.message };
+  }
+
+  // Update lead status
+  await supabase.from('leads').update({ status: 'converted' }).eq('id', leadId);
+  
+  revalidatePath('/admin/leads');
+  return { success: true, message: 'Student account created and invite sent! Lead marked as converted.' };
+}

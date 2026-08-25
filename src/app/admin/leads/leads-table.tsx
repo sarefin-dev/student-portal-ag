@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   useReactTable,
@@ -13,8 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { updateLeadStatus, deleteLead, createLead } from './actions';
-import { Plus, X, Trash2 } from 'lucide-react';
+import { updateLeadStatus, deleteLead, createLead, promoteLeadToStudent } from './actions';
+import { Plus, X, Trash2, UserPlus } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -137,36 +137,84 @@ export function LeadsTable({ data, currentPage, totalPages, initialSearch }: { d
       header: 'Actions',
       cell: ({ row }) => {
         const leadId = row.original.id;
+        const leadEmail = row.original.email;
+        const [isPromoting, setIsPromoting] = React.useState(false);
+
+        const handlePromote = async () => {
+          setIsPromoting(true);
+          const res = await promoteLeadToStudent(leadId);
+          setIsPromoting(false);
+          if (res.success) {
+            alert(res.message);
+          } else {
+            alert(res.error);
+          }
+        };
+
         return (
-          <TooltipProvider>
-            <AlertDialog>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8">
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Delete</span>
-                    </Button>
-                  </AlertDialogTrigger>
-                </TooltipTrigger>
-                <TooltipContent>Delete Lead</TooltipContent>
-              </Tooltip>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Lead?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete this lead? This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => deleteLead(leadId)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </TooltipProvider>
+          <div className="flex items-center gap-1">
+            {leadEmail && (
+              <TooltipProvider>
+                <AlertDialog>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-primary hover:text-primary hover:bg-primary/10 h-8 w-8">
+                          <UserPlus className="h-4 w-4" />
+                          <span className="sr-only">Promote to Student</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Promote to Student</TooltipContent>
+                  </Tooltip>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Promote Lead to Student?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will automatically create a student account for <strong>{leadEmail}</strong> and send them a password setup email. The lead status will be changed to Converted.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handlePromote} disabled={isPromoting}>
+                        {isPromoting ? 'Promoting...' : 'Promote & Send Invite'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </TooltipProvider>
+            )}
+
+            <TooltipProvider>
+              <AlertDialog>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8">
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Delete Lead</TooltipContent>
+                </Tooltip>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Lead?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this lead? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => deleteLead(leadId)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </TooltipProvider>
+          </div>
         );
       }
     },
