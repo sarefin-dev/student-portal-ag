@@ -27,8 +27,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ManualEnrollDialog } from './manual-enroll-form';
 
-export function EnrollmentsTable({ data, currentPage, totalPages, initialSearch }: { data: any[], currentPage: number, totalPages: number, initialSearch: string }) {
+export function EnrollmentsTable({ data, currentPage, totalPages, initialSearch, courses }: { data: any[], currentPage: number, totalPages: number, initialSearch: string, courses: any[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
@@ -219,6 +220,7 @@ export function EnrollmentsTable({ data, currentPage, totalPages, initialSearch 
         </form>
 
         <div className="flex flex-wrap items-center gap-2">
+          <ManualEnrollDialog courses={courses} />
           <DataTableFilter 
             filterKey="enrollment_status"
             title="Enrollment Status"

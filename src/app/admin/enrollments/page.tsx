@@ -40,6 +40,8 @@ export default async function EnrollmentsPage({
     .order(sort, { ascending: order === 'asc' })
     .range(from, to);
 
+  const { data: courses } = await supabase.from('courses').select('id, title, status, price_amount, currency');
+
   const totalPages = count ? Math.ceil(count / pageSize) : 1;
 
   return (
@@ -51,8 +53,9 @@ export default async function EnrollmentsPage({
 
       <EnrollmentsTable 
         data={enrollments || []} 
+        totalPages={totalPages} 
         currentPage={page} 
-        totalPages={totalPages}
+        courses={courses || []}
         initialSearch={search || ''}
       />
     </div>
