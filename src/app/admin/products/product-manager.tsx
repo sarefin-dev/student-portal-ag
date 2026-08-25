@@ -6,6 +6,17 @@ import { createProduct, deleteProduct } from './actions';
 import Link from 'next/link';
 import { Plus, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function ProductManager({ initialProducts }: { initialProducts: any[] }) {
   const [isCreating, setIsCreating] = useState(false);
@@ -33,35 +44,32 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
         <form action={async (fd) => {
           await createProduct(fd);
           setIsCreating(false);
-        }} className="space-y-4 bg-muted/50 p-4 rounded-lg border">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Title</label>
-              <input name="title" required className="flex h-10 w-full rounded border px-3 py-2 text-sm bg-background" placeholder="e.g. Complete React Masterclass" />
+        }} className="bg-card p-6 rounded-lg border shadow-sm">
+          <h3 className="font-bold text-lg mb-4">New SKU</h3>
+          <div className="grid gap-4 md:grid-cols-2 mb-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Internal Title</label>
+              <input name="title" className="flex h-10 w-full rounded-md border px-3 py-2 text-sm bg-background" required />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Slug (Unique URL)</label>
-              <input name="slug" required className="flex h-10 w-full rounded border px-3 py-2 text-sm bg-background" placeholder="react-masterclass" />
+            <div>
+              <label className="block text-sm font-medium mb-1">Slug</label>
+              <input name="slug" className="flex h-10 w-full rounded-md border px-3 py-2 text-sm bg-background" required />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Kind</label>
-              <select name="kind" className="flex h-10 w-full rounded border px-3 py-2 text-sm bg-background">
-                <option value="single">Single (1 Course or 1 Service)</option>
-                <option value="bundle">Bundle (Multiple Items)</option>
-                <option value="service">Service (Standalone)</option>
+            <div>
+              <label className="block text-sm font-medium mb-1">Kind</label>
+              <select name="kind" className="flex h-10 w-full rounded-md border px-3 py-2 text-sm bg-background">
+                <option value="single">Single Course</option>
+                <option value="bundle">Bundle</option>
+                <option value="service">Service</option>
               </select>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Pricing Model</label>
-              <select name="pricing_model" className="flex h-10 w-full rounded border px-3 py-2 text-sm bg-background">
+            <div>
+              <label className="block text-sm font-medium mb-1">Pricing Model</label>
+              <select name="pricing_model" className="flex h-10 w-full rounded-md border px-3 py-2 text-sm bg-background">
                 <option value="one_time">One-time Payment</option>
-                <option value="installment">Installment Plan</option>
-                <option value="free">Free (Lead Magnet)</option>
+                <option value="free">Free</option>
+                <option value="installment">Installments</option>
               </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Price (BDT)</label>
-              <input name="price_amount" type="number" step="0.01" className="flex h-10 w-full rounded border px-3 py-2 text-sm bg-background" />
             </div>
           </div>
           <Button type="submit">Create SKU</Button>
@@ -69,33 +77,45 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {initialProducts.map(product => (
-          <div key={product.id} className="border rounded-lg p-4 bg-card text-card-foreground shadow-sm flex flex-col justify-between">
+        {initialProducts.map((product) => (
+          <div key={product.id} className="bg-card border rounded-lg p-5 shadow-sm flex flex-col justify-between">
             <div>
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold">{product.title}</h3>
-                <span className="text-xs font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded uppercase">{product.kind}</span>
+                <h3 className="font-bold text-lg leading-tight">{product.title}</h3>
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded">
+                  {product.kind}
+                </span>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                {product.pricing_model === 'free' ? 'Free' : `BDT ${product.price_amount}`}
+                {product.pricing_model === 'free' ? 'Free' : `${product.price_amount} BDT`}
+                <br/>Status: <span className="capitalize">{product.status}</span>
               </p>
-              
-              <div className="flex gap-2 text-xs">
-                {product.listed_on_site ? (
-                  <span className="text-green-600 font-medium">● Public</span>
-                ) : (
-                  <span className="text-muted-foreground">○ Hidden</span>
-                )}
-                <span>• {product.enrollment_state}</span>
-              </div>
             </div>
-            <div className="mt-4 pt-4 border-t flex justify-between">
-              <Link href={`/admin/products/${product.id}`} className="text-sm text-blue-600 hover:underline">
+            <div className="mt-4 pt-4 border-t flex justify-between items-center">
+              <Link href={`/admin/products/${product.id}`} className="text-sm text-blue-600 hover:underline font-medium">
                 Manage Details
               </Link>
-              <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-2" onClick={() => deleteProduct(product.id)}>
-                Delete
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-3">
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Product?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to permanently delete this product? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <Button variant="destructive" onClick={() => deleteProduct(product.id)}>
+                      Delete Product
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         ))}
