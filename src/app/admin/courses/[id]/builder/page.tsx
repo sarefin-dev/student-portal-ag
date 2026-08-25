@@ -4,8 +4,21 @@ import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { addModule, addSubmodule, addLesson, publishCourse, unpublishCourse, updatePrice, setComingSoon } from './actions';
-import { User } from 'lucide-react';
+import { User, PowerOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { ModuleHeader } from './module-header';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default async function CourseBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -73,10 +86,42 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
               <Button variant="default">Publish Course</Button>
             </form>
           ) : (
-            <form action={unpublishCourse}>
-              <input type="hidden" name="courseId" value={course.id} />
-              <Button variant="destructive">Deactivate Course</Button>
-            </form>
+            <AlertDialog>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="icon">
+                        <PowerOff className="h-4 w-4" />
+                        <span className="sr-only">Deactivate Course</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Deactivate Course</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Deactivate Course?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to deactivate <strong>{course.title}</strong>? 
+                    This will immediately hide it from the public catalog and prevent new enrollments. 
+                    Existing students will retain access.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <form action={unpublishCourse}>
+                    <input type="hidden" name="courseId" value={course.id} />
+                    <AlertDialogAction type="submit" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 w-full">
+                      Confirm Deactivation
+                    </AlertDialogAction>
+                  </form>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </div>
@@ -134,15 +179,7 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
             {course.modules.map((module: any) => (
               <div key={module.id} className="rounded-lg border bg-muted/10 p-4 shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-2 mb-4">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold">Module {module.position}: {module.title}</h3>
-                    {module.guest_instructor_id && (
-                      <Badge variant="secondary" className="flex items-center gap-1 text-xs">
-                        <User className="w-3 h-3" />
-                        Guest: {module.profiles?.full_name || 'Unknown'}
-                      </Badge>
-                    )}
-                  </div>
+                  <ModuleHeader module={module} courseId={course.id} guestInstructors={instructors || []} />
                   <form action={addSubmodule} className="flex items-center gap-2">
                     <input type="hidden" name="courseId" value={course.id} />
                     <input type="hidden" name="moduleId" value={module.id} />

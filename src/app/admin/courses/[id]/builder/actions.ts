@@ -168,3 +168,19 @@ export async function updatePrice(formData: FormData) {
   if (course?.slug) await invalidateCourseCache(course.slug);
   revalidatePath(`/admin/courses/${courseId}/builder`);
 }
+  
+export async function updateModule(formData: FormData) {
+  const { supabase } = await requireAuth();
+  const courseId = formData.get('courseId') as string;
+  const moduleId = formData.get('moduleId') as string;
+  const title = formData.get('title') as string;
+  const guestInstructorId = formData.get('guestInstructorId') as string;
+  
+  const { error } = await supabase
+    .from('modules')
+    .update({ title, guest_instructor_id: guestInstructorId || null })
+    .eq('id', moduleId);
+    
+  if (error) console.error('Error updating module:', error);
+  revalidatePath(`/admin/courses/${courseId}/builder`);
+}
