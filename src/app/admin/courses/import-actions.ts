@@ -3,8 +3,14 @@
 import { createClient } from '@/lib/supabase/server';
 import { generateObject } from 'ai';
 import { google } from '@ai-sdk/google';
+import { createDeepSeek } from '@ai-sdk/deepseek';
+import { ollama } from 'ai-sdk-ollama';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+
+const deepseek = createDeepSeek({
+  apiKey: process.env.DEEPSEEK_API_KEY || '',
+});
 
 const CourseSchema = z.object({
   title: z.string(),
@@ -38,20 +44,42 @@ export async function importCourseFromText(syllabusText: string) {
   if (!user) return { success: false, error: "Unauthorized" };
 
   try {
-    // 1. Generate JSON using Gemini
-    const { object } = await generateObject({
-      model: google('gemini-2.5-pro'),
-      schema: CourseSchema,
-      prompt: `You are an expert LMS curriculum architect. Parse the following plain-text syllabus into our strict JSON schema. Extract the course title, instructor, modules, submodules, and lessons. If there is a routine or schedule provided, calculate the exact ISO datetimes for each class and include them in the routine object.
+    const aiCall = async (modelConfig: any) => {
+      return await generateObject({
+        model: modelConfig,
+        schema: CourseSchema,
+        prompt: `You are an expert LMS curriculum architect. Parse the following plain-text syllabus into our strict JSON schema. Extract the course title, instructor, modules, submodules, and lessons. If there is a routine or schedule provided, calculate the exact ISO datetimes for each class and include them in the routine object.
 
 Text to parse:
 """
 ${syllabusText}
 """
-      `
-    });
+        `
+      });
+    };
 
-    // 2. Call the Database RPC to bulk insert
+    let result;
+    try {
+      // 1. Try Localhost First (Free)
+      result = await aiCall(ollama('llama3.3'));
+      console.log("Course imported successfully using Local Ollama");
+    } catch (localErr) {
+      console.log("Ollama failed, falling back to Gemini...", localErr);
+      try {
+        // 2. Try Gemini
+        result = await aiCall(google('gemini-2.5-pro'));
+        console.log("Course imported successfully using Gemini");
+      } catch (geminiErr) {
+        console.log("Gemini failed, falling back to DeepSeek...", geminiErr);
+        // 3. Try Deepseek
+        result = await aiCall(deepseek('deepseek-chat'));
+        console.log("Course imported successfully using DeepSeek");
+      }
+    }
+
+    const object = result.object;
+
+    // Call the Database RPC to bulk insert
     const { data: courseId, error } = await supabase.rpc('import_course_tree', {
       payload: object,
       instructor_id: user.id
