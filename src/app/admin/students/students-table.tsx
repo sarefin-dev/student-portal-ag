@@ -13,7 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toggleStudentStatus } from './actions';
-import { Ban, CheckCircle } from 'lucide-react';
+import { Ban, CheckCircle, Eye } from 'lucide-react';
+import Link from 'next/link';
 import {
   Select,
   SelectContent,
@@ -123,47 +124,48 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
         const studentId = row.original.id;
         const isSuspended = status === 'suspended';
         return (
-          <AlertDialog>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AlertDialogTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      disabled={isUpdating === studentId}
-                      className={isSuspended ? 'text-success hover:text-success h-8 w-8' : 'text-destructive hover:text-destructive h-8 w-8'}
-                    >
-                      {isSuspended ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
-                      <span className="sr-only">{isSuspended ? 'Reactivate' : 'Suspend'}</span>
-                    </Button>
-                  </AlertDialogTrigger>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {isSuspended ? 'Reactivate' : 'Suspend'}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{isSuspended ? 'Reactivate Student?' : 'Suspend Student?'}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {isSuspended 
-                    ? 'Are you sure you want to reactivate this student? They will regain access to their account and enrolled courses.'
-                    : 'Are you sure you want to suspend this student? They will lose access to their account and all enrolled courses until reactivated.'}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => handleToggleStatus(studentId, status)}
-                  className={isSuspended ? "bg-success text-success-foreground hover:bg-success/90" : "bg-destructive text-destructive-foreground hover:bg-destructive/90"}
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" asChild title="View Profile">
+              <Link href={`/admin/students/${studentId}`}>
+                <Eye className="w-4 h-4" />
+                <span className="sr-only">View Profile</span>
+              </Link>
+            </Button>
+            
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  disabled={isUpdating === studentId}
+                  className={isSuspended ? 'text-success hover:text-success h-8 w-8' : 'text-destructive hover:text-destructive h-8 w-8'}
+                  title={isSuspended ? 'Reactivate' : 'Suspend'}
                 >
-                  Confirm {isSuspended ? 'Reactivation' : 'Suspension'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  {isSuspended ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                  <span className="sr-only">{isSuspended ? 'Reactivate' : 'Suspend'}</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{isSuspended ? 'Reactivate Student?' : 'Suspend Student?'}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {isSuspended 
+                      ? 'Are you sure you want to reactivate this student? They will regain access to their account and enrolled courses.'
+                      : 'Are you sure you want to suspend this student? They will lose access to their account and all enrolled courses until reactivated.'}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleToggleStatus(studentId, status)}
+                    className={isSuspended ? "bg-success text-success-foreground hover:bg-success/90" : "bg-destructive text-destructive-foreground hover:bg-destructive/90"}
+                  >
+                    Confirm {isSuspended ? 'Reactivation' : 'Suspension'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         );
       }
     },
