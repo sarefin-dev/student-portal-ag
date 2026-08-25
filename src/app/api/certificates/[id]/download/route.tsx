@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#ffffff',
-    padding: 40,
+    padding: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -21,72 +21,83 @@ const styles = StyleSheet.create({
   },
   innerBorder: {
     border: '1pt solid #0f172a',
-    padding: 40,
+    paddingTop: 30,
+    paddingBottom: 20,
+    paddingHorizontal: 30,
     width: '100%',
     height: '100%',
+    flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#fafafa',
   },
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   logoText: {
-    fontSize: 28,
+    fontSize: 24,
     fontFamily: 'Times-Bold',
     color: '#0f172a',
-    marginBottom: 40,
+    marginBottom: 30,
     textTransform: 'uppercase',
     letterSpacing: 4
   },
   logoImage: {
-    height: 45,
-    marginBottom: 40,
+    height: 40,
+    marginBottom: 30,
     objectFit: 'contain'
   },
   title: {
-    fontSize: 48,
+    fontSize: 36,
     fontFamily: 'Times-Bold',
-    marginBottom: 20,
+    marginBottom: 16,
     color: '#0f172a',
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    textAlign: 'center'
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'Times-Italic',
-    marginBottom: 30,
-    color: '#334155'
+    marginBottom: 20,
+    color: '#334155',
+    textAlign: 'center'
   },
   name: {
-    fontSize: 42,
-    fontFamily: 'Times-Bold',
-    marginBottom: 30,
-    color: '#1e293b',
-    borderBottom: '2pt solid #1e293b',
-    paddingBottom: 10,
-    paddingHorizontal: 40
-  },
-  course: {
-    fontSize: 28,
+    fontSize: 36,
     fontFamily: 'Times-Bold',
     marginBottom: 20,
+    color: '#1e293b',
+    borderBottom: '1pt solid #1e293b',
+    paddingBottom: 8,
+    paddingHorizontal: 30,
+    textAlign: 'center'
+  },
+  course: {
+    fontSize: 24,
+    fontFamily: 'Times-Bold',
+    marginBottom: 16,
     color: '#0f172a',
     textAlign: 'center',
     maxWidth: '85%'
   },
   summary: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'Times-Roman',
     color: '#334155',
     textAlign: 'center',
     maxWidth: '75%',
-    lineHeight: 1.6,
-    marginBottom: 50,
+    lineHeight: 1.5,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    position: 'absolute',
-    bottom: 80,
-    paddingHorizontal: 80
+    paddingHorizontal: 50,
+    marginTop: 20,
+    marginBottom: 10,
   },
   footerBlock: {
     flexDirection: 'column',
@@ -96,31 +107,29 @@ const styles = StyleSheet.create({
     width: 200,
     height: 1,
     backgroundColor: '#1e293b',
-    marginBottom: 10
+    marginBottom: 8
   },
   signatureImage: {
-    height: 40,
+    height: 35,
     marginBottom: 5,
     objectFit: 'contain'
   },
   signatureText: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'Times-Bold',
     color: '#1e293b'
   },
   signatureTitle: {
-    fontSize: 12,
+    fontSize: 10,
     fontFamily: 'Times-Roman',
     color: '#64748b'
   },
   metadata: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: 'Times-Roman',
     color: '#64748b',
-    position: 'absolute',
-    bottom: 30,
-    width: '100%',
-    textAlign: 'center'
+    textAlign: 'center',
+    marginTop: 10
   }
 });
 
@@ -129,27 +138,29 @@ const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseS
     <Page size="A4" orientation="landscape" style={styles.page}>
       <View style={styles.outerBorder}>
         <View style={styles.innerBorder}>
-          {logoBase64 ? (
-            <Image src={logoBase64} style={styles.logoImage} />
-          ) : (
-            <Text style={styles.logoText}>ArefinLab</Text>
-          )}
-          
-          <Text style={styles.title}>Certificate of Completion</Text>
-          <Text style={styles.subtitle}>This is to certify that</Text>
-          <Text style={styles.name}>{studentName}</Text>
-          <Text style={styles.subtitle}>
-            has successfully completed the {courseDuration ? `${courseDuration} course` : 'course'}
-          </Text>
-          <Text style={styles.course}>{courseTitle}</Text>
-          
-          {courseSummary ? (
-            <Text style={styles.summary}>Covering: {courseSummary}</Text>
-          ) : null}
+          <View style={styles.contentWrapper}>
+            {logoBase64 ? (
+              <Image src={logoBase64} style={styles.logoImage} />
+            ) : (
+              <Text style={styles.logoText}>ArefinLab</Text>
+            )}
+            
+            <Text style={styles.title}>CERTIFICATE OF COMPLETION</Text>
+            <Text style={styles.subtitle}>This is to certify that</Text>
+            <Text style={styles.name}>{studentName}</Text>
+            <Text style={styles.subtitle}>
+              has successfully completed the {courseDuration ? `${courseDuration} course` : 'course'}
+            </Text>
+            <Text style={styles.course}>{courseTitle}</Text>
+            
+            {courseSummary ? (
+              <Text style={styles.summary}>Covering: {courseSummary}</Text>
+            ) : null}
+          </View>
           
           <View style={styles.footer}>
             <View style={styles.footerBlock}>
-              <Text style={{ fontSize: 18, fontFamily: 'Times-Roman', marginBottom: 15, color: '#1e293b' }}>{issueDate}</Text>
+              <Text style={{ fontSize: 16, fontFamily: 'Times-Roman', marginBottom: 12, color: '#1e293b' }}>{issueDate}</Text>
               <View style={styles.signatureLine} />
               <Text style={styles.signatureText}>Date of Issue</Text>
             </View>
@@ -158,7 +169,7 @@ const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseS
               {signatureImage ? (
                 <Image src={signatureImage} style={styles.signatureImage} />
               ) : (
-                <Text style={{ fontSize: 24, fontFamily: 'Times-Italic', marginBottom: 10, color: '#1e293b' }}>{instructorName}</Text>
+                <Text style={{ fontSize: 20, fontFamily: 'Times-Italic', marginBottom: 8, color: '#1e293b' }}>{instructorName}</Text>
               )}
               <View style={styles.signatureLine} />
               <Text style={styles.signatureText}>{instructorName}</Text>
