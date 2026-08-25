@@ -55,7 +55,7 @@ export function AiTutorChat({ lessonContext }: { lessonContext: string }) {
           </div>
         )}
         
-        {messages.map(m => (
+        {messages.map((m: any) => (
           <div key={m.id} className={`flex gap-3 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
             <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
               {m.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}

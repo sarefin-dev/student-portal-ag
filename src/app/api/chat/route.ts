@@ -53,7 +53,7 @@ ${lessonContext || 'No specific lesson context provided.'}
         system: systemPrompt,
       });
       // If we got here, connection succeeded, return stream
-      return result.toDataStreamResponse();
+      return result.toAIStreamResponse();
     } catch (e) {
       try {
         const result = await streamText({
@@ -61,14 +61,14 @@ ${lessonContext || 'No specific lesson context provided.'}
           messages,
           system: systemPrompt,
         });
-        return result.toDataStreamResponse();
+        return result.toAIStreamResponse();
       } catch (e2) {
         const result = await streamText({
           model: deepseek('deepseek-chat'),
           messages,
           system: systemPrompt,
         });
-        return result.toDataStreamResponse();
+        return result.toAIStreamResponse();
       }
     }
 

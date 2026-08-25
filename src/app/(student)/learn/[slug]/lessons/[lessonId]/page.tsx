@@ -166,7 +166,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
             
             // Mark all blocks in this lesson as completed
             if (blockIds.length > 0) {
-              const upserts = blockIds.map(id => ({
+              const upserts = blockIds.map((id: string) => ({
                 student_id: user?.id,
                 content_block_id: id,
                 status: 'completed'
