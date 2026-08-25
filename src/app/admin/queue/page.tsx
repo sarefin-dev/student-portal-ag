@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default async function VerificationQueuePage() {
   const supabase = await createClient();
@@ -52,48 +53,65 @@ export default async function VerificationQueuePage() {
           <div className="lg:col-span-2 space-y-4">
             <h2 className="text-lg font-semibold">Pending Requests</h2>
             {pending.map(p => (
-              <div key={p.id} className="rounded border bg-card p-6 flex flex-col md:flex-row gap-6 justify-between items-start">
-                <div className="space-y-2">
+              <div key={p.id} className="border rounded-lg p-4 bg-card shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono bg-muted px-2 py-1 rounded text-sm">{p.submitted_trx_id}</span>
-                    <span className="font-semibold text-lg">Tk {p.submitted_amount}</span>
+                    <span className="font-semibold text-lg">{p.orders?.profiles?.full_name || 'Unknown Student'}</span>
+                    <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{p.orders?.profiles?.email}</span>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    <p>Sender: {p.submitted_sender_msisdn}</p>
-                    <p>User: {p.orders?.profiles?.full_name} ({p.orders?.profiles?.email})</p>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>Claimed Sender: <span className="font-mono text-foreground">{p.submitted_sender_msisdn}</span></p>
+                    <p>Claimed TrxID: <span className="font-mono text-foreground">{p.submitted_trx_id}</span></p>
                     <p>Expected Order Amount: Tk {p.orders?.total_amount}</p>
                     <p>Submitted: {new Date(p.created_at).toLocaleString()}</p>
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 w-full md:w-auto">
-                  <form action={approvePendingVerification}>
-                    <input type="hidden" name="pendingId" value={p.id} />
-                    <Button variant="default" className="w-full bg-success hover:bg-success/90 text-success-foreground" type="submit">Approve (Override)</Button>
-                  </form>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" className="w-full text-destructive hover:text-destructive hover:bg-destructive/10">
-                        Reject
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Reject Verification?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to reject this verification? This will deny the payment.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <form action={rejectPendingVerification}>
+                <div className="flex gap-2 w-full md:w-auto justify-end">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <form action={approvePendingVerification}>
                           <input type="hidden" name="pendingId" value={p.id} />
-                          <AlertDialogAction type="submit" className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                            Confirm Rejection
-                          </AlertDialogAction>
+                          <Button variant="default" size="icon" className="bg-success hover:bg-success/90 text-success-foreground h-10 w-10" type="submit">
+                            <Check className="h-5 w-5" />
+                            <span className="sr-only">Approve</span>
+                          </Button>
                         </form>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                      </TooltipTrigger>
+                      <TooltipContent>Approve Payment</TooltipContent>
+                    </Tooltip>
+
+                    <AlertDialog>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10 h-10 w-10">
+                              <X className="h-5 w-5" />
+                              <span className="sr-only">Reject</span>
+                            </Button>
+                          </AlertDialogTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>Reject Payment</TooltipContent>
+                      </Tooltip>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Reject Verification?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to reject this verification? This will deny the payment.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <form action={rejectPendingVerification}>
+                            <input type="hidden" name="pendingId" value={p.id} />
+                            <AlertDialogAction type="submit" className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Confirm Rejection
+                            </AlertDialogAction>
+                          </form>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </TooltipProvider>
                 </div>
               </div>
             ))}

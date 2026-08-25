@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { createProduct, deleteProduct } from './actions';
 import Link from 'next/link';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Settings, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   AlertDialog,
@@ -91,31 +91,46 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
                 <br/>Status: <span className="capitalize">{product.status}</span>
               </p>
             </div>
-            <div className="mt-4 pt-4 border-t flex justify-between items-center">
-              <Link href={`/admin/products/${product.id}`} className="text-sm text-blue-600 hover:underline font-medium">
-                Manage Details
-              </Link>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-3">
-                    Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Product?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to permanently delete this product? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <Button variant="destructive" onClick={() => deleteProduct(product.id)}>
-                      Delete Product
-                    </Button>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+            <div className="mt-4 pt-4 border-t flex justify-end gap-2 items-center">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link href={`/admin/products/${product.id}`} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8">
+                      <Settings className="h-4 w-4 text-blue-600" />
+                      <span className="sr-only">Manage Details</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Manage Details</TooltipContent>
+                </Tooltip>
+
+                <AlertDialog>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete Product</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Delete Product</TooltipContent>
+                  </Tooltip>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Product?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to permanently delete this product? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <Button variant="destructive" onClick={() => deleteProduct(product.id)}>
+                        Delete Product
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </TooltipProvider>
             </div>
           </div>
         ))}

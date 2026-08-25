@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -123,17 +124,26 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
         const isSuspended = status === 'suspended';
         return (
           <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                disabled={isUpdating === studentId}
-                className={isSuspended ? 'text-success hover:text-success' : 'text-destructive hover:text-destructive'}
-              >
-                {isSuspended ? <CheckCircle className="w-4 h-4 mr-1" /> : <Ban className="w-4 h-4 mr-1" />}
-                {isSuspended ? 'Reactivate' : 'Suspend'}
-              </Button>
-            </AlertDialogTrigger>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      disabled={isUpdating === studentId}
+                      className={isSuspended ? 'text-success hover:text-success h-8 w-8' : 'text-destructive hover:text-destructive h-8 w-8'}
+                    >
+                      {isSuspended ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                      <span className="sr-only">{isSuspended ? 'Reactivate' : 'Suspend'}</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isSuspended ? 'Reactivate' : 'Suspend'}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>{isSuspended ? 'Reactivate Student?' : 'Suspend Student?'}</AlertDialogTitle>

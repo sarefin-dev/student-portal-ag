@@ -142,17 +142,26 @@ export function InstructorsTable({ data, currentPage, totalPages, initialSearch,
         
         return (
           <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={isUpdating === staffId || isSelf}
-                className={isSuspended ? 'text-success hover:text-success' : 'text-destructive hover:text-destructive'}
-              >
-                {isSuspended ? <CheckCircle className="w-4 h-4 mr-1" /> : <Ban className="w-4 h-4 mr-1" />}
-                {isSuspended ? 'Reactivate' : 'Suspend'}
-              </Button>
-            </AlertDialogTrigger>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={isUpdating === staffId || isSelf}
+                      className={isSuspended ? 'text-success hover:text-success h-8 w-8' : 'text-destructive hover:text-destructive h-8 w-8'}
+                    >
+                      {isSuspended ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                      <span className="sr-only">{isSuspended ? 'Reactivate' : 'Suspend'}</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isSuspended ? 'Reactivate' : 'Suspend'}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>{isSuspended ? 'Reactivate Instructor?' : 'Suspend Instructor?'}</AlertDialogTitle>
