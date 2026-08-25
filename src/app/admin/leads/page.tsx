@@ -14,7 +14,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
 
   let query = supabase
     .from('leads')
-    .select('*', { count: 'exact' })
+    .select('*', { count: 'estimated' })
     .order('created_at', { ascending: false });
 
   if (search) {
