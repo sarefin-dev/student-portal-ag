@@ -63,11 +63,13 @@ export function LedgerTable({ data, currentPage, totalPages, initialSearch }: { 
       },
     },
     {
-      accessorKey: 'status',
+      id: 'status',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
       cell: ({ row }) => {
-        const status = row.getValue('status') as string;
-        const color = status === 'completed' ? 'text-success bg-success/10' : status === 'pending' ? 'text-warning bg-warning/10' : 'text-destructive bg-destructive/10';
+        const kind = row.original.kind as string;
+        const isRefund = kind === 'refund';
+        const status = isRefund ? 'refunded' : 'completed';
+        const color = isRefund ? 'text-amber-700 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30' : 'text-green-700 bg-green-100 dark:text-green-400 dark:bg-green-900/30';
         return <span className={`capitalize text-xs font-semibold px-2 py-0.5 rounded ${color}`}>{status}</span>;
       }
     },
