@@ -63,10 +63,10 @@ export function AiImportDialog() {
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Parsing Syllabus & Generating Database Records...
+                Parsing Syllabus & Importing Course...
               </>
             ) : (
-              "Generate Course"
+              "Import Course"
             )}
           </Button>
         </form>
