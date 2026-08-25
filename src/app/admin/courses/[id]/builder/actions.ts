@@ -184,3 +184,18 @@ export async function updateModule(formData: FormData) {
   if (error) console.error('Error updating module:', error);
   revalidatePath(`/admin/courses/${courseId}/builder`);
 }
+
+export async function updateSubmodule(formData: FormData) {
+  const { supabase } = await requireAuth();
+  const courseId = formData.get('courseId') as string;
+  const submoduleId = formData.get('submoduleId') as string;
+  const title = formData.get('title') as string;
+  
+  const { error } = await supabase
+    .from('submodules')
+    .update({ title })
+    .eq('id', submoduleId);
+    
+  if (error) console.error('Error updating submodule:', error);
+  revalidatePath(`/admin/courses/${courseId}/builder`);
+}

@@ -7,6 +7,7 @@ import { addModule, addSubmodule, addLesson, publishCourse, unpublishCourse, upd
 import { User, PowerOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ModuleHeader } from './module-header';
+import { SubmoduleHeader } from './submodule-header';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -192,7 +193,7 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
                   {module.submodules?.map((sub: any) => (
                     <div key={sub.id} className="rounded border bg-background p-3">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
-                        <h4 className="font-semibold text-primary">Submodule {sub.position}: {sub.title}</h4>
+                        <SubmoduleHeader submodule={sub} courseId={course.id} />
                         <form action={addLesson} className="flex items-center gap-2">
                           <input type="hidden" name="courseId" value={course.id} />
                           <input type="hidden" name="submoduleId" value={sub.id} />
