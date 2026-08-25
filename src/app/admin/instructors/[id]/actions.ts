@@ -58,6 +58,7 @@ export async function updateKysAction(instructorId: string, formData: FormData) 
   const supabaseAdmin = createSupabaseClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
 
   const updates = {
+    avatar_url: formData.get('avatar_url') as string,
     address: formData.get('address') as string,
     bio: formData.get('bio') as string,
     nid_number: formData.get('nid_number') as string,
