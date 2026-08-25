@@ -1,6 +1,6 @@
 'use client';
 
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Bot, Send, User, X, MessageCircle } from 'lucide-react';
@@ -8,17 +8,27 @@ import { useState, useEffect, useRef } from 'react';
 
 export function AiTutorChat({ lessonContext }: { lessonContext: string }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [inputStr, setInputStr] = useState('');
   
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const { messages, append, status } = useChat({
     api: '/api/chat',
     body: { lessonContext }
   });
+  
+  const isLoading = status === 'submitted' || status === 'streaming';
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputStr.trim() || isLoading) return;
+    append({ role: 'user', content: inputStr });
+    setInputStr('');
+  };
 
   if (!isOpen) {
     return (
@@ -84,13 +94,13 @@ export function AiTutorChat({ lessonContext }: { lessonContext: string }) {
       <div className="p-3 bg-muted/30 border-t">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input 
-            value={input} 
-            onChange={handleInputChange} 
+            value={inputStr} 
+            onChange={(e) => setInputStr(e.target.value)} 
             placeholder="Type your question..." 
             className="flex-1"
             disabled={isLoading}
           />
-          <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+          <Button type="submit" size="icon" disabled={isLoading || !inputStr.trim()}>
             <Send className="w-4 h-4" />
           </Button>
         </form>
