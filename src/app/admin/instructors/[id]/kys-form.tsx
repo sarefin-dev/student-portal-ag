@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { createClient } from '@/lib/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Lock, Unlock } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export function KysForm({ instructor }: { instructor: any }) {
   const [isPending, setIsPending] = useState(false);
@@ -162,19 +163,21 @@ export function KysForm({ instructor }: { instructor: any }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="payout_method">Preferred Payout Method</Label>
-            <select 
-              id="payout_method" 
-              name="payout_method" 
-              value={payoutMethod}
-              onChange={(e) => setPayoutMethod(e.target.value)}
+            <Select 
+              value={payoutMethod || undefined}
+              onValueChange={setPayoutMethod}
               disabled={!isEditing}
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              name="payout_method"
             >
-              <option value="">Select Method...</option>
-              <option value="bkash">bKash</option>
-              <option value="nagad">Nagad</option>
-              <option value="bank">Bank Account</option>
-            </select>
+              <SelectTrigger id="payout_method">
+                <SelectValue placeholder="Select Method..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bkash">bKash</SelectItem>
+                <SelectItem value="nagad">Nagad</SelectItem>
+                <SelectItem value="bank">Bank Account</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {payoutMethod === 'bkash' && (
