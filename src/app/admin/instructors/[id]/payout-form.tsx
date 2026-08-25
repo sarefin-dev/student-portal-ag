@@ -45,7 +45,12 @@ export function PayoutForm({ instructorId, currentPayout }: { instructorId: stri
             max="100" 
             step="0.01" 
             value={payout}
-            onChange={(e) => setPayout(e.target.value)}
+            onChange={(e) => {
+              let val = parseFloat(e.target.value);
+              if (val > 100) val = 100;
+              if (val < 0) val = 0;
+              setPayout(isNaN(val) ? '' : val.toString());
+            }}
             className="pl-8"
             required
           />

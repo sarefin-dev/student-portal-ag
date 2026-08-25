@@ -97,7 +97,11 @@ export function KysForm({ instructor }: { instructor: any }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input id="phone" name="phone" type="tel" defaultValue={instructor.phone || ''} placeholder="+880..." />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="nid_number">NID / Social Proof Number</Label>
               <Input id="nid_number" name="nid_number" defaultValue={instructor.nid_number || ''} />
