@@ -37,7 +37,48 @@ export async function addTextBlock(formData: FormData) {
   if (error) console.error("Error adding text block:", error);
 
   revalidatePath(`/admin/courses/${courseId}/builder/lessons/${lessonId}`);
-  revalidatePath(`/learn/${courseId}`); // naive revalidation
+  revalidatePath(`/learn/${courseId}`);
+}
+
+export async function removeBlock(formData: FormData) {
+  const { supabase } = await requireAuth();
+  const courseId = formData.get('courseId') as string;
+  const lessonId = formData.get('lessonId') as string;
+  const blockId = formData.get('blockId') as string;
+
+  await supabase.from('content_blocks').delete().eq('id', blockId);
+  revalidatePath(`/admin/courses/${courseId}/builder/lessons/${lessonId}`);
+}
+
+export async function moveBlock(formData: FormData) {
+  const { supabase } = await requireAuth();
+  const courseId = formData.get('courseId') as string;
+  const lessonId = formData.get('lessonId') as string;
+  const blockId = formData.get('blockId') as string;
+  const direction = formData.get('direction') as 'up' | 'down';
+
+  const { data: blocks } = await supabase
+    .from('content_blocks')
+    .select('id, position')
+    .eq('lesson_id', lessonId)
+    .order('position', { ascending: true });
+    
+  if (!blocks || blocks.length < 2) return;
+
+  const currentIndex = blocks.findIndex(b => b.id === blockId);
+  if (currentIndex === -1) return;
+  if (direction === 'up' && currentIndex === 0) return;
+  if (direction === 'down' && currentIndex === blocks.length - 1) return;
+
+  const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+  const currentBlock = blocks[currentIndex];
+  const swapBlock = blocks[swapIndex];
+
+  // Perform swap using individual updates
+  await supabase.from('content_blocks').update({ position: swapBlock.position }).eq('id', currentBlock.id);
+  await supabase.from('content_blocks').update({ position: currentBlock.position }).eq('id', swapBlock.id);
+
+  revalidatePath(`/admin/courses/${courseId}/builder/lessons/${lessonId}`);
 }
 
 export async function addVideoBlock(formData: FormData) {

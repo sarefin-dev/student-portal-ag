@@ -3,7 +3,9 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { addTextBlock, addVideoBlock } from './actions';
+import { addTextBlock, addVideoBlock, moveBlock, removeBlock } from './actions';
+import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default async function LessonBuilderPage({ params }: { params: Promise<{ id: string, lessonId: string }> }) {
   const { id: courseId, lessonId } = await params;
@@ -50,30 +52,77 @@ export default async function LessonBuilderPage({ params }: { params: Promise<{ 
           <h2 className="text-xl font-bold">Content Blocks</h2>
           {(!lesson.content_blocks || lesson.content_blocks.length === 0) ? (
             <div className="rounded-md border border-dashed p-8 text-center text-muted-foreground">
-              This lesson is empty. Add a block from the right.
+              No content blocks yet. Add text or video from the sidebar.
             </div>
           ) : (
             <div className="space-y-4">
-              {lesson.content_blocks.map((block: any) => (
-                <div key={block.id} className="rounded-lg border bg-card p-4 shadow-sm flex items-start justify-between gap-4">
-                  <div>
-                    <span className="inline-block rounded bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary capitalize mb-2">
-                      {block.block_type}
-                    </span>
-                    {block.block_type === 'text' && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {block.payload.content_markdown}
-                      </p>
-                    )}
-                    {block.block_type === 'video' && (
-                      <p className="text-sm font-mono text-muted-foreground">
-                        Video ID: {block.payload.video_id}
-                      </p>
-                    )}
+              <TooltipProvider>
+                {lesson.content_blocks.map((block: any, index: number) => (
+                  <div key={block.id} className="rounded-lg border bg-card p-4 shadow-sm flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <span className="inline-block rounded bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary capitalize mb-2">
+                        {block.block_type}
+                      </span>
+                      {block.block_type === 'text' && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {block.payload.content_markdown}
+                        </p>
+                      )}
+                      {block.block_type === 'video' && (
+                        <p className="text-sm font-mono text-muted-foreground">
+                          Video ID: {block.payload.video_id}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-1">
+                      <form action={moveBlock}>
+                        <input type="hidden" name="courseId" value={courseId} />
+                        <input type="hidden" name="lessonId" value={lessonId} />
+                        <input type="hidden" name="blockId" value={block.id} />
+                        <input type="hidden" name="direction" value="up" />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" type="submit" disabled={index === 0} className="h-8 w-8">
+                              <ArrowUp className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Move Up</TooltipContent>
+                        </Tooltip>
+                      </form>
+
+                      <form action={moveBlock}>
+                        <input type="hidden" name="courseId" value={courseId} />
+                        <input type="hidden" name="lessonId" value={lessonId} />
+                        <input type="hidden" name="blockId" value={block.id} />
+                        <input type="hidden" name="direction" value="down" />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" type="submit" disabled={index === lesson.content_blocks.length - 1} className="h-8 w-8">
+                              <ArrowDown className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Move Down</TooltipContent>
+                        </Tooltip>
+                      </form>
+
+                      <form action={removeBlock}>
+                        <input type="hidden" name="courseId" value={courseId} />
+                        <input type="hidden" name="lessonId" value={lessonId} />
+                        <input type="hidden" name="blockId" value={block.id} />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" type="submit" className="h-8 w-8 text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Remove Block</TooltipContent>
+                        </Tooltip>
+                      </form>
+                    </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="text-destructive">Remove</Button>
-                </div>
-              ))}
+                ))}
+              </TooltipProvider>
             </div>
           )}
         </div>
