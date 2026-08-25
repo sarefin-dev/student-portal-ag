@@ -14,6 +14,8 @@ import { setEnrollmentStatus, setAccountStatus } from './actions';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableFilter } from "@/components/data-table/data-table-filter";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { BookX, BookOpen, UserX, UserCheck } from 'lucide-react';
 
 export function EnrollmentsTable({ data, currentPage, totalPages, initialSearch }: { data: any[], currentPage: number, totalPages: number, initialSearch: string }) {
   const router = useRouter();
@@ -72,17 +74,46 @@ export function EnrollmentsTable({ data, currentPage, totalPages, initialSearch 
       cell: ({ row }) => {
         const enr = row.original;
         return (
-          <div className="text-right space-x-2">
-            <Button variant="outline" size="sm" onClick={async () => {
-              await setEnrollmentStatus(enr.student_id, enr.course_id, enr.status === 'active' ? 'banned' : 'active');
-            }}>
-              {enr.status === 'active' ? 'Ban from Course' : 'Unban from Course'}
-            </Button>
-            <Button variant={enr.profiles.status === 'active' ? 'destructive' : 'secondary'} size="sm" onClick={async () => {
-              await setAccountStatus(enr.student_id, enr.profiles.status === 'active' ? 'suspended' : 'active');
-            }}>
-              {enr.profiles.status === 'active' ? 'Suspend Account' : 'Unsuspend Account'}
-            </Button>
+          <div className="text-right space-x-2 flex justify-end">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={async () => {
+                      await setEnrollmentStatus(enr.student_id, enr.course_id, enr.status === 'active' ? 'banned' : 'active');
+                    }}
+                  >
+                    {enr.status === 'active' ? <BookX className="h-4 w-4" /> : <BookOpen className="h-4 w-4 text-success" />}
+                    <span className="sr-only">{enr.status === 'active' ? 'Ban from Course' : 'Unban from Course'}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{enr.status === 'active' ? 'Ban from Course' : 'Unban from Course'}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant={enr.profiles.status === 'active' ? 'destructive' : 'secondary'} 
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={async () => {
+                      await setAccountStatus(enr.student_id, enr.profiles.status === 'active' ? 'suspended' : 'active');
+                    }}
+                  >
+                    {enr.profiles.status === 'active' ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                    <span className="sr-only">{enr.profiles.status === 'active' ? 'Suspend Account' : 'Unsuspend Account'}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{enr.profiles.status === 'active' ? 'Suspend Account' : 'Unsuspend Account'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         );
       }
