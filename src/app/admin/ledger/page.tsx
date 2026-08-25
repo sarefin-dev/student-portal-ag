@@ -17,12 +17,12 @@ async function manualEnroll(formData: FormData) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, is_superadmin')
     .eq('id', user.id)
     .single();
 
-  if (profile?.role !== 'admin') {
-    throw new Error('Unauthorized: Admin access required');
+  if (profile?.role !== 'admin' || !profile?.is_superadmin) {
+    throw new Error('Unauthorized: Superadmin access required for financial operations');
   }
 
   const supabaseAdmin = createSupabaseClient(
@@ -73,9 +73,19 @@ export default async function ManualLedgerPage({ searchParams }: { searchParams:
     env.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  // Ensure admin
+  // Ensure superadmin
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_superadmin')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.is_superadmin) {
+    redirect('/admin');
+  }
 
   const { data: courses } = await supabase
     .from('courses')

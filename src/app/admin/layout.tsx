@@ -17,7 +17,7 @@ export default async function AdminLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, is_superadmin")
     .eq("id", user.id)
     .single();
 
@@ -27,7 +27,7 @@ export default async function AdminLayout({
 
   return (
     <div className="flex h-[100dvh] w-full bg-background overflow-hidden">
-      <AdminSidebar role={profile.role} logoutAction={logout} />
+      <AdminSidebar role={profile.role} isSuperAdmin={profile.is_superadmin} logoutAction={logout} />
       <main className="flex-1 overflow-y-auto bg-background p-4 md:p-6 mt-14 md:mt-0">
         {children}
       </main>

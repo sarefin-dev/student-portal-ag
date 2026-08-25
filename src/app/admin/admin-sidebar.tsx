@@ -28,7 +28,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 
-const adminNavGroups = [
+const baseAdminNavGroups = [
   {
     items: [
       { label: "Overview", href: "/admin", icon: LayoutDashboard },
@@ -48,14 +48,14 @@ const adminNavGroups = [
       { label: "Enrollments", href: "/admin/enrollments", icon: BookOpen },
       { label: "Manual Enroll", href: "/admin/enroll-manual", icon: UserPlus },
       { label: "Verification Queue", href: "/admin/queue", icon: ListChecks },
-      { label: "Ledger", href: "/admin/ledger", icon: FileSpreadsheet },
+      { label: "Ledger", href: "/admin/ledger", icon: FileSpreadsheet }, // Restricted
     ],
   },
   {
     title: "Settings & Logs",
     items: [
       { label: "Testimonials", href: "/admin/testimonials", icon: MessageSquare },
-      { label: "Audit Log", href: "/admin/audit-log", icon: ScrollText },
+      { label: "Audit Log", href: "/admin/audit-log", icon: ScrollText }, // Restricted
       { label: "Settings", href: "/admin/settings", icon: Settings },
     ],
   },
@@ -78,9 +78,20 @@ const instructorNavGroups = [
   },
 ];
 
-export function AdminSidebar({ logoutAction, role }: { logoutAction: () => void; role?: string }) {
+export function AdminSidebar({ logoutAction, role, isSuperAdmin }: { logoutAction: () => void; role?: string; isSuperAdmin?: boolean }) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+
+  // Filter restricted items for non-superadmins
+  const adminNavGroups = baseAdminNavGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => {
+      if (!isSuperAdmin && (item.label === "Ledger" || item.label === "Audit Log")) {
+        return false;
+      }
+      return true;
+    })
+  }));
 
   const navGroups = role === 'instructor' ? instructorNavGroups : adminNavGroups;
 
