@@ -6,7 +6,7 @@ export default async function AdminManualEnrollPage() {
 
   const { data: courses } = await supabase
     .from('courses')
-    .select('id, title')
+    .select('id, title, status, price, created_at')
     .is('deleted_at', null)
     .order('title', { ascending: true });
 
