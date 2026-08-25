@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { updateKysAction } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,9 +15,39 @@ export function KysForm({ instructor }: { instructor: any }) {
   const [isPending, setIsPending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(instructor.avatar_url || '');
   const [payoutMethod, setPayoutMethod] = useState(instructor.payout_method || '');
   const [message, setMessage] = useState({ text: '', type: '' });
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    const handleAnchorClick = (e: MouseEvent) => {
+      if (!isDirty) return;
+      const target = e.target as HTMLElement;
+      const anchor = target.closest('a');
+      if (anchor && anchor.href && !anchor.hasAttribute('download') && anchor.target !== '_blank') {
+        if (!window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('click', handleAnchorClick, { capture: true });
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('click', handleAnchorClick, { capture: true });
+    };
+  }, [isDirty]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -42,6 +72,7 @@ export function KysForm({ instructor }: { instructor: any }) {
         .getPublicUrl(filePath);
 
       setAvatarUrl(publicUrlData.publicUrl);
+      setIsDirty(true);
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Failed to upload image. Please try again.');
@@ -61,11 +92,12 @@ export function KysForm({ instructor }: { instructor: any }) {
     } else {
       setMessage({ text: 'KYS profile updated successfully.', type: 'success' });
       setIsEditing(false);
+      setIsDirty(false);
     }
   }
 
   return (
-    <form action={onSubmit} className="space-y-6">
+    <form action={onSubmit} onChange={() => setIsDirty(true)} className="space-y-6">
       <input type="hidden" name="avatar_url" value={avatarUrl} />
       
       <div className="flex justify-end mb-4">
