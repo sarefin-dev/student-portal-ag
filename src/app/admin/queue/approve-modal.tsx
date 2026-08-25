@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { approvePendingVerification } from './actions';
 import { Check } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -34,10 +35,27 @@ export function ApprovePaymentModal({ pendingId, shortfall }: { pendingId: strin
     }
     
     try {
-      await approvePendingVerification(formData);
+      const res = await approvePendingVerification(formData);
+      if (!res?.success) throw new Error(res?.error || 'Failed to approve');
+      toast.success('Payment approved successfully');
       setOpen(false);
     } catch (err: any) {
-      alert(err.message || 'Failed to approve');
+      toast.error(err.message || 'Failed to approve');
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const handleFastApprove = async () => {
+    setIsPending(true);
+    const formData = new FormData();
+    formData.set('pendingId', pendingId);
+    try {
+      const res = await approvePendingVerification(formData);
+      if (!res?.success) throw new Error(res?.error || 'Failed to approve');
+      toast.success('Payment approved successfully');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to approve');
     } finally {
       setIsPending(false);
     }
@@ -46,17 +64,17 @@ export function ApprovePaymentModal({ pendingId, shortfall }: { pendingId: strin
   if (shortfall <= 0) {
     // If no shortfall, just standard submit without modal
     return (
-      <form action={async (fd) => {
-        setIsPending(true);
-        await approvePendingVerification(fd);
-        setIsPending(false);
-      }}>
-        <input type="hidden" name="pendingId" value={pendingId} />
-        <Button variant="default" size="icon" className="bg-success hover:bg-success/90 text-success-foreground h-10 w-10" type="submit" disabled={isPending}>
-          <Check className="h-5 w-5" />
-          <span className="sr-only">Approve</span>
-        </Button>
-      </form>
+      <Button 
+        variant="default" 
+        size="icon" 
+        className="bg-success hover:bg-success/90 text-success-foreground h-10 w-10" 
+        type="button" 
+        onClick={handleFastApprove}
+        disabled={isPending}
+      >
+        <Check className="h-5 w-5" />
+        <span className="sr-only">Approve</span>
+      </Button>
     );
   }
 

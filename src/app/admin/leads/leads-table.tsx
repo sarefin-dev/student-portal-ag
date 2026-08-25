@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { updateLeadStatus, deleteLead, createLead, promoteLeadToStudent } from './actions';
 import { Plus, X, Trash2, UserPlus } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -45,6 +46,7 @@ export function LeadsTable({ data, currentPage, totalPages, initialSearch }: { d
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isSubmittingNewLead, setIsSubmittingNewLead] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -250,41 +252,47 @@ export function LeadsTable({ data, currentPage, totalPages, initialSearch }: { d
 
       {isCreating && (
         <form action={async (fd) => {
+          setIsSubmittingNewLead(true);
           try {
             const result = await createLead(fd);
             if (!result.success) {
-              alert(result.error || 'Failed to create lead');
+              toast.error(result.error || 'Failed to create lead');
               return;
             }
+            toast.success('Lead created successfully');
             setIsCreating(false);
-          } catch (err) {
-            alert('Failed to create lead');
+          } catch (err: any) {
+            toast.error(err.message || 'Failed to create lead');
+          } finally {
+            setIsSubmittingNewLead(false);
           }
         }} className="space-y-4 bg-muted/50 p-4 rounded-lg border">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-medium">Name *</label>
-              <Input id="name" name="name" required placeholder="John Doe" className="bg-background" />
+              <Input id="name" name="name" required placeholder="John Doe" className="bg-background" disabled={isSubmittingNewLead} />
             </div>
             <div className="space-y-2">
               <label htmlFor="phone" className="text-sm font-medium">Phone</label>
-              <Input id="phone" name="phone" placeholder="01XXXXXXXXX" className="bg-background" />
+              <Input id="phone" name="phone" placeholder="01XXXXXXXXX" className="bg-background" disabled={isSubmittingNewLead} />
             </div>
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">Email</label>
-              <Input id="email" name="email" type="email" placeholder="john@example.com" className="bg-background" />
+              <Input id="email" name="email" type="email" placeholder="john@example.com" className="bg-background" disabled={isSubmittingNewLead} />
             </div>
             <div className="space-y-2">
               <label htmlFor="interested_in" className="text-sm font-medium">Interest</label>
-              <Input id="interested_in" name="interested_in" placeholder="e.g. Next.js Course" className="bg-background" />
+              <Input id="interested_in" name="interested_in" placeholder="e.g. Next.js Course" className="bg-background" disabled={isSubmittingNewLead} />
             </div>
             <div className="space-y-2 col-span-2">
               <label htmlFor="notes" className="text-sm font-medium">Notes</label>
-              <Textarea id="notes" name="notes" placeholder="Optional notes..." className="bg-background min-h-[80px]" />
+              <Textarea id="notes" name="notes" placeholder="Optional notes..." className="bg-background min-h-[80px]" disabled={isSubmittingNewLead} />
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="submit">Create Lead</Button>
+            <Button type="submit" disabled={isSubmittingNewLead}>
+              {isSubmittingNewLead ? 'Creating...' : 'Create Lead'}
+            </Button>
           </div>
         </form>
       )}

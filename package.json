@@ -57,6 +57,7 @@
     "remark-gfm": "^4.0.1",
     "resend": "^6.20.0",
     "sharp": "0.35.3",
+    "sonner": "^2.0.8",
     "tailwind-merge": "3.6.0",
     "zod": "4.4.3"
   },

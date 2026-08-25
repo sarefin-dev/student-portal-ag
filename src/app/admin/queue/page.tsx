@@ -94,7 +94,7 @@ export default async function VerificationQueuePage() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <form action={rejectPendingVerification}>
+                          <form action={async (fd) => { 'use server'; await rejectPendingVerification(fd); }}>
                             <input type="hidden" name="pendingId" value={p.id} />
                             <AlertDialogAction type="submit" className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                               Confirm Rejection

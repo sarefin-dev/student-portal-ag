@@ -1,4 +1,4 @@
-drop function if exists force_approve_pending_verification(uuid, uuid);
+drop function if exists force_approve_pending_verification(uuid, uuid, boolean, int);
 
 create or replace function force_approve_pending_verification(
   p_pending_id uuid,

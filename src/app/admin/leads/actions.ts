@@ -92,6 +92,10 @@ export async function promoteLeadToStudent(leadId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'Unauthorized' };
 
+  // Explicitly check if caller is an admin
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') return { success: false, error: 'Forbidden' };
+
   const { data: lead } = await supabase.from('leads').select('*').eq('id', leadId).single();
   if (!lead) return { success: false, error: 'Lead not found' };
   if (!lead.email) return { success: false, error: 'Lead must have an email address to create a student account' };
@@ -99,7 +103,7 @@ export async function promoteLeadToStudent(leadId: string) {
   const supabaseAdmin = createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
   // Check if user already exists
-  const { data: existingProfile } = await supabaseAdmin.from('profiles').select('id').eq('email', lead.email).single();
+  const { data: existingProfile, error: profileErr } = await supabaseAdmin.from('profiles').select('id').eq('email', lead.email).maybeSingle();
   
   if (existingProfile) {
     // Just mark lead as converted

@@ -19,41 +19,55 @@ async function requireAdmin() {
 }
 
 export async function approvePendingVerification(formData: FormData) {
-  const pendingId = formData.get('pendingId') as string;
-  const receivedTxId = formData.get('receivedTxId') as string; // Optional, if they match it manually
-  const createInstallment = formData.get('createInstallment') === 'true';
-  const dueDays = parseInt(formData.get('dueDays') as string || '30', 10);
-  
-  const supabase = await requireAdmin();
+  try {
+    const pendingId = formData.get('pendingId') as string;
+    const receivedTxId = formData.get('receivedTxId') as string; // Optional, if they match it manually
+    const createInstallment = formData.get('createInstallment') === 'true';
+    const dueDays = parseInt(formData.get('dueDays') as string || '30', 10);
+    
+    const supabase = await requireAdmin();
 
-  // Call the atomic manual override RPC
-  const { error } = await supabase.rpc('force_approve_pending_verification', { 
-    p_pending_id: pendingId, 
-    p_received_tx_id: receivedTxId || null,
-    p_create_installment: createInstallment,
-    p_due_days: dueDays
-  });
+    // Call the atomic manual override RPC
+    const { error } = await supabase.rpc('force_approve_pending_verification', { 
+      p_pending_id: pendingId, 
+      p_received_tx_id: receivedTxId || null,
+      p_create_installment: createInstallment,
+      p_due_days: dueDays
+    });
 
-  if (error) {
-    console.error("Manual approval failed:", error);
-    throw new Error('Failed to approve payment');
+    if (error) {
+      console.error("Manual approval failed:", error);
+      return { success: false, error: 'Failed to approve payment: ' + error.message };
+    }
+    
+    revalidatePath('/admin/queue');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Server error' };
   }
-  
-  revalidatePath('/admin/queue');
 }
 
 export async function rejectPendingVerification(formData: FormData) {
-  const pendingId = formData.get('pendingId') as string;
-  const reason = formData.get('reason') as string || 'Declined by admin';
-  const supabase = await requireAdmin();
+  try {
+    const pendingId = formData.get('pendingId') as string;
+    const reason = formData.get('reason') as string || 'Declined by admin';
+    const supabase = await requireAdmin();
 
-  await supabase
-    .from('pending_verifications')
-    .update({ status: 'rejected' })
-    .eq('id', pendingId);
+    const { error } = await supabase
+      .from('pending_verifications')
+      .update({ status: 'rejected' })
+      .eq('id', pendingId);
 
-  // Todo: Send rejection email with reason using Resend
-  console.log(`Rejected ${pendingId} for reason: ${reason}`);
+    if (error) {
+      return { success: false, error: 'Failed to reject: ' + error.message };
+    }
 
-  revalidatePath('/admin/queue');
+    // Todo: Send rejection email with reason using Resend
+    console.log(`Rejected ${pendingId} for reason: ${reason}`);
+
+    revalidatePath('/admin/queue');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Server error' };
+  }
 }
