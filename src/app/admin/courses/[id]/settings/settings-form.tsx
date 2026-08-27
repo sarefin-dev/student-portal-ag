@@ -79,7 +79,7 @@ export function CourseSettingsForm({
 
       <div className="space-y-2">
         <label className="text-sm font-medium">Course Type</label>
-        <Select name="type" defaultValue={course.type} onValueChange={setCurrentType} required>
+        <Select name="type" value={currentType} onValueChange={setCurrentType} required>
           <SelectTrigger>
             <SelectValue placeholder="Select course type" />
           </SelectTrigger>
@@ -221,6 +221,7 @@ export function CourseSettingsForm({
     </form>
   );
 }
+
 
 
 
