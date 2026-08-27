@@ -16,13 +16,14 @@ export function ResourceManager({ resources }: { resources: any[] }) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget;
     setIsUploading(true);
-    const formData = new FormData(e.currentTarget);
+    const formData = new FormData(form);
     const res = await createResource(formData);
     setIsUploading(false);
     if (res.success) {
       toast.success('Resource uploaded successfully!');
-      e.currentTarget.reset();
+      form.reset();
       setIsFree(false);
     } else {
       toast.error(res.error || 'Failed to upload resource');
