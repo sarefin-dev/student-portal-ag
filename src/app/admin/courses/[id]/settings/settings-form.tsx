@@ -154,6 +154,14 @@ export function CourseSettingsForm({
       {['live_cohort', 'in_person'].includes(course.type) && (
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
+            <label className="text-sm font-medium">Cohort Duration (e.g. 4 Weeks)</label>
+            <input 
+              type="text" 
+              name="duration" 
+              defaultValue={course.duration || ''} 
+              placeholder="e.g. 4 Weeks, 3 Days, 2 Months"
+              className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm mb-4" 
+            />
             <label className="text-sm font-medium">Cohort Start Date (Optional)</label>
             <input 
               type="datetime-local" 
@@ -202,5 +210,6 @@ export function CourseSettingsForm({
     </form>
   );
 }
+
 
 

@@ -26,6 +26,7 @@ export async function updateCourseSettings(formData: FormData) {
   const type = formData.get('type') as string;
   const description = formData.get('description') as string;
   const thumbnailUrl = formData.get('thumbnailUrl') as string;
+  const duration = formData.get('duration') as string;
   const startDate = formData.get('start_date') as string;
   const cutoffDate = formData.get('enrollment_cutoff_date') as string;
   const outcomesText = formData.get('outcomes') as string;
@@ -40,6 +41,7 @@ export async function updateCourseSettings(formData: FormData) {
     title,
     type,
     description,
+    duration: duration || null,
     thumbnail_url: thumbnailUrl || null,
     outcomes: outcomesText ? outcomesText.split('\n').filter(s => s.trim()) : [],
     ai_summary: aiSummary || null
@@ -87,6 +89,7 @@ export async function updateCourseSettings(formData: FormData) {
   revalidatePath(`/admin/courses/${courseId}/builder`);
   revalidatePath('/admin/courses');
 }
+
 
 
 
