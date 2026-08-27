@@ -23,6 +23,7 @@ export async function generateAiSummary(title: string, outcomes: string) {
 export async function updateCourseSettings(formData: FormData) {
   const courseId = formData.get('courseId') as string;
   const title = formData.get('title') as string;
+  const type = formData.get('type') as string;
   const description = formData.get('description') as string;
   const thumbnailUrl = formData.get('thumbnailUrl') as string;
   const startDate = formData.get('start_date') as string;
@@ -37,6 +38,7 @@ export async function updateCourseSettings(formData: FormData) {
 
   const updatePayload: any = {
     title,
+    type,
     description,
     thumbnail_url: thumbnailUrl || null,
     outcomes: outcomesText ? outcomesText.split('\n').filter(s => s.trim()) : [],
@@ -85,6 +87,7 @@ export async function updateCourseSettings(formData: FormData) {
   revalidatePath(`/admin/courses/${courseId}/builder`);
   revalidatePath('/admin/courses');
 }
+
 
 
 

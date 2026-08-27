@@ -76,6 +76,15 @@ export function CourseSettingsForm({
       </div>
 
       <div className="space-y-2">
+        <label className="text-sm font-medium">Course Type</label>
+        <select name="type" defaultValue={course.type} className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm">
+          <option value="recorded">Recorded Video (Self-Paced)</option>
+          <option value="live_cohort">Live Cohort (Online Workshop)</option>
+          <option value="in_person">In-Person (Classroom)</option>
+        </select>
+      </div>
+
+      <div className="space-y-2">
         <label className="text-sm font-medium">Description</label>
         <textarea name="description" defaultValue={course.description || ''} rows={4} className="flex w-full rounded border border-input bg-background px-3 py-2 text-sm" />
       </div>
@@ -193,4 +202,5 @@ export function CourseSettingsForm({
     </form>
   );
 }
+
 
