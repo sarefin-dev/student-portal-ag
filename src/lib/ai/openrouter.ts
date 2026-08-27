@@ -4,8 +4,8 @@ import { env } from '@/env';
 
 // Best free models on OpenRouter/AgentRouter
 export const FREE_MODELS = {
-  chat: 'meta-llama/llama-3.3-70b-instruct:free',
-  coder: 'deepseek/deepseek-chat:free',
+  chat: env.OPENROUTER_MODEL || 'nvidia/nemotron-3-ultra-550b-a55b:free',
+  coder: env.OPENROUTER_MODEL || 'nvidia/nemotron-3-ultra-550b-a55b:free',
   fallback: 'google/gemini-2.5-flash:free'
 };
 
