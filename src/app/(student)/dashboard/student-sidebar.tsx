@@ -19,6 +19,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { NotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Logo } from "@/components/ui/logo";
 
 const navItems = [
   { label: "My Courses", href: "/dashboard", icon: BookOpen },
@@ -74,7 +75,7 @@ export function StudentSidebar({ logoutAction }: { logoutAction: () => void }) {
             <SheetContent side="left" className="w-[264px] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border">
               <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
               <div className="flex h-14 items-center px-4 border-b border-sidebar-border">
-                <span className="font-semibold text-sidebar-primary">Student Portal</span>
+                <Logo href="/dashboard" size="sm" subtitle="Student Portal" />
               </div>
               <nav className="flex flex-col gap-1 p-4 flex-1 h-[calc(100vh-8rem)]">
                 <NavContent />
@@ -89,7 +90,7 @@ export function StudentSidebar({ logoutAction }: { logoutAction: () => void }) {
               </div>
             </SheetContent>
           </Sheet>
-          <span className="font-semibold text-sidebar-primary">Student Portal</span>
+          <Logo href="/dashboard" size="sm" subtitle="Student Portal" />
         </div>
         <div className="flex items-center gap-1">
           <ThemeToggle />
@@ -104,8 +105,8 @@ export function StudentSidebar({ logoutAction }: { logoutAction: () => void }) {
           collapsed ? "w-[60px]" : "w-[264px]"
         )}
       >
-        <div className="flex h-14 items-center justify-between border-b border-sidebar-border px-4">
-          {!collapsed && <span className="font-semibold text-sidebar-primary truncate">Student Portal</span>}
+        <div className="flex h-14 items-center justify-between border-b border-sidebar-border px-3">
+          <Logo href="/dashboard" size="sm" subtitle="Student Portal" collapsed={collapsed} />
           <div className={cn("flex items-center gap-1", collapsed && "mx-auto")}>
             {!collapsed && <ThemeToggle />}
             {!collapsed && <NotificationBell />}

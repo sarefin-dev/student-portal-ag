@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { AlertCircle, Copy, HelpCircle } from 'lucide-react';
 import { RoutineSelector } from './routine-selector';
 
+import { Logo } from '@/components/ui/logo';
+
 export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ course?: string, bundle?: string, resource?: string, orderId?: string, step?: string, method?: string, error?: string }> }) {
   const params = await searchParams;
   const { course: courseId, bundle: bundleId, resource: resourceId, orderId, step, method, error } = params;
@@ -48,7 +50,10 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
 
     return (
       <div className="container mx-auto py-6 md:py-12 px-4 max-w-lg">
-        <div className="rounded border bg-card p-8 shadow-none space-y-6">
+        <div className="rounded-xl border bg-card p-8 shadow-sm space-y-6">
+          <div className="flex justify-between items-center pb-2 border-b">
+            <Logo href="/" size="sm" subtitle="Secure Checkout" />
+          </div>
           <h1 className="text-2xl font-bold">Review Your Order</h1>
           <div className="rounded border bg-muted/50 p-4 flex flex-col gap-2">
             <div className="flex justify-between items-center">

@@ -8,17 +8,20 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+import { Logo } from '@/components/ui/logo';
+
 function SyllabusContent({ course }: { course: any }) {
   return (
     <>
-      <div className="flex h-14 items-center border-b px-4 shrink-0 bg-sidebar/50 backdrop-blur">
-        <Link href="/dashboard" className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+      <div className="flex h-14 items-center justify-between border-b px-4 shrink-0 bg-sidebar/50 backdrop-blur">
+        <Logo href="/dashboard" size="sm" subtitle="Classroom" />
+        <Link href="/dashboard" className="flex items-center text-xs font-medium text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Dashboard
         </Link>
       </div>
       
       <div className="p-4 border-b shrink-0">
-        <h2 className="text-lg font-bold">{course.title}</h2>
+        <h2 className="text-base font-bold leading-snug">{course.title}</h2>
       </div>
 
       <div className="px-4 py-2 border-b shrink-0">
@@ -135,7 +138,7 @@ export default async function ClassroomLayout({
   return (
     <div className="flex flex-col md:flex-row min-h-[100dvh]">
       {/* Mobile Top Bar (Syllabus Trigger) */}
-      <div className="md:hidden flex h-14 items-center border-b bg-background px-4 z-10 shrink-0">
+      <div className="md:hidden flex h-14 items-center justify-between border-b bg-background px-4 z-10 shrink-0">
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" size="sm" className="mr-2 -ml-2 text-muted-foreground hover:text-foreground">
@@ -147,7 +150,7 @@ export default async function ClassroomLayout({
             <SyllabusContent course={course} />
           </SheetContent>
         </Sheet>
-        <span className="font-semibold text-sm truncate flex-1 text-right">{course.title}</span>
+        <Logo href="/dashboard" size="sm" subtitle="Classroom" />
       </div>
 
       {/* Desktop Syllabus Sidebar */}

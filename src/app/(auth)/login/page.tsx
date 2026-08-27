@@ -5,13 +5,15 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
 
+import { Logo } from "@/components/ui/logo"
+
 export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background py-12 px-4">
       <div className="mx-auto w-full max-w-md space-y-6">
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold text-primary">Student Portal</h1>
-          <p className="text-muted-foreground">Access your courses and materials</p>
+        <div className="flex flex-col items-center justify-center space-y-2 text-center">
+          <Logo href="/" size="lg" subtitle="Student Portal" className="mb-1" />
+          <p className="text-sm text-muted-foreground">Access your courses, routine, and learning materials</p>
         </div>
 
         <Tabs defaultValue="signin" className="w-full">

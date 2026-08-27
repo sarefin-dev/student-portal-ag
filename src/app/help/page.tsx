@@ -2,11 +2,13 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { HelpCircle, Mail, MessageCircle } from 'lucide-react';
 
+import { Logo } from '@/components/ui/logo';
+
 export default function HelpPage() {
   return (
     <div className="min-h-[100dvh] flex flex-col">
       <header className="border-b px-6 py-4 flex items-center justify-between bg-card">
-        <Link href="/" className="font-bold text-xl text-primary">Student Portal</Link>
+        <Logo href="/" size="sm" subtitle="Help & Support" />
         <Link href="/dashboard">
           <Button variant="ghost">Back to Dashboard</Button>
         </Link>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Logo } from "@/components/ui/logo";
 
 const baseAdminNavGroups = [
   {
@@ -161,14 +162,14 @@ export function AdminSidebar({ logoutAction, role, isSuperAdmin }: { logoutActio
             <SheetContent side="left" className="w-[264px] p-0 bg-sidebar text-sidebar-foreground border-sidebar-border overflow-y-auto">
               <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
               <div className="flex h-14 items-center px-4 border-b border-sidebar-border">
-                <span className="font-semibold text-sidebar-primary">Admin Portal</span>
+                <Logo href="/admin" size="sm" subtitle="Admin Portal" />
               </div>
               <nav className="flex flex-col p-2">
                 <NavContent />
               </nav>
             </SheetContent>
           </Sheet>
-          <span className="font-semibold text-sidebar-primary">Admin Portal</span>
+          <Logo href="/admin" size="sm" subtitle="Admin Portal" />
         </div>
         <ThemeToggle />
       </div>
@@ -181,7 +182,7 @@ export function AdminSidebar({ logoutAction, role, isSuperAdmin }: { logoutActio
         )}
       >
         <div className="flex h-14 items-center justify-between border-b border-sidebar-border px-3">
-          {!collapsed && <span className="font-semibold text-sidebar-primary px-1 truncate">Admin Portal</span>}
+          <Logo href="/admin" size="sm" subtitle="Admin Portal" collapsed={collapsed} />
           <div className={cn("flex items-center gap-1", collapsed && "mx-auto flex-col")}>
             {!collapsed && <ThemeToggle />}
             <Button
