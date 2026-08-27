@@ -74,7 +74,7 @@ ${syllabusText}
     // Call the Database RPC to bulk insert
     const { data: courseId, error } = await supabase.rpc('import_course_tree', {
       payload: object,
-      instructor_id: user.id
+      p_instructor_id: user.id
     });
 
     if (error) {
@@ -184,4 +184,5 @@ export async function importSubmoduleFromText(courseId: string, moduleId: string
     return { success: false, error: err.message || "Failed to process text" };
   }
 }
+
 
