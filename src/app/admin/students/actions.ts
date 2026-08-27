@@ -46,40 +46,54 @@ export async function toggleStudentStatus(studentId: string, currentStatus: stri
 
 
 
+import { sendWelcomeCredentialsEmail } from '@/lib/email';
+
 export async function createStudentAdmin(formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthorized');
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Unauthorized' };
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (profile?.role !== 'admin') throw new Error('Unauthorized');
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (profile?.role !== 'admin') return { error: 'Unauthorized: Admin access required' };
 
-  const supabaseAdmin = createSupabaseClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.SUPABASE_SERVICE_ROLE_KEY
-  );
+    const supabaseAdmin = createSupabaseClient(
+      env.NEXT_PUBLIC_SUPABASE_URL,
+      env.SUPABASE_SERVICE_ROLE_KEY
+    );
 
-  const fullName = formData.get('fullName') as string;
-  const email = formData.get('email') as string;
-  const phone = formData.get('phone') as string;
-  const password = formData.get('password') as string;
+    const fullName = formData.get('fullName') as string;
+    const email = (formData.get('email') as string)?.trim().toLowerCase();
+    const phone = formData.get('phone') as string;
+    const password = formData.get('password') as string;
 
-  const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: {
-      full_name: fullName,
-      phone: phone || null
+    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: fullName,
+        phone: phone || null
+      }
+    });
+
+    if (authError) {
+      return { error: authError.message };
     }
-  });
 
-  if (authError) {
-    return { error: authError.message };
+    // Automatically send welcome email with credentials
+    await sendWelcomeCredentialsEmail({
+      to: email,
+      fullName,
+      password,
+    });
+
+    revalidatePath('/admin/students');
+    return { success: true };
+  } catch (err: any) {
+    console.error('createStudentAdmin error:', err);
+    return { error: err?.message || 'Failed to create student account' };
   }
-
-  revalidatePath('/admin/students');
-  return { success: true };
 }
 
 import { Resend } from 'resend';

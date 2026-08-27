@@ -18,6 +18,8 @@ async function requireAdmin() {
   return supabase;
 }
 
+import { sendEnrollmentNotification } from '@/lib/email';
+
 export async function approvePendingVerification(formData: FormData) {
   try {
     const pendingId = formData.get('pendingId') as string;
@@ -26,6 +28,26 @@ export async function approvePendingVerification(formData: FormData) {
     const dueDays = parseInt(formData.get('dueDays') as string || '30', 10);
     
     const supabase = await requireAdmin();
+
+    // Fetch order details before approving to notify student
+    const { data: pendingRecord } = await supabase
+      .from('pending_verifications')
+      .select(`
+        order_id,
+        orders (
+          student_id,
+          courses (
+            title,
+            slug
+          ),
+          profiles (
+            email,
+            full_name
+          )
+        )
+      `)
+      .eq('id', pendingId)
+      .maybeSingle();
 
     // Call the atomic manual override RPC
     const { error } = await supabase.rpc('force_approve_pending_verification', { 
@@ -38,6 +60,18 @@ export async function approvePendingVerification(formData: FormData) {
     if (error) {
       console.error("Manual approval failed:", error);
       return { success: false, error: 'Failed to approve payment: ' + error.message };
+    }
+
+    // Send confirmation & enrollment notification
+    const order = (pendingRecord as any)?.orders;
+    if (order && order.profiles?.email && order.courses?.title) {
+      await sendEnrollmentNotification({
+        studentId: order.student_id,
+        studentEmail: order.profiles.email,
+        studentName: order.profiles.full_name,
+        courseTitle: order.courses.title,
+        courseSlug: order.courses.slug,
+      });
     }
     
     revalidatePath('/admin/queue');
