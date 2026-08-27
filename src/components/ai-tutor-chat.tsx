@@ -5,13 +5,42 @@ import { Input } from '@/components/ui/input';
 import { Bot, Send, User, X, MessageCircle } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
-export function AiTutorChat({ lessonContext }: { lessonContext: string }) {
+export function AiTutorChat({ lessonContext, lessonId }: { lessonContext: string, lessonId?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputStr, setInputStr] = useState('');
-  const [messages, setMessages] = useState<{role: string, content: string, id: number}[]>([]);
+  const [messages, setMessages] = useState<{role: string, content: string, id: string | number}[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load existing chat history for this student & lesson
+  useEffect(() => {
+    if (!isOpen || hasLoadedHistory) return;
+    
+    async function loadHistory() {
+      try {
+        const url = lessonId ? `/api/chat?lessonId=${encodeURIComponent(lessonId)}` : '/api/chat';
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.messages && data.messages.length > 0) {
+            setMessages(data.messages.map((m: any) => ({
+              id: m.id,
+              role: m.role,
+              content: m.content
+            })));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load chat history:", err);
+      } finally {
+        setHasLoadedHistory(true);
+      }
+    }
+
+    loadHistory();
+  }, [isOpen, hasLoadedHistory, lessonId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -30,12 +59,22 @@ export function AiTutorChat({ lessonContext }: { lessonContext: string }) {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...messages, userMsg], lessonContext })
+        body: JSON.stringify({ 
+          messages: [...messages.map(({ role, content }) => ({ role, content })), { role: userMsg.role, content: userMsg.content }], 
+          lessonContext,
+          lessonId
+        })
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        setMessages(prev => [...prev, { role: 'assistant', content: `🚨 ${errorText}`, id: Date.now() + 1 }]);
+        const friendlyMessage = response.status === 429 
+          ? '⏳ Daily limit reached (20 messages/day). Please try again tomorrow!'
+          : response.status === 503
+          ? '⚡ The AI service is temporarily experiencing high demand. Please retry in a few moments.'
+          : (errorText || 'Failed to get a response from AI.');
+
+        setMessages(prev => [...prev, { role: 'assistant', content: friendlyMessage, id: Date.now() + 1 }]);
         return;
       }
 
@@ -69,8 +108,13 @@ export function AiTutorChat({ lessonContext }: { lessonContext: string }) {
           setMessages(prev => [...prev.slice(0, -1), { ...aiMsg }]);
         }
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error('Chat error:', err);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: '⚠️ Network connection issue. Please check your internet connection and try again.', 
+        id: Date.now() + 1 
+      }]);
     } finally {
       setIsLoading(false);
     }

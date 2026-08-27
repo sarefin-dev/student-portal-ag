@@ -225,7 +225,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
         </div>
       </div>
 
-      <AiTutorChat lessonContext={lessonContext} />
+      <AiTutorChat lessonContext={lessonContext} lessonId={lessonId} />
     </div>
   );
 }
