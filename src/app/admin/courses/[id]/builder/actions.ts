@@ -1,4 +1,4 @@
-'use server';
+﻿'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
@@ -199,3 +199,22 @@ export async function updateSubmodule(formData: FormData) {
   if (error) console.error('Error updating submodule:', error);
   revalidatePath(`/admin/courses/${courseId}/builder`);
 }
+
+export async function markLessonCompleteForCohort(courseId: string, lessonId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized');
+
+  const { error } = await supabase.rpc('mark_lesson_complete_for_cohort', {
+    p_course_id: courseId,
+    p_lesson_id: lessonId
+  });
+
+  if (error) {
+    console.error('Failed to mark lesson complete:', error);
+    throw new Error('Failed to mark lesson complete for cohort');
+  }
+
+  revalidatePath(`/admin/courses/${courseId}/builder`);
+}
+

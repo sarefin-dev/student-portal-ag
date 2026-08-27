@@ -8,6 +8,7 @@ import { User, PowerOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ModuleHeader } from './module-header';
 import { SubmoduleHeader } from './submodule-header';
+import { MarkCompleteButton } from './mark-complete-button';
 import { AiImportModuleDialog, AiImportSubmoduleDialog } from '../../ai-import-partial-dialogs';
 import {
   AlertDialog,
@@ -209,9 +210,12 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
                         {sub.lessons?.map((lesson: any) => (
                           <div key={lesson.id} className="flex items-center justify-between p-2 rounded-sm bg-muted/50 text-sm">
                             <span>Lesson {lesson.position}: {lesson.title}</span>
-                            <Link href={`/admin/courses/${course.id}/builder/lessons/${lesson.id}`}>
-                              <Button variant="ghost" size="sm" className="h-7 text-xs text-primary">Edit Content</Button>
-                            </Link>
+                            <div className="flex items-center gap-1">
+                                <MarkCompleteButton courseId={course.id} lessonId={lesson.id} courseType={course.type} />
+                                <Link href={`/admin/courses/${course.id}/builder/lessons/${lesson.id}`}>
+                                  <Button variant="ghost" size="sm" className="h-7 text-xs text-primary">Edit Content</Button>
+                                </Link>
+                              </div>
                           </div>
                         ))}
                       </div>
@@ -226,6 +230,10 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
     </div>
   );
 }
+
+
+
+
 
 
 
