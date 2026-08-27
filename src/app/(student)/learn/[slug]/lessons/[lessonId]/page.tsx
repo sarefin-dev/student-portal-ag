@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
-import { CheckCircle2, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, RotateCcw, Download, FileText } from 'lucide-react';
 import { VideoPlayer } from '@/components/video-player';
 import { Button } from '@/components/ui/button';
 import { SubmitButton } from '@/components/ui/submit-button';
@@ -122,13 +122,26 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                 }
 
                 if (block.block_type === 'file') {
+                  const downloadUrl = payload.resource_id 
+                    ? `/api/resources/${payload.resource_id}/download`
+                    : payload.url || '#';
+
                   return (
-                    <div key={block.id} className="rounded border p-4 flex items-center justify-between bg-muted/50 shadow-none">
-                      <div>
-                        <h4 className="font-semibold">{payload.file_name}</h4>
-                        <p className="text-xs text-muted-foreground">{payload.mime_type}</p>
+                    <div key={block.id} className="rounded-lg border p-4 flex items-center justify-between bg-card shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-base">{payload.file_name || 'Downloadable Resource'}</h4>
+                          <p className="text-xs text-muted-foreground">{payload.mime_type || 'PDF Document'}</p>
+                        </div>
                       </div>
-                      <Button variant="outline" size="sm">Download</Button>
+                      <a href={downloadUrl} target="_blank" rel="noopener noreferrer" download>
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <Download className="w-4 h-4" /> Download
+                        </Button>
+                      </a>
                     </div>
                   );
                 }

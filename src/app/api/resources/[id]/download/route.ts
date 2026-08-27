@@ -42,12 +42,54 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       .eq('orders.student_id', user.id)
       .eq('orders.status', 'completed')
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (!orderItem) {
-      return new NextResponse('Payment required', { status: 403 });
+      // Check if student is actively enrolled in any course that attaches this resource
+      const supabaseAdminCheck = createSupabaseClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+      const { data: attachedBlocks } = await supabaseAdminCheck
+        .from('content_blocks')
+        .select(`
+          lesson_id,
+          lessons!inner (
+            submodules!inner (
+              modules!inner (
+                course_id
+              )
+            )
+          )
+        `)
+        .eq('block_type', 'file')
+        .filter('payload->>resource_id', 'eq', id);
+
+      let isEnrolledInCourse = false;
+      if (attachedBlocks && attachedBlocks.length > 0) {
+        for (const block of attachedBlocks) {
+          const courseId = (block as any).lessons?.submodules?.modules?.course_id;
+          if (courseId) {
+            const { data: enrollment } = await supabaseAdminCheck
+              .from('enrollments')
+              .select('id')
+              .eq('student_id', user.id)
+              .eq('course_id', courseId)
+              .eq('status', 'active')
+              .limit(1)
+              .maybeSingle();
+
+            if (enrollment) {
+              isEnrolledInCourse = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!isEnrolledInCourse) {
+        return new NextResponse('Payment required', { status: 403 });
+      }
+    } else {
+      orderItemId = orderItem.id;
     }
-    orderItemId = orderItem.id;
   }
 
   // Check download limits

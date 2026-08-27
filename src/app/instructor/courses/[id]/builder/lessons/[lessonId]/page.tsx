@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { addTextBlock, addVideoBlock, addYoutubeBlock } from './actions';
+import { addTextBlock, addVideoBlock, addYoutubeBlock, addResourceBlock } from './actions';
+import { FileText } from 'lucide-react';
 
 export default async function LessonBuilderPage({ params }: { params: Promise<{ id: string, lessonId: string }> }) {
   const { id: courseId, lessonId } = await params;
@@ -28,12 +29,14 @@ export default async function LessonBuilderPage({ params }: { params: Promise<{ 
 
   // For the video dropdown, let's just fetch available videos
   const { data: videos } = await supabase.from('videos').select('id, bunny_video_guid').limit(50);
+  // Fetch available resources/eBooks
+  const { data: resources } = await supabase.from('resources').select('id, title, type').is('deleted_at', null).order('created_at', { ascending: false });
 
   return (
     <div className="space-y-6">
       <div className="flex h-14 items-center border-b pb-4 mb-6">
         <Link href={`/instructor/courses/${courseId}/builder`} className="text-sm font-medium text-muted-foreground hover:text-foreground">
-          â† Back to Course Builder
+          ← Back to Course Builder
         </Link>
       </div>
 
@@ -68,6 +71,12 @@ export default async function LessonBuilderPage({ params }: { params: Promise<{ 
                     {block.block_type === 'video' && (
                       <p className="text-sm font-mono text-muted-foreground">
                         Video: {block.payload.youtube_url || block.payload.video_id}
+                      </p>
+                    )}
+                    {block.block_type === 'file' && (
+                      <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-primary shrink-0" />
+                        <span>{block.payload.file_name || 'Attached File'}</span>
                       </p>
                     )}
                   </div>
@@ -122,7 +131,34 @@ export default async function LessonBuilderPage({ params }: { params: Promise<{ 
               <Input name="youtubeUrl" placeholder="e.g. https://youtube.com/watch?v=..." required />
               <Button type="submit" variant="secondary" className="w-full">Embed YouTube Video</Button>
             </form>
-          </div></div></div></div>
+          </div>
+
+          <div className="rounded-lg border bg-card p-4 shadow-sm space-y-4">
+            <h3 className="font-bold border-b pb-2">Attach eBook / Resource</h3>
+            {(!resources || resources.length === 0) ? (
+              <div className="text-xs text-muted-foreground space-y-2">
+                <p>No resources uploaded yet.</p>
+                <Link href="/instructor/resources" className="text-primary hover:underline font-medium block">
+                  + Upload an eBook / Resource first
+                </Link>
+              </div>
+            ) : (
+              <form action={addResourceBlock} className="space-y-3">
+                <input type="hidden" name="courseId" value={courseId} />
+                <input type="hidden" name="lessonId" value={lessonId} />
+                <select name="resourceId" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+                  {resources.map(r => (
+                    <option key={r.id} value={r.id}>
+                      [{r.type.toUpperCase()}] {r.title}
+                    </option>
+                  ))}
+                </select>
+                <Button type="submit" variant="secondary" className="w-full">Attach to Lesson</Button>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
-

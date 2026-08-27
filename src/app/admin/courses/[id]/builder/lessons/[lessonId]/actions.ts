@@ -1,4 +1,4 @@
-﻿'use server';
+'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
@@ -134,5 +134,45 @@ export async function addYoutubeBlock(formData: FormData) {
     });
 
   if (error) console.error("Error adding youtube block:", error);
+  revalidatePath(`/admin/courses/${courseId}/builder/lessons/${lessonId}`);
+}
+
+export async function addResourceBlock(formData: FormData) {
+  const { supabase } = await requireAuth();
+  const courseId = formData.get('courseId') as string;
+  const lessonId = formData.get('lessonId') as string;
+  const resourceId = formData.get('resourceId') as string;
+
+  const { data: resource } = await supabase
+    .from('resources')
+    .select('id, title, storage_path, type')
+    .eq('id', resourceId)
+    .single();
+
+  if (!resource) return;
+
+  const { data: existing } = await supabase
+    .from('content_blocks')
+    .select('position')
+    .eq('lesson_id', lessonId)
+    .order('position', { ascending: false })
+    .limit(1);
+  const position = existing && existing.length > 0 ? existing[0].position + 1 : 1;
+
+  const { error } = await supabase
+    .from('content_blocks')
+    .insert({
+      lesson_id: lessonId,
+      block_type: 'file',
+      position,
+      payload: {
+        resource_id: resource.id,
+        file_name: resource.title,
+        mime_type: 'application/pdf',
+        storage_path: resource.storage_path
+      }
+    });
+
+  if (error) console.error("Error adding resource block:", error);
   revalidatePath(`/admin/courses/${courseId}/builder/lessons/${lessonId}`);
 }

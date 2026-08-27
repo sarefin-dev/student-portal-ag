@@ -1,10 +1,10 @@
-﻿import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { addTextBlock, addVideoBlock, addYoutubeBlock, moveBlock, removeBlock } from './actions';
-import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react';
+import { addTextBlock, addVideoBlock, addYoutubeBlock, addResourceBlock, moveBlock, removeBlock } from './actions';
+import { ArrowDown, ArrowUp, Trash2, FileText } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   AlertDialog,
@@ -41,12 +41,14 @@ export default async function LessonBuilderPage({ params }: { params: Promise<{ 
 
   // For the video dropdown, let's just fetch available videos
   const { data: videos } = await supabase.from('videos').select('id, bunny_video_guid').limit(50);
+  // Fetch available resources/eBooks
+  const { data: resources } = await supabase.from('resources').select('id, title, type').is('deleted_at', null).order('created_at', { ascending: false });
 
   return (
     <div className="space-y-6">
       <div className="flex h-14 items-center border-b pb-4 mb-6">
         <Link href={`/admin/courses/${courseId}/builder`} className="text-sm font-medium text-muted-foreground hover:text-foreground">
-          â† Back to Course Builder
+          ← Back to Course Builder
         </Link>
       </div>
 
@@ -63,7 +65,7 @@ export default async function LessonBuilderPage({ params }: { params: Promise<{ 
           <h2 className="text-xl font-bold">Content Blocks</h2>
           {(!lesson.content_blocks || lesson.content_blocks.length === 0) ? (
             <div className="rounded-md border border-dashed p-8 text-center text-muted-foreground">
-              No content blocks yet. Add text or video from the sidebar.
+              No content blocks yet. Add text, video, or downloadable resources from the sidebar.
             </div>
           ) : (
             <div className="space-y-4">
@@ -82,6 +84,12 @@ export default async function LessonBuilderPage({ params }: { params: Promise<{ 
                       {block.block_type === 'video' && (
                         <p className="text-sm font-mono text-muted-foreground">
                           Video: {block.payload.youtube_url || block.payload.video_id}
+                        </p>
+                      )}
+                      {block.block_type === 'file' && (
+                        <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-primary shrink-0" />
+                          <span>{block.payload.file_name || 'Attached File'}</span>
                         </p>
                       )}
                     </div>
@@ -193,7 +201,10 @@ export default async function LessonBuilderPage({ params }: { params: Promise<{ 
                 <Input name="videoId" placeholder="e.g. 123e4567-e89b-12d3-a456-426614174000" required />
               )}
               <Button type="submit" variant="secondary" className="w-full">Attach Video</Button>
-            </form></div><div className="rounded-lg border bg-card p-4 shadow-sm space-y-4 mt-4">
+            </form>
+          </div>
+
+          <div className="rounded-lg border bg-card p-4 shadow-sm space-y-4">
             <h3 className="font-bold border-b pb-2">Add YouTube Video</h3>
             <form action={addYoutubeBlock} className="space-y-3">
               <input type="hidden" name="courseId" value={courseId} />
@@ -201,8 +212,34 @@ export default async function LessonBuilderPage({ params }: { params: Promise<{ 
               <Input name="youtubeUrl" placeholder="e.g. https://youtube.com/watch?v=..." required />
               <Button type="submit" variant="secondary" className="w-full">Embed YouTube Video</Button>
             </form>
-          </div></div></div></div>
+          </div>
+
+          <div className="rounded-lg border bg-card p-4 shadow-sm space-y-4">
+            <h3 className="font-bold border-b pb-2">Attach eBook / Resource</h3>
+            {(!resources || resources.length === 0) ? (
+              <div className="text-xs text-muted-foreground space-y-2">
+                <p>No resources uploaded yet.</p>
+                <Link href="/admin/resources" className="text-primary hover:underline font-medium block">
+                  + Upload an eBook / Resource first
+                </Link>
+              </div>
+            ) : (
+              <form action={addResourceBlock} className="space-y-3">
+                <input type="hidden" name="courseId" value={courseId} />
+                <input type="hidden" name="lessonId" value={lessonId} />
+                <select name="resourceId" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+                  {resources.map(r => (
+                    <option key={r.id} value={r.id}>
+                      [{r.type.toUpperCase()}] {r.title}
+                    </option>
+                  ))}
+                </select>
+                <Button type="submit" variant="secondary" className="w-full">Attach to Lesson</Button>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
-
-
