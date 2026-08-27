@@ -1,4 +1,4 @@
-'use server';
+﻿'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
@@ -29,6 +29,7 @@ export async function updateCourseSettings(formData: FormData) {
   const cutoffDate = formData.get('enrollment_cutoff_date') as string;
   const outcomesText = formData.get('outcomes') as string;
   const aiSummary = formData.get('ai_summary') as string;
+  const instructorId = formData.get('instructorId') as string;
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -49,6 +50,7 @@ export async function updateCourseSettings(formData: FormData) {
     updatePayload.enrollment_cutoff_date = cutoffDate ? new Date(cutoffDate).toISOString() : null;
   }
 
+  // 1. Update Course Table
   const { error } = await supabase
     .from('courses')
     .update(updatePayload)
@@ -59,7 +61,29 @@ export async function updateCourseSettings(formData: FormData) {
     throw new Error('Failed to update course settings');
   }
 
+  // 2. Update Instructor Assignment
+  if (instructorId) {
+    // 1. Reset all existing instructors to NOT be the lead
+    await supabase.from('instructor_assignments').update({ is_lead: false }).eq('course_id', courseId);
+    
+    // 2. Upsert the selected instructor as the lead (keeps them as co-instructor if they were already one)
+    const { error: assignError } = await supabase
+      .from('instructor_assignments')
+      .upsert({ 
+        course_id: courseId, 
+        instructor_id: instructorId,
+        is_lead: true
+      }, { onConflict: 'course_id, instructor_id' });
+    
+    if (assignError) console.error("Instructor assignment error:", assignError);
+  } else {
+    // Clear assignment if they set it back to "None"
+    await supabase.from('instructor_assignments').delete().eq('course_id', courseId);
+  }
+
   revalidatePath(`/admin/courses/${courseId}/settings`);
   revalidatePath(`/admin/courses/${courseId}/builder`);
   revalidatePath('/admin/courses');
 }
+
+

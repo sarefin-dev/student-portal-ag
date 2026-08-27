@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import ReactPDF, { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
 import fs from 'fs';
@@ -177,7 +177,7 @@ const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseS
             </View>
           </View>
 
-          <Text style={styles.metadata}>Verify at {host}/verify/{verifyCode} • ID: {verifyCode}</Text>
+          <Text style={styles.metadata}>Verify at {host}/verify/{verifyCode} â€¢ ID: {verifyCode}</Text>
         </View>
       </View>
     </Page>
@@ -235,6 +235,7 @@ export async function GET(
       .from('instructor_assignments')
       .select('profiles(full_name, instructor_title, signature_url)')
       .eq('course_id', cert.courses.id)
+      .order('is_lead', { ascending: false })
       .limit(1)
       .maybeSingle();
       
@@ -276,3 +277,4 @@ export async function GET(
     }
   });
 }
+

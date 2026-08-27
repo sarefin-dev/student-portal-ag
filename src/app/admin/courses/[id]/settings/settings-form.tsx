@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,15 @@ import { createClient } from '@/lib/supabase/client';
 import { updateCourseSettings } from './actions';
 import Image from 'next/image';
 
-export function CourseSettingsForm({ course }: { course: any }) {
+export function CourseSettingsForm({ 
+  course, 
+  instructors, 
+  assignedInstructorId 
+}: { 
+  course: any, 
+  instructors: any[], 
+  assignedInstructorId: string 
+}) {
   const [isUploading, setIsUploading] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState(course.thumbnail_url || '');
 
@@ -50,6 +58,21 @@ export function CourseSettingsForm({ course }: { course: any }) {
       <div className="space-y-2">
         <label className="text-sm font-medium">Title</label>
         <input name="title" defaultValue={course.title} required className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm" />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Lead Instructor (Certificate Signer)</label>
+        <select 
+          name="instructorId" 
+          defaultValue={assignedInstructorId} 
+          className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm"
+        >
+          <option value="">-- No Lead Instructor (ArefinLab Team) --</option>
+          {instructors?.map(inst => (
+            <option key={inst.id} value={inst.id}>{inst.full_name} ({inst.email})</option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground">The assigned instructor's name will appear on student certificates.</p>
       </div>
 
       <div className="space-y-2">
@@ -170,3 +193,4 @@ export function CourseSettingsForm({ course }: { course: any }) {
     </form>
   );
 }
+
