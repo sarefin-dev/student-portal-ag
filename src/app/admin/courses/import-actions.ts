@@ -56,7 +56,7 @@ ${syllabusText}
     let result;
     try {
       // 1. Try Localhost First (Free)
-      result = await aiCall(ollama('llama3.3'));
+      result = await aiCall(ollama(process.env.OLLAMA_MODEL || 'llama3.3'));
     } catch (localErr) {
       console.log("Ollama failed, falling back to OpenRouter free models...", localErr);
       try {
@@ -132,7 +132,7 @@ export async function importModuleFromText(courseId: string, syllabusText: strin
     };
 
     let result;
-    try { result = await aiCall(ollama('llama3.3')); } catch (localErr) {
+    try { result = await aiCall(ollama(process.env.OLLAMA_MODEL || 'llama3.3')); } catch (localErr) {
       try { result = await aiCall((await getCloudAI())(FREE_MODELS.chat)); } catch (orErr) {
         result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
       }
@@ -166,7 +166,7 @@ export async function importSubmoduleFromText(courseId: string, moduleId: string
     };
 
     let result;
-    try { result = await aiCall(ollama('llama3.3')); } catch (localErr) {
+    try { result = await aiCall(ollama(process.env.OLLAMA_MODEL || 'llama3.3')); } catch (localErr) {
       try { result = await aiCall((await getCloudAI())(FREE_MODELS.chat)); } catch (orErr) {
         result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
       }
@@ -184,3 +184,4 @@ export async function importSubmoduleFromText(courseId: string, moduleId: string
     return { success: false, error: err.message || "Failed to process text" };
   }
 }
+
