@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+﻿import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { User, PowerOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ModuleHeader } from './module-header';
 import { SubmoduleHeader } from './submodule-header';
+import { AiImportModuleDialog, AiImportSubmoduleDialog } from '../../ai-import-partial-dialogs';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -186,7 +187,8 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
                     <input type="hidden" name="moduleId" value={module.id} />
                     <Input name="title" placeholder="Submodule Title" className="h-8 w-40 text-sm" required />
                     <Button variant="outline" size="sm" type="submit">+ Submodule</Button>
-                  </form>
+                      <AiImportModuleDialog courseId={course.id} moduleId={module.id} moduleTitle={module.title} />
+                    </form>
                 </div>
 
                 <div className="space-y-4 pl-4">
@@ -199,7 +201,8 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
                           <input type="hidden" name="submoduleId" value={sub.id} />
                           <Input name="title" placeholder="Lesson Title" className="h-7 w-40 text-xs" required />
                           <Button variant="secondary" size="sm" className="h-7 text-xs" type="submit">+ Lesson</Button>
-                        </form>
+                            <AiImportSubmoduleDialog courseId={course.id} moduleId={sub.id} submoduleTitle={sub.title} />
+                          </form>
                       </div>
 
                       <div className="space-y-2 mt-3">
@@ -223,3 +226,6 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
     </div>
   );
 }
+
+
+

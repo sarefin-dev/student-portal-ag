@@ -90,3 +90,97 @@ ${syllabusText}
     return { success: false, error: err.message || "Failed to process text" };
   }
 }
+
+
+const ModuleSchema = z.object({
+  title: z.string(),
+  submodules: z.array(z.object({
+    title: z.string(),
+    lessons: z.array(z.object({
+      title: z.string(),
+      contentBlocks: z.array(z.object({
+        type: z.enum(['text', 'video', 'pdf', 'quiz']),
+        content: z.string()
+      }))
+    }))
+  }))
+});
+
+const SubmoduleSchema = z.object({
+  title: z.string(),
+  lessons: z.array(z.object({
+    title: z.string(),
+    contentBlocks: z.array(z.object({
+      type: z.enum(['text', 'video', 'pdf', 'quiz']),
+      content: z.string()
+    }))
+  }))
+});
+
+export async function importModuleFromText(courseId: string, syllabusText: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Unauthorized" };
+
+  try {
+    const aiCall = async (modelConfig: any) => {
+      return await generateObject({
+        model: modelConfig,
+        schema: ModuleSchema,
+        prompt: `You are an expert LMS curriculum architect. Parse the following text into a single Module structure (with submodules and lessons). Create detailed contentBlocks for each lesson.\n\nText to parse:\n"""\n${syllabusText}\n"""`
+      });
+    };
+
+    let result;
+    try { result = await aiCall(ollama('llama3.3')); } catch (localErr) {
+      try { result = await aiCall((await getCloudAI())(FREE_MODELS.chat)); } catch (orErr) {
+        result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
+      }
+    }
+
+    const { error } = await supabase.rpc('import_module_tree', {
+      payload: result.object,
+      p_course_id: courseId
+    });
+
+    if (error) throw error;
+    revalidatePath(`/admin/courses/${courseId}/builder`);
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to process text" };
+  }
+}
+
+export async function importSubmoduleFromText(courseId: string, moduleId: string, syllabusText: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Unauthorized" };
+
+  try {
+    const aiCall = async (modelConfig: any) => {
+      return await generateObject({
+        model: modelConfig,
+        schema: SubmoduleSchema,
+        prompt: `You are an expert LMS curriculum architect. Parse the following text into a single Submodule structure (with lessons). Create detailed contentBlocks for each lesson.\n\nText to parse:\n"""\n${syllabusText}\n"""`
+      });
+    };
+
+    let result;
+    try { result = await aiCall(ollama('llama3.3')); } catch (localErr) {
+      try { result = await aiCall((await getCloudAI())(FREE_MODELS.chat)); } catch (orErr) {
+        result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
+      }
+    }
+
+    const { error } = await supabase.rpc('import_submodule_tree', {
+      payload: result.object,
+      p_module_id: moduleId
+    });
+
+    if (error) throw error;
+    revalidatePath(`/admin/courses/${courseId}/builder`);
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to process text" };
+  }
+}
