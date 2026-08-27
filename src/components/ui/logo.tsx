@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 interface LogoProps {
@@ -31,7 +31,7 @@ export function Logo({
     <div className={cn("flex items-center gap-2.5 select-none", className)}>
       <div className="relative shrink-0 flex items-center justify-center">
         <img
-          src="/logo.png"
+          src="/sitelogo.jpg"
           alt="ArefinLab Logo"
           className="w-auto object-contain rounded-md"
           style={{ height: `${currentSize.imgHeight}px` }}
