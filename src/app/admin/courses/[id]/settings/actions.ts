@@ -8,7 +8,7 @@ import { google } from '@ai-sdk/google';
 export async function generateAiSummary(title: string, outcomes: string) {
   try {
     const { text } = await generateText({
-      model: google('gemini-2.5-flash'),
+      model: google(process.env.GOOGLE_GENERATIVE_AI_MODEL || 'gemini-3.6-flash'),
       prompt: `Write a very concise, professional one-sentence summary (max 150 characters) of what was covered in this course for a certificate of completion. Start the sentence dynamically (e.g. "key concepts including...", "advanced topics such as...", or "practical skills in..."). Do not include the course name. 
       Course Title: ${title}
       Outcomes: ${outcomes}`,
@@ -85,5 +85,6 @@ export async function updateCourseSettings(formData: FormData) {
   revalidatePath(`/admin/courses/${courseId}/builder`);
   revalidatePath('/admin/courses');
 }
+
 
 
