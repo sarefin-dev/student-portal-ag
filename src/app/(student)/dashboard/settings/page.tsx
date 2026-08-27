@@ -1,8 +1,10 @@
-import { updatePassword, updateInstructorProfile } from "./actions";
+import { updateInstructorProfile } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/server";
+import { StudentProfileForm } from "./profile-form";
+import { PasswordChangeForm } from "./password-form";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -10,17 +12,22 @@ export default async function SettingsPage() {
   
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, instructor_title, signature_url')
+    .select('role, full_name, email, phone, address, instructor_title, signature_url')
     .eq('id', user?.id)
     .single();
 
   const isInstructorOrAdmin = profile?.role === 'instructor' || profile?.role === 'admin';
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
+    <div className="max-w-2xl mx-auto space-y-8 pb-16">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
-        <p className="text-muted-foreground mt-2">Manage your account preferences and security.</p>
+        <p className="text-muted-foreground mt-2">Manage your personal details, preferences, and password.</p>
+      </div>
+
+      <div className="rounded-lg border bg-card p-6 shadow-sm">
+        <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
+        <StudentProfileForm profile={profile} />
       </div>
 
       {isInstructorOrAdmin && (
@@ -57,17 +64,7 @@ export default async function SettingsPage() {
 
       <div className="rounded-lg border bg-card p-6 shadow-sm">
         <h2 className="text-xl font-semibold mb-4">Change Password</h2>
-        <form action={updatePassword} className="space-y-4 max-w-sm">
-          <div className="space-y-2">
-            <Label htmlFor="new_password">New Password</Label>
-            <Input id="new_password" name="new_password" type="password" required minLength={6} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirm_password">Confirm New Password</Label>
-            <Input id="confirm_password" name="confirm_password" type="password" required minLength={6} />
-          </div>
-          <Button type="submit">Update Password</Button>
-        </form>
+        <PasswordChangeForm />
       </div>
     </div>
   );

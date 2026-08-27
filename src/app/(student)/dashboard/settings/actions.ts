@@ -3,6 +3,50 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
+export async function updateStudentProfile(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Unauthorized" };
+  }
+
+  const fullName = (formData.get("full_name") as string)?.trim();
+  const phone = (formData.get("phone") as string)?.trim();
+  const address = (formData.get("address") as string)?.trim();
+
+  if (!fullName) {
+    return { error: "Full name is required." };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      full_name: fullName,
+      phone: phone || null,
+      address: address || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id);
+
+  if (error) {
+    console.error("Profile update error:", error);
+    return { error: error.message };
+  }
+
+  // Update user metadata in auth
+  await supabase.auth.updateUser({
+    data: {
+      full_name: fullName,
+      phone: phone || null,
+    },
+  });
+
+  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
 export async function updatePassword(formData: FormData) {
   const newPassword = formData.get("new_password") as string;
   const confirmPassword = formData.get("confirm_password") as string;

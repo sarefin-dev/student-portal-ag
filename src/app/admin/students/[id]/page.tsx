@@ -80,6 +80,10 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
               <div>{profile.phone || <span className="text-muted-foreground italic">N/A</span>}</div>
             </div>
             <div>
+              <div className="text-sm text-muted-foreground">Address</div>
+              <div>{profile.address || <span className="text-muted-foreground italic">N/A</span>}</div>
+            </div>
+            <div>
               <div className="text-sm text-muted-foreground">Status</div>
               <Badge variant={profile.status === 'suspended' ? 'destructive' : 'default'} className="mt-1">
                 {profile.status === 'suspended' ? 'Suspended' : 'Active'}
