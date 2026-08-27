@@ -1,7 +1,8 @@
-import { createClient } from '@/lib/supabase/server';
+﻿import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
 import { StudentsTable } from './students-table';
+import { CreateStudentDialog } from './create-student-dialog';
 import { env } from '@/env';
 
 export default async function AdminStudentsPage({ searchParams }: { searchParams: Promise<{ page?: string, search?: string, sort?: string, order?: string, status?: string }> }) {
@@ -50,9 +51,12 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Students Directory</h1>
-        <p className="text-muted-foreground">Manage all registered students in the platform.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Students Directory</h1>
+          <p className="text-muted-foreground">Manage all registered students in the platform.</p>
+        </div>
+        <CreateStudentDialog />
       </div>
 
       <StudentsTable 
@@ -64,3 +68,5 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
     </div>
   );
 }
+
+

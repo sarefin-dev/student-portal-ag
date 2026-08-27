@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -13,7 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toggleStudentStatus } from './actions';
-import { Ban, CheckCircle, Eye } from 'lucide-react';
+import { Ban, CheckCircle, Eye, Mail } from 'lucide-react';
+import { SendNotificationDialog } from './send-notification-dialog';
 import Link from 'next/link';
 import {
   Select,
@@ -44,6 +45,7 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
   const searchParams = useSearchParams();
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [notifyStudent, setNotifyStudent] = useState<any>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,9 +130,10 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" asChild title="View Profile">
               <Link href={`/admin/students/${studentId}`}>
                 <Eye className="w-4 h-4" />
-                <span className="sr-only">View Profile</span>
-              </Link>
-            </Button>
+                <span className="sr-only">View Profile</span></Link></Button><Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" title="Send Email" onClick={() => setNotifyStudent(row.original)}>
+                <Mail className="w-4 h-4" />
+                <span className="sr-only">Send Email</span>
+              </Button>
             
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -282,3 +285,4 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
     </Card>
   );
 }
+
