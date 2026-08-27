@@ -45,6 +45,21 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 4
   },
+  watermarkContainer: {
+    position: 'absolute',
+    top: '20%',
+    left: '25%',
+    width: '50%',
+    height: '60%',
+    opacity: 0.05,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  watermarkImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+  },
   logoImage: {
     height: 40,
     marginBottom: 30,
@@ -138,6 +153,11 @@ const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseS
     <Page size="A4" orientation="landscape" style={styles.page}>
       <View style={styles.outerBorder}>
         <View style={styles.innerBorder}>
+          {logoBase64 ? (
+            <View style={styles.watermarkContainer}>
+              <Image src={logoBase64} style={styles.watermarkImage} />
+            </View>
+          ) : null}
           <View style={styles.contentWrapper}>
             {logoBase64 ? (
               <Image src={logoBase64} style={styles.logoImage} />
@@ -277,4 +297,5 @@ export async function GET(
     }
   });
 }
+
 
