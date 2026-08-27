@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
 
@@ -37,7 +37,7 @@ export default async function StudentDashboardPage() {
       .limit(3)
   ]);
 
-  const enrollments = enrollmentsRes.data;
+  const enrollments = (enrollmentsRes.data || []).filter((enr: any) => enr.courses !== null);
   const certificates = certificatesRes.data;
   const payments = paymentsRes.data;
 
@@ -68,9 +68,9 @@ export default async function StudentDashboardPage() {
                       <div className="font-semibold">{session.title}</div>
                       <div className="text-sm text-muted-foreground flex gap-2 mt-1">
                         <span>{session.courses?.title}</span>
-                        <span>•</span>
+                        <span>â€¢</span>
                         <span>{new Date(session.scheduled_at).toLocaleString()}</span>
-                        <span>•</span>
+                        <span>â€¢</span>
                         <span>{session.duration_minutes} min</span>
                       </div>
                     </div>
@@ -174,3 +174,4 @@ export default async function StudentDashboardPage() {
     </div>
   )
 }
+
