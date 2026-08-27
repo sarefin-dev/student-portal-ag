@@ -8,6 +8,7 @@ interface LogoProps {
   subtitle?: string;
   showSubtitle?: boolean;
   collapsed?: boolean;
+  variant?: 'default' | 'dark';
 }
 
 export function Logo({
@@ -17,6 +18,7 @@ export function Logo({
   subtitle,
   showSubtitle = true,
   collapsed = false,
+  variant = 'default',
 }: LogoProps) {
   const sizeMap = {
     sm: { imgHeight: 26, text: 'text-base', sub: 'text-[10px]' },
@@ -26,6 +28,7 @@ export function Logo({
   };
 
   const currentSize = sizeMap[size];
+  const isDark = variant === 'dark';
 
   const content = (
     <div className={cn("flex items-center gap-2.5 select-none", className)}>
@@ -39,11 +42,11 @@ export function Logo({
       </div>
       {!collapsed && (
         <div className="flex flex-col text-left">
-          <span className={cn("font-bold tracking-tight text-foreground leading-tight", currentSize.text)}>
+          <span className={cn("font-bold tracking-tight leading-tight", isDark ? "text-white" : "text-foreground", currentSize.text)}>
             Arefin<span className="text-primary">Lab</span>
           </span>
           {showSubtitle && subtitle && (
-            <span className={cn("text-muted-foreground font-medium uppercase tracking-wider text-[10px] leading-none mt-0.5", currentSize.sub)}>
+            <span className={cn("font-medium uppercase tracking-wider text-[10px] leading-none mt-0.5", isDark ? "text-zinc-400" : "text-muted-foreground", currentSize.sub)}>
               {subtitle}
             </span>
           )}

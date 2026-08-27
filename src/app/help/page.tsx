@@ -7,10 +7,10 @@ import { Logo } from '@/components/ui/logo';
 export default function HelpPage() {
   return (
     <div className="min-h-[100dvh] flex flex-col">
-      <header className="border-b px-6 py-4 flex items-center justify-between bg-card">
-        <Logo href="/" size="sm" subtitle="Help & Support" />
+      <header className="border-b border-zinc-800 px-6 py-4 flex items-center justify-between bg-zinc-950 text-white">
+        <Logo href="/" size="sm" subtitle="Help & Support" variant="dark" />
         <Link href="/dashboard">
-          <Button variant="ghost">Back to Dashboard</Button>
+          <Button variant="ghost" className="text-zinc-300 hover:text-white hover:bg-zinc-800">Back to Dashboard</Button>
         </Link>
       </header>
 
