@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { createResource, deleteResource } from './actions';
 import { FileText, Download, Trash2, Link as LinkIcon, Edit, File as FileIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function ResourceManager({ resources }: { resources: any[] }) {
   const [isFree, setIsFree] = useState(false);
@@ -20,10 +21,11 @@ export function ResourceManager({ resources }: { resources: any[] }) {
     const res = await createResource(formData);
     setIsUploading(false);
     if (res.success) {
+      toast.success('Resource uploaded successfully!');
       e.currentTarget.reset();
       setIsFree(false);
     } else {
-      alert(res.error);
+      toast.error(res.error || 'Failed to upload resource');
     }
   };
 
