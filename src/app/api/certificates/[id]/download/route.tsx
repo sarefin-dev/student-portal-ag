@@ -4,7 +4,10 @@ import ReactPDF, { Document, Page, Text, View, StyleSheet, Font, Image } from '@
 import fs from 'fs';
 import path from 'path';
 
-// Register standard fonts is not strictly needed for Times, it's built-in, but we must explicitly use it in styles.
+Font.register({ family: 'NotoSansBengali-Regular', src: path.join(process.cwd(), 'public/fonts/NotoSansBengali-Regular.ttf') });
+Font.register({ family: 'NotoSansBengali-Bold', src: path.join(process.cwd(), 'public/fonts/NotoSansBengali-Bold.ttf') });
+
+// Register standard fonts
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
@@ -39,7 +42,7 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontSize: 24,
-    fontFamily: 'Times-Bold',
+    fontFamily: 'NotoSansBengali-Bold',
     color: '#0f172a',
     marginBottom: 30,
     textTransform: 'uppercase',
@@ -67,7 +70,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 36,
-    fontFamily: 'Times-Bold',
+    fontFamily: 'NotoSansBengali-Bold',
     marginBottom: 16,
     color: '#0f172a',
     textTransform: 'uppercase',
@@ -75,14 +78,14 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    fontFamily: 'Times-Italic',
+    fontFamily: 'NotoSansBengali-Regular',
     marginBottom: 20,
     color: '#334155',
     textAlign: 'center'
   },
   name: {
     fontSize: 36,
-    fontFamily: 'Times-Bold',
+    fontFamily: 'NotoSansBengali-Bold',
     marginBottom: 20,
     color: '#1e293b',
     borderBottom: '1pt solid #1e293b',
@@ -92,7 +95,7 @@ const styles = StyleSheet.create({
   },
   course: {
     fontSize: 24,
-    fontFamily: 'Times-Bold',
+    fontFamily: 'NotoSansBengali-Bold',
     marginBottom: 16,
     color: '#0f172a',
     textAlign: 'center',
@@ -100,7 +103,7 @@ const styles = StyleSheet.create({
   },
   summary: {
     fontSize: 12,
-    fontFamily: 'Times-Roman',
+    fontFamily: 'NotoSansBengali-Regular',
     color: '#334155',
     textAlign: 'center',
     maxWidth: '75%',
@@ -131,17 +134,17 @@ const styles = StyleSheet.create({
   },
   signatureText: {
     fontSize: 12,
-    fontFamily: 'Times-Bold',
+    fontFamily: 'NotoSansBengali-Bold',
     color: '#1e293b'
   },
   signatureTitle: {
     fontSize: 10,
-    fontFamily: 'Times-Roman',
+    fontFamily: 'NotoSansBengali-Regular',
     color: '#64748b'
   },
   metadata: {
     fontSize: 10,
-    fontFamily: 'Times-Roman',
+    fontFamily: 'NotoSansBengali-Regular',
     color: '#64748b',
     textAlign: 'center',
     marginTop: 10
@@ -180,7 +183,7 @@ const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseS
           
           <View style={styles.footer}>
             <View style={styles.footerBlock}>
-              <Text style={{ fontSize: 16, fontFamily: 'Times-Roman', marginBottom: 12, color: '#1e293b' }}>{issueDate}</Text>
+              <Text style={{ fontSize: 16, fontFamily: 'NotoSansBengali-Regular', marginBottom: 12, color: '#1e293b' }}>{issueDate}</Text>
               <View style={styles.signatureLine} />
               <Text style={styles.signatureText}>Date of Issue</Text>
             </View>
@@ -189,7 +192,7 @@ const CertificateDocument = ({ studentName, courseTitle, courseDuration, courseS
               {signatureImage ? (
                 <Image src={signatureImage} style={styles.signatureImage} />
               ) : (
-                <Text style={{ fontSize: 20, fontFamily: 'Times-Italic', marginBottom: 8, color: '#1e293b' }}>{instructorName}</Text>
+                <Text style={{ fontSize: 20, fontFamily: 'NotoSansBengali-Regular', marginBottom: 8, color: '#1e293b' }}>{instructorName}</Text>
               )}
               <View style={styles.signatureLine} />
               <Text style={styles.signatureText}>{instructorName}</Text>
@@ -297,5 +300,6 @@ export async function GET(
     }
   });
 }
+
 
 
