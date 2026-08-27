@@ -11,6 +11,7 @@ export default async function ResourcesCatalogPage() {
     .from('resources')
     .select('*')
     .is('deleted_at', null)
+    .eq('is_course_only', false)
     .order('created_at', { ascending: false });
 
   return (

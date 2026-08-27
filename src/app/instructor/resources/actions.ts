@@ -20,10 +20,12 @@ export async function createResource(formData: FormData) {
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
     const type = formData.get('type') as string;
-    const isFree = formData.get('is_free') === 'true';
-    const priceAmount = formData.get('price_amount') ? parseFloat(formData.get('price_amount') as string) : null;
+    const distributionType = formData.get('distribution_type') as string;
+    const isCourseOnly = distributionType === 'course_only' || formData.get('is_course_only') === 'true';
+    const isFree = isCourseOnly || formData.get('is_free') === 'true';
+    const priceAmount = (isFree || isCourseOnly) ? null : (formData.get('price_amount') ? parseFloat(formData.get('price_amount') as string) : null);
     const compareAtPriceRaw = formData.get('compare_at_price');
-    const compareAtPrice = compareAtPriceRaw ? parseFloat(compareAtPriceRaw as string) : null;
+    const compareAtPrice = (isFree || isCourseOnly) ? null : (compareAtPriceRaw ? parseFloat(compareAtPriceRaw as string) : null);
     const watermarkEnabled = formData.get('watermark_enabled') === 'true';
     const downloadLimit = formData.get('download_limit') ? parseInt(formData.get('download_limit') as string, 10) : null;
     const file = formData.get('file') as File | null;
@@ -31,8 +33,8 @@ export async function createResource(formData: FormData) {
     if (!title || !type || !file || file.size === 0) {
       return { success: false, error: "Missing required fields or file" };
     }
-    if (!isFree && (!priceAmount || priceAmount <= 0)) {
-      return { success: false, error: "Paid resources must have a price" };
+    if (!isFree && !isCourseOnly && (!priceAmount || priceAmount <= 0)) {
+      return { success: false, error: "Paid standalone resources must have a valid price" };
     }
 
     const { createClient: createAdminClient } = await import('@supabase/supabase-js');
@@ -67,8 +69,9 @@ export async function createResource(formData: FormData) {
         description,
         type,
         is_free: isFree,
-        price_amount: isFree ? null : priceAmount,
-        compare_at_price: isFree ? null : compareAtPrice,
+        is_course_only: isCourseOnly,
+        price_amount: isFree || isCourseOnly ? null : priceAmount,
+        compare_at_price: isFree || isCourseOnly ? null : compareAtPrice,
         storage_path: fileName,
         watermark_enabled: watermarkEnabled,
         download_limit: downloadLimit,

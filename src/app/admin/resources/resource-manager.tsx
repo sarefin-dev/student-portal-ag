@@ -11,6 +11,7 @@ import { FileText, Download, Trash2, Link as LinkIcon, Edit, File as FileIcon } 
 import { toast } from 'sonner';
 
 export function ResourceManager({ resources }: { resources: any[] }) {
+  const [distributionType, setDistributionType] = useState<'standalone' | 'course_only'>('course_only');
   const [isFree, setIsFree] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -25,13 +26,14 @@ export function ResourceManager({ resources }: { resources: any[] }) {
       toast.success('Resource uploaded successfully!');
       form.reset();
       setIsFree(false);
+      setDistributionType('course_only');
     } else {
       toast.error(res.error || 'Failed to upload resource');
     }
   };
 
   return (
-    <div className="grid md:grid-cols-[1fr_320px] gap-8">
+    <div className="grid md:grid-cols-[1fr_340px] gap-8">
       <div className="space-y-4">
         {resources.map(resource => (
           <Card key={resource.id}>
@@ -44,7 +46,11 @@ export function ResourceManager({ resources }: { resources: any[] }) {
                   <h3 className="font-semibold text-lg">{resource.title}</h3>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold bg-muted px-2 py-1 rounded capitalize">{resource.type}</span>
-                    {resource.is_free ? (
+                    {resource.is_course_only ? (
+                      <span className="text-xs font-semibold bg-indigo-500/10 text-indigo-600 px-2 py-1 rounded">
+                        Course / Cohort Exclusive
+                      </span>
+                    ) : resource.is_free ? (
                       <span className="text-xs font-semibold bg-success/10 text-success px-2 py-1 rounded">Free</span>
                     ) : (
                       <span className="text-xs font-semibold bg-primary/10 text-primary px-2 py-1 rounded">
@@ -67,13 +73,18 @@ export function ResourceManager({ resources }: { resources: any[] }) {
                   )}
                 </div>
                 <div className="pt-2 flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => {
-                    // Copy direct checkout/download link
-                    navigator.clipboard.writeText(`${window.location.origin}/resources`);
-                    alert("Link copied!");
-                  }}>
-                    <LinkIcon className="w-4 h-4 mr-2" /> Share Link
-                  </Button>
+                  {!resource.is_course_only ? (
+                    <Button variant="outline" size="sm" onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/resources`);
+                      toast.success("Storefront link copied!");
+                    }}>
+                      <LinkIcon className="w-4 h-4 mr-2" /> Share Store Link
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-muted-foreground self-center italic">
+                      Included in course lessons
+                    </span>
+                  )}
                   <Button variant="destructive" size="sm" onClick={async () => {
                     if (confirm("Are you sure?")) {
                       await deleteResource(resource.id);
@@ -90,7 +101,7 @@ export function ResourceManager({ resources }: { resources: any[] }) {
           <div className="text-center p-12 border rounded-lg bg-muted/30">
             <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
             <h3 className="text-xl font-semibold mb-2">No Resources</h3>
-            <p className="text-muted-foreground">Upload your first digital product.</p>
+            <p className="text-muted-foreground">Upload your first digital product or course material.</p>
           </div>
         )}
       </div>
@@ -104,7 +115,7 @@ export function ResourceManager({ resources }: { resources: any[] }) {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label>Title</Label>
-                <Input name="title" required placeholder="e.g. System Design Guide" />
+                <Input name="title" required placeholder="e.g. System Design eBook" />
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
@@ -113,55 +124,96 @@ export function ResourceManager({ resources }: { resources: any[] }) {
               <div className="space-y-2">
                 <Label>Type</Label>
                 <select name="type" className="w-full p-2 border rounded-md bg-background text-sm" required>
-                  <option value="article">Article (PDF)</option>
                   <option value="ebook">eBook (PDF)</option>
+                  <option value="article">Article (PDF)</option>
                   <option value="infographic">Infographic</option>
-                  <option value="presentation">Presentation</option>
-                  <option value="other">Other</option>
+                  <option value="presentation">Presentation / Slides</option>
+                  <option value="other">Other Resource</option>
                 </select>
               </div>
-              <div className="space-y-2 border p-3 rounded-md bg-muted/30">
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    name="is_free" 
-                    id="is_free" 
-                    value="true"
-                    checked={isFree}
-                    onChange={(e) => setIsFree(e.target.checked)} 
-                  />
-                  <Label htmlFor="is_free">This resource is Free</Label>
-                </div>
-                  {!isFree && (
-                    <div className="mt-2 grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Selling Price (BDT)</Label>
-                        <Input name="price_amount" type="number" step="0.01" min="1" required={!isFree} placeholder="e.g. 500" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Original Price (Strike)</Label>
-                        <Input name="compare_at_price" type="number" step="0.01" placeholder="Optional" />
-                      </div>
+
+              {/* Distribution & Pricing Strategy */}
+              <div className="space-y-3 border p-3 rounded-md bg-muted/20">
+                <Label className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Distribution & Access</Label>
+                
+                <div className="space-y-2">
+                  <label className="flex items-start gap-2 cursor-pointer text-sm">
+                    <input 
+                      type="radio" 
+                      name="distribution_type" 
+                      value="course_only" 
+                      checked={distributionType === 'course_only'}
+                      onChange={() => setDistributionType('course_only')}
+                      className="mt-1"
+                    />
+                    <div>
+                      <span className="font-medium">Part of Course / Cohort</span>
+                      <p className="text-xs text-muted-foreground">Included for enrolled course students only. Not sold separately in storefront.</p>
                     </div>
-                  )}
+                  </label>
+
+                  <label className="flex items-start gap-2 cursor-pointer text-sm">
+                    <input 
+                      type="radio" 
+                      name="distribution_type" 
+                      value="standalone" 
+                      checked={distributionType === 'standalone'}
+                      onChange={() => setDistributionType('standalone')}
+                      className="mt-1"
+                    />
+                    <div>
+                      <span className="font-medium">Sell / List on Storefront</span>
+                      <p className="text-xs text-muted-foreground">Appears publicly in the /resources catalog for purchase or free download.</p>
+                    </div>
+                  </label>
+                </div>
+
+                {distributionType === 'standalone' && (
+                  <div className="pt-2 border-t space-y-3">
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        name="is_free" 
+                        id="is_free" 
+                        value="true"
+                        checked={isFree}
+                        onChange={(e) => setIsFree(e.target.checked)} 
+                      />
+                      <Label htmlFor="is_free" className="text-sm cursor-pointer">Free for everyone in storefront</Label>
+                    </div>
+                    {!isFree && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Price (BDT)</Label>
+                          <Input name="price_amount" type="number" step="0.01" min="1" required={!isFree} placeholder="500" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Original (Strike)</Label>
+                          <Input name="compare_at_price" type="number" step="0.01" placeholder="Optional" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
+
               <div className="space-y-2">
-                <Label>PDF File</Label>
+                <Label>PDF / Document File</Label>
                 <Input name="file" type="file" required accept=".pdf" />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <input type="checkbox" name="watermark_enabled" id="watermark_enabled" value="true" defaultChecked />
-                  <Label htmlFor="watermark_enabled">Enable PDF Watermarking</Label>
+                  <Label htmlFor="watermark_enabled" className="text-sm cursor-pointer">Enable PDF Watermarking</Label>
                 </div>
-                <p className="text-xs text-muted-foreground">Automatically stamps the buyer's email onto the PDF.</p>
+                <p className="text-xs text-muted-foreground">Automatically stamps the recipient's name & email onto the document.</p>
               </div>
               <div className="space-y-2">
                 <Label>Download Limit (Optional)</Label>
                 <Input name="download_limit" type="number" placeholder="e.g. 5 (Leave empty for unlimited)" />
               </div>
               <Button type="submit" className="w-full" disabled={isUploading}>
-                {isUploading ? 'Uploading...' : 'Upload Resource'}
+                {isUploading ? 'Uploading...' : 'Save & Upload Resource'}
               </Button>
             </form>
           </CardContent>
