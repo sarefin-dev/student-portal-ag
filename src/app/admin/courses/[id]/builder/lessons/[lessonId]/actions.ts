@@ -1,4 +1,4 @@
-'use server';
+﻿'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
@@ -107,5 +107,32 @@ export async function addVideoBlock(formData: FormData) {
 
   if (error) console.error("Error adding video block:", error);
 
+  revalidatePath(`/admin/courses/${courseId}/builder/lessons/${lessonId}`);
+}
+
+export async function addYoutubeBlock(formData: FormData) {
+  const { supabase } = await requireAuth();
+  const courseId = formData.get('courseId') as string;
+  const lessonId = formData.get('lessonId') as string;
+  const youtubeUrl = formData.get('youtubeUrl') as string;
+
+  const { data: existing } = await supabase
+    .from('content_blocks')
+    .select('position')
+    .eq('lesson_id', lessonId)
+    .order('position', { ascending: false })
+    .limit(1);
+  const position = existing && existing.length > 0 ? existing[0].position + 1 : 1;
+
+  const { error } = await supabase
+    .from('content_blocks')
+    .insert({
+      lesson_id: lessonId,
+      block_type: 'video',
+      position,
+      payload: { youtube_url: youtubeUrl }
+    });
+
+  if (error) console.error("Error adding youtube block:", error);
   revalidatePath(`/admin/courses/${courseId}/builder/lessons/${lessonId}`);
 }

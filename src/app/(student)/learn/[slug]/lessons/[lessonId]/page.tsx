@@ -93,6 +93,21 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
                 const payload = block.payload;
 
                 if (block.block_type === 'video') {
+                  if (payload.youtube_url) {
+                    const ytIdMatch = payload.youtube_url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
+                    const ytId = ytIdMatch ? ytIdMatch[1] : null;
+
+                    return (
+                      <div key={block.id} className="overflow-hidden rounded border shadow-none aspect-video bg-black">
+                        {ytId ? (
+                           <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${ytId}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                        ) : (
+                           <div className="p-4 bg-red-100 text-red-700">Invalid YouTube URL</div>
+                        )}
+                      </div>
+                    );
+                  }
+
                   return (
                     <div key={block.id} className="overflow-hidden rounded border bg-black shadow-none">
                       <VideoPlayer videoId={payload.video_id} blockId={block.id} hostname={env.BUNNY_STREAM_CDN_HOSTNAME} />

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { addTextBlock, addVideoBlock } from './actions';
+import { addTextBlock, addVideoBlock, addYoutubeBlock } from './actions';
 
 export default async function LessonBuilderPage({ params }: { params: Promise<{ id: string, lessonId: string }> }) {
   const { id: courseId, lessonId } = await params;
@@ -33,7 +33,7 @@ export default async function LessonBuilderPage({ params }: { params: Promise<{ 
     <div className="space-y-6">
       <div className="flex h-14 items-center border-b pb-4 mb-6">
         <Link href={`/instructor/courses/${courseId}/builder`} className="text-sm font-medium text-muted-foreground hover:text-foreground">
-          ← Back to Course Builder
+          â† Back to Course Builder
         </Link>
       </div>
 
@@ -67,7 +67,7 @@ export default async function LessonBuilderPage({ params }: { params: Promise<{ 
                     )}
                     {block.block_type === 'video' && (
                       <p className="text-sm font-mono text-muted-foreground">
-                        Video ID: {block.payload.video_id}
+                        Video: {block.payload.youtube_url || block.payload.video_id}
                       </p>
                     )}
                   </div>
@@ -114,10 +114,15 @@ export default async function LessonBuilderPage({ params }: { params: Promise<{ 
                 <Input name="videoId" placeholder="e.g. 123e4567-e89b-12d3-a456-426614174000" required />
               )}
               <Button type="submit" variant="secondary" className="w-full">Attach Video</Button>
+            </form></div><div className="rounded-lg border bg-card p-4 shadow-sm space-y-4 mt-4">
+            <h3 className="font-bold border-b pb-2">Add YouTube Video</h3>
+            <form action={addYoutubeBlock} className="space-y-3">
+              <input type="hidden" name="courseId" value={courseId} />
+              <input type="hidden" name="lessonId" value={lessonId} />
+              <Input name="youtubeUrl" placeholder="e.g. https://youtube.com/watch?v=..." required />
+              <Button type="submit" variant="secondary" className="w-full">Embed YouTube Video</Button>
             </form>
-          </div>
-        </div>
-      </div>
-    </div>
+          </div></div></div></div>
   );
 }
+
