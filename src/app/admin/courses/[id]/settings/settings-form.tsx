@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createClient } from '@/lib/supabase/client';
 import { updateCourseSettings } from './actions';
 import Image from 'next/image';
@@ -17,6 +18,7 @@ export function CourseSettingsForm({
 }) {
   const [isUploading, setIsUploading] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState(course.thumbnail_url || '');
+  const [currentType, setCurrentType] = useState(course.type || 'recorded');
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -77,11 +79,20 @@ export function CourseSettingsForm({
 
       <div className="space-y-2">
         <label className="text-sm font-medium">Course Type</label>
-        <select name="type" defaultValue={course.type} className="flex h-10 w-full rounded border border-input bg-background px-3 py-2 text-sm">
-          <option value="recorded">Recorded Video (Self-Paced)</option>
-          <option value="live_cohort">Live Cohort (Online Workshop)</option>
-          <option value="in_person">In-Person (Classroom)</option>
-        </select>
+        <Select name="type" defaultValue={course.type} onValueChange={setCurrentType} required>
+          <SelectTrigger>
+            <SelectValue placeholder="Select course type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="recorded">Recorded Video</SelectItem>
+            <SelectItem value="live_cohort">Live Cohort (Online)</SelectItem>
+            <SelectItem value="in_person">In-Person (Classroom)</SelectItem>
+            <SelectItem value="text_based">Text Based</SelectItem>
+            <SelectItem value="mixed">Mixed Format</SelectItem>
+            <SelectItem value="ebook">E-Book</SelectItem>
+            <SelectItem value="digital_download">Digital Download</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
@@ -151,7 +162,7 @@ export function CourseSettingsForm({
         <p className="text-xs text-muted-foreground">This 1-sentence summary is printed on the student's PDF certificate.</p>
       </div>
 
-      {['live_cohort', 'in_person'].includes(course.type) && (
+      {['live_cohort', 'in_person'].includes(currentType) && (
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Cohort Duration (e.g. 4 Weeks)</label>
@@ -210,6 +221,8 @@ export function CourseSettingsForm({
     </form>
   );
 }
+
+
 
 
 
