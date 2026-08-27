@@ -21,32 +21,28 @@ export function Logo({
   variant = 'default',
 }: LogoProps) {
   const sizeMap = {
-    sm: { imgHeight: 26, text: 'text-base', sub: 'text-[10px]' },
-    md: { imgHeight: 34, text: 'text-lg', sub: 'text-[11px]' },
-    lg: { imgHeight: 44, text: 'text-xl', sub: 'text-xs' },
-    xl: { imgHeight: 56, text: 'text-2xl', sub: 'text-sm' },
+    sm: { text: 'text-base', sub: 'text-[10px]', badge: 'text-sm' },
+    md: { text: 'text-xl', sub: 'text-[11px]', badge: 'text-base' },
+    lg: { text: 'text-2xl', sub: 'text-xs', badge: 'text-lg' },
+    xl: { text: 'text-3xl', sub: 'text-sm', badge: 'text-xl' },
   };
 
   const currentSize = sizeMap[size];
   const isDark = variant === 'dark';
 
   const content = (
-    <div className={cn("flex items-center gap-2.5 select-none", className)}>
-      <div className="relative shrink-0 flex items-center justify-center">
-        <img
-          src="/sitelogo.jpg"
-          alt="ArefinLab Logo"
-          className="w-auto object-contain rounded-md"
-          style={{ height: `${currentSize.imgHeight}px` }}
-        />
-      </div>
-      {!collapsed && (
+    <div className={cn("flex items-center select-none", className)}>
+      {collapsed ? (
+        <span className={cn("font-black tracking-tighter text-primary px-1", currentSize.badge)}>
+          AL
+        </span>
+      ) : (
         <div className="flex flex-col text-left">
-          <span className={cn("font-bold tracking-tight leading-tight", isDark ? "text-white" : "text-foreground", currentSize.text)}>
+          <span className={cn("font-extrabold tracking-tight leading-none", isDark ? "text-white" : "text-foreground", currentSize.text)}>
             Arefin<span className="text-primary">Lab</span>
           </span>
           {showSubtitle && subtitle && (
-            <span className={cn("font-medium uppercase tracking-wider text-[10px] leading-none mt-0.5", isDark ? "text-zinc-400" : "text-muted-foreground", currentSize.sub)}>
+            <span className={cn("font-semibold uppercase tracking-wider text-[10px] leading-none mt-1", isDark ? "text-zinc-400" : "text-muted-foreground", currentSize.sub)}>
               {subtitle}
             </span>
           )}
