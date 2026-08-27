@@ -1,4 +1,4 @@
-﻿'use server';
+'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { generateObject } from 'ai';
@@ -54,17 +54,17 @@ ${syllabusText}
     };
 
     let result;
-    try {
-      // 1. Try Localhost First (Free)
-      result = await aiCall(ollama(process.env.OLLAMA_MODEL || 'llama3.3'));
-    } catch (localErr) {
-      console.log("Ollama failed, falling back to OpenRouter free models...", localErr);
+    if (process.env.OPENROUTER_API_KEY) {
       try {
-        // 2. Try OpenRouter Llama 3
         result = await aiCall((await getCloudAI())(FREE_MODELS.chat));
       } catch (orErr) {
         console.log("OpenRouter primary failed, trying fallback...", orErr);
-        // 3. Try OpenRouter Gemini Fallback
+        result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
+      }
+    } else {
+      try {
+        result = await aiCall(ollama(process.env.OLLAMA_MODEL || 'llama3.3'));
+      } catch (localErr) {
         result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
       }
     }

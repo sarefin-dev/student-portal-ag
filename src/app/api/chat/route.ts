@@ -1,4 +1,4 @@
-﻿import { streamText } from 'ai';
+import { streamText } from 'ai';
 import { getCloudAI, FREE_MODELS } from '@/lib/ai/openrouter';
 import { ollama } from 'ai-sdk-ollama';
 import { createClient as createServerClient } from '@/lib/supabase/server';
@@ -30,30 +30,18 @@ CURRENT LESSON CONTEXT:
 ${lessonContext || 'No specific lesson context provided.'}
 """`;
 
-    try {
-      const result = await streamText({
-        model: ollama('llama3.3'),
-        messages,
-        system: systemPrompt,
-      });
-      return result.toTextStreamResponse();
-    } catch (e) {
-      try {
-        const result = await streamText({
-          model: (await getCloudAI())(FREE_MODELS.chat),
-          messages,
-          system: systemPrompt,
-        });
-        return result.toTextStreamResponse();
-      } catch (e2) {
-        const result = await streamText({
-          model: (await getCloudAI())(FREE_MODELS.fallback),
-          messages,
-          system: systemPrompt,
-        });
-        return result.toTextStreamResponse();
-      }
-    }
+    const cloudAI = await getCloudAI();
+    const model = (process.env.OPENROUTER_API_KEY)
+      ? cloudAI(FREE_MODELS.chat)
+      : (process.env.OLLAMA_MODEL ? ollama(process.env.OLLAMA_MODEL) : cloudAI(FREE_MODELS.chat));
+
+    const result = await streamText({
+      model,
+      messages,
+      system: systemPrompt,
+    });
+
+    return result.toTextStreamResponse();
 
   } catch (error) {
     console.error('Chat Error:', error);

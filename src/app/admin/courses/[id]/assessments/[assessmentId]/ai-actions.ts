@@ -1,4 +1,4 @@
-﻿'use server';
+'use server';
 
 import { createClient } from '@/lib/supabase/server';
 import { generateObject } from 'ai';
@@ -37,12 +37,16 @@ Ensure there is exactly one correct answer per question, and provide a helpful e
     };
 
     let result;
-    try {
-      result = await aiCall(ollama('llama3.3'));
-    } catch (localErr) {
+    if (process.env.OPENROUTER_API_KEY) {
       try {
         result = await aiCall((await getCloudAI())(FREE_MODELS.chat));
-      } catch (geminiErr) {
+      } catch (orErr) {
+        result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
+      }
+    } else {
+      try {
+        result = await aiCall(ollama(process.env.OLLAMA_MODEL || 'llama3.3'));
+      } catch (localErr) {
         result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
       }
     }
