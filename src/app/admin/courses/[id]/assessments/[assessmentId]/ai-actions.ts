@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { generateObject } from 'ai';
-import { getCloudAI, FREE_MODELS } from '@/lib/ai/openrouter';
+import { getCloudAI, getAllConfiguredModels } from '@/lib/ai/openrouter';
 import { ollama } from 'ai-sdk-ollama';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
@@ -36,29 +36,45 @@ Ensure there is exactly one correct answer per question, and provide a helpful e
       });
     };
 
-    let result;
-    if (process.env.OPENROUTER_API_KEY) {
+    const cloudAI = await getCloudAI();
+    const modelsToTry = getAllConfiguredModels();
+    let result: any = null;
+    let lastError: any = null;
+
+    for (const modelName of modelsToTry) {
       try {
-        result = await aiCall((await getCloudAI())(FREE_MODELS.chat));
-      } catch (orErr) {
-        result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
-      }
-    } else {
-      try {
-        result = await aiCall(ollama(process.env.OLLAMA_MODEL || 'llama3.3'));
-      } catch (localErr) {
-        result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
+        result = await aiCall(cloudAI(modelName));
+        if (result) break;
+      } catch (err: any) {
+        console.warn(`Model ${modelName} failed during quiz generation:`, err?.message || err);
+        lastError = err;
       }
     }
 
-    const { questions } = result.object;
+    if (!result && process.env.OLLAMA_MODEL) {
+      try {
+        result = await aiCall(ollama(process.env.OLLAMA_MODEL));
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    if (!result) {
+      throw new Error(`All configured AI models failed: ${lastError?.message || 'Upstream service unavailable'}`);
+    }
+
+    const questions = result.object.questions as Array<{
+      prompt: string;
+      explanation: string;
+      options: Array<{ text: string; is_correct: boolean }>;
+    }>;
 
     // Validate that at least one option is correct per question
     for (const q of questions) {
-      const correctCount = q.options.filter(o => o.is_correct).length;
+      const correctCount = q.options.filter((o: any) => o.is_correct).length;
       if (correctCount !== 1) {
         // Auto-fix if the AI messes up
-        q.options.forEach((o, idx) => o.is_correct = (idx === 0));
+        q.options.forEach((o: any, idx: number) => o.is_correct = (idx === 0));
       }
     }
 
@@ -80,7 +96,7 @@ Ensure there is exactly one correct answer per question, and provide a helpful e
         
       if (qErr) throw qErr;
 
-      const optionsToInsert = q.options.map((opt, idx) => ({
+      const optionsToInsert = q.options.map((opt: any, idx: number) => ({
         question_id: qData.id,
         option_text: opt.text,
         is_correct: opt.is_correct,

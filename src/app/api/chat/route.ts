@@ -1,5 +1,5 @@
 import { streamText } from 'ai';
-import { getCloudAI } from '@/lib/ai/openrouter';
+import { getCloudAI, getAllConfiguredModels } from '@/lib/ai/openrouter';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { env } from '@/env';
@@ -81,17 +81,7 @@ ${lessonContext || 'No specific lesson context provided.'}
     }
 
     const cloudAI = await getCloudAI();
-
-    // Multi-tier fallback candidate models if primary is overloaded
-    const candidateModels = [
-      env.OPENROUTER_MODEL || 'nvidia/nemotron-3-ultra-550b-a55b:free',
-      'meta-llama/llama-3.3-70b-instruct:free',
-      'google/gemini-2.5-flash:free',
-      'deepseek/deepseek-chat:free'
-    ];
-
-    // Remove duplicates while preserving order
-    const modelsToTry = Array.from(new Set(candidateModels));
+    const modelsToTry = getAllConfiguredModels();
 
     let lastError: any = null;
 

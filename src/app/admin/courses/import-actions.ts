@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { generateObject } from 'ai';
-import { getCloudAI, FREE_MODELS } from '@/lib/ai/openrouter';
+import { getCloudAI, getAllConfiguredModels } from '@/lib/ai/openrouter';
 import { ollama } from 'ai-sdk-ollama';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
@@ -53,20 +53,31 @@ ${syllabusText}
       });
     };
 
-    let result;
-    if (process.env.OPENROUTER_API_KEY) {
+    const cloudAI = await getCloudAI();
+    const modelsToTry = getAllConfiguredModels();
+    let result: any = null;
+    let lastError: any = null;
+
+    for (const modelName of modelsToTry) {
       try {
-        result = await aiCall((await getCloudAI())(FREE_MODELS.chat));
-      } catch (orErr) {
-        console.log("OpenRouter primary failed, trying fallback...", orErr);
-        result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
+        result = await aiCall(cloudAI(modelName));
+        if (result) break;
+      } catch (err: any) {
+        console.warn(`Model ${modelName} failed during course import:`, err?.message || err);
+        lastError = err;
       }
-    } else {
+    }
+
+    if (!result && process.env.OLLAMA_MODEL) {
       try {
-        result = await aiCall(ollama(process.env.OLLAMA_MODEL || 'llama3.3'));
-      } catch (localErr) {
-        result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
+        result = await aiCall(ollama(process.env.OLLAMA_MODEL));
+      } catch (err) {
+        lastError = err;
       }
+    }
+
+    if (!result) {
+      throw new Error(`All configured AI models failed: ${lastError?.message || 'Upstream service unavailable'}`);
     }
 
     const object = result.object;
@@ -131,11 +142,30 @@ export async function importModuleFromText(courseId: string, syllabusText: strin
       });
     };
 
-    let result;
-    try { result = await aiCall(ollama(process.env.OLLAMA_MODEL || 'llama3.3')); } catch (localErr) {
-      try { result = await aiCall((await getCloudAI())(FREE_MODELS.chat)); } catch (orErr) {
-        result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
+    const cloudAI = await getCloudAI();
+    const modelsToTry = getAllConfiguredModels();
+    let result: any = null;
+    let lastError: any = null;
+
+    for (const modelName of modelsToTry) {
+      try {
+        result = await aiCall(cloudAI(modelName));
+        if (result) break;
+      } catch (err: any) {
+        lastError = err;
       }
+    }
+
+    if (!result && process.env.OLLAMA_MODEL) {
+      try {
+        result = await aiCall(ollama(process.env.OLLAMA_MODEL));
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    if (!result) {
+      throw new Error(`All configured AI models failed: ${lastError?.message || 'Upstream service unavailable'}`);
     }
 
     const { error } = await supabase.rpc('import_module_tree', {
@@ -165,11 +195,30 @@ export async function importSubmoduleFromText(courseId: string, moduleId: string
       });
     };
 
-    let result;
-    try { result = await aiCall(ollama(process.env.OLLAMA_MODEL || 'llama3.3')); } catch (localErr) {
-      try { result = await aiCall((await getCloudAI())(FREE_MODELS.chat)); } catch (orErr) {
-        result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
+    const cloudAI = await getCloudAI();
+    const modelsToTry = getAllConfiguredModels();
+    let result: any = null;
+    let lastError: any = null;
+
+    for (const modelName of modelsToTry) {
+      try {
+        result = await aiCall(cloudAI(modelName));
+        if (result) break;
+      } catch (err: any) {
+        lastError = err;
       }
+    }
+
+    if (!result && process.env.OLLAMA_MODEL) {
+      try {
+        result = await aiCall(ollama(process.env.OLLAMA_MODEL));
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    if (!result) {
+      throw new Error(`All configured AI models failed: ${lastError?.message || 'Upstream service unavailable'}`);
     }
 
     const { error } = await supabase.rpc('import_submodule_tree', {

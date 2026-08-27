@@ -1,8 +1,8 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { env } from '@/env';
 import { generateObject } from 'ai';
-import { getCloudAI, FREE_MODELS } from '@/lib/ai/openrouter';
+import { getCloudAI, getAllConfiguredModels } from '@/lib/ai/openrouter';
 import { z } from 'zod';
 
 export async function POST(req: Request) {
@@ -86,14 +86,22 @@ export async function POST(req: Request) {
               });
             };
 
-            let result;
-            try {
-              result = await aiCall((await getCloudAI())(FREE_MODELS.coder));
-              aiProvider = 'openrouter_primary';
-            } catch (err) {
-              console.log("OpenRouter primary failed, trying fallback...", err);
-              result = await aiCall((await getCloudAI())(FREE_MODELS.fallback));
-              aiProvider = 'openrouter_fallback';
+            const cloudAI = await getCloudAI();
+            const modelsToTry = getAllConfiguredModels();
+            let result: any = null;
+
+            for (const modelName of modelsToTry) {
+              try {
+                result = await aiCall(cloudAI(modelName));
+                aiProvider = modelName;
+                if (result) break;
+              } catch (err) {
+                console.log(`OpenRouter model ${modelName} failed, trying next...`, err);
+              }
+            }
+
+            if (!result) {
+              throw new Error('All configured AI grading models failed.');
             }
 
             scorePercent = result.object.scorePercent;
