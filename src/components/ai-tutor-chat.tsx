@@ -52,16 +52,21 @@ export function AiTutorChat({ lessonContext }: { lessonContext: string }) {
         if (done) break;
         const chunk = decoder.decode(value, { stream: true });
         
-        // Vercel AI SDK streams text as `0:"chunk"\n`
-        const textLines = chunk.split('\n');
-        for (const line of textLines) {
-          if (line.startsWith('0:')) {
-            try {
-              const text = JSON.parse(line.substring(2));
-              aiMsg.content += text;
-              setMessages(prev => [...prev.slice(0, -1), { ...aiMsg }]);
-            } catch (e) {}
+        // Handle both AI SDK data-stream format (0:"...") and raw text streams
+        if (chunk.startsWith('0:') || chunk.includes('\n0:')) {
+          const textLines = chunk.split('\n');
+          for (const line of textLines) {
+            if (line.startsWith('0:')) {
+              try {
+                const text = JSON.parse(line.substring(2));
+                aiMsg.content += text;
+                setMessages(prev => [...prev.slice(0, -1), { ...aiMsg }]);
+              } catch (e) {}
+            }
           }
+        } else {
+          aiMsg.content += chunk;
+          setMessages(prev => [...prev.slice(0, -1), { ...aiMsg }]);
         }
       }
     } catch (err) {
@@ -111,7 +116,7 @@ export function AiTutorChat({ lessonContext }: { lessonContext: string }) {
             <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
               {m.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
             </div>
-            <div className={`text-sm px-4 py-2 rounded-2xl max-w-[80%] ${m.role === 'user' ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-muted rounded-tl-sm'}`}>
+            <div className={`text-sm px-4 py-2 rounded-2xl max-w-[80%] whitespace-pre-wrap leading-relaxed ${m.role === 'user' ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-muted rounded-tl-sm'}`}>
               {m.content}
             </div>
           </div>
