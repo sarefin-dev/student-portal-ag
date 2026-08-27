@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,11 +33,19 @@ export function SendNotificationDialog({
     const sendEmail = formData.get('sendEmail') === 'on';
 
     try {
-      await sendStudentNotification(studentId, title, body, sendEmail);
-      toast.success('Message sent successfully!');
-      onOpenChange(false);
+      const res = await sendStudentNotification(studentId, title, body, sendEmail);
+      if (res?.error) {
+        toast.error(res.error);
+      } else {
+        if (res?.warning) {
+          toast.warning(res.warning, { duration: 6000 });
+        } else {
+          toast.success('Message sent successfully!');
+        }
+        onOpenChange(false);
+      }
     } catch (e: any) {
-      toast.error(e.message || 'Failed to send message');
+      toast.error(e?.message || 'Failed to send message');
     } finally {
       setIsLoading(false);
     }

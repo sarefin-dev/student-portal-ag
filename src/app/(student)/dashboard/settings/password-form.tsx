@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -17,9 +17,13 @@ export function PasswordChangeForm() {
     const formData = new FormData(e.currentTarget);
 
     try {
-      await updatePassword(formData);
-      toast.success('Password changed successfully!');
-      formRef.current?.reset();
+      const res = await updatePassword(formData);
+      if (res?.error) {
+        toast.error(res.error);
+      } else {
+        toast.success('Password changed successfully!');
+        formRef.current?.reset();
+      }
     } catch (err: any) {
       toast.error(err.message || 'Failed to update password');
     } finally {

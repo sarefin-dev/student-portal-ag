@@ -48,33 +48,39 @@ export async function updateStudentProfile(formData: FormData) {
 }
 
 export async function updatePassword(formData: FormData) {
-  const newPassword = formData.get("new_password") as string;
-  const confirmPassword = formData.get("confirm_password") as string;
+  try {
+    const newPassword = formData.get("new_password") as string;
+    const confirmPassword = formData.get("confirm_password") as string;
 
-  if (!newPassword || newPassword.length < 6) {
-    throw new Error("Password must be at least 6 characters.");
+    if (!newPassword || newPassword.length < 6) {
+      return { error: "Password must be at least 6 characters." };
+    }
+    
+    if (newPassword !== confirmPassword) {
+      return { error: "Passwords do not match." };
+    }
+
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { error: "Unauthorized: Please log in again." };
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    revalidatePath("/dashboard/settings");
+    return { success: true };
+  } catch (err: any) {
+    console.error("updatePassword error:", err);
+    return { error: err?.message || "Failed to update password" };
   }
-  
-  if (newPassword !== confirmPassword) {
-    throw new Error("Passwords do not match.");
-  }
-
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
-
-  const { error } = await supabase.auth.updateUser({
-    password: newPassword
-  });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  revalidatePath("/dashboard/settings");
 }
 
 export async function updateInstructorProfile(formData: FormData) {
