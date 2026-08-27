@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -282,6 +282,16 @@ export function StudentsTable({ data, currentPage, totalPages, initialSearch }: 
           </div>
         </div>
       </CardContent>
+      {notifyStudent && (
+        <SendNotificationDialog
+          studentId={notifyStudent.id}
+          studentName={notifyStudent.full_name || notifyStudent.email}
+          open={!!notifyStudent}
+          onOpenChange={(val) => {
+            if (!val) setNotifyStudent(null);
+          }}
+        />
+      )}
     </Card>
   );
 }
