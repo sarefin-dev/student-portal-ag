@@ -28,7 +28,7 @@ export async function manualEnroll(formData: FormData) {
   // Find student and course
   const [{ data: student }, { data: course }] = await Promise.all([
     supabase.from('profiles').select('id, full_name, email, role').eq('email', email).maybeSingle(),
-    supabase.from('courses').select('id, title, slug').eq('id', courseId).maybeSingle()
+    supabase.from('courses').select('id, title, slug, status').eq('id', courseId).maybeSingle()
   ]);
 
   if (!student) {
@@ -37,6 +37,10 @@ export async function manualEnroll(formData: FormData) {
 
   if (!course) {
     return { success: false, error: "Course not found" };
+  }
+
+  if (course.status !== 'active') {
+    return { success: false, error: `Cannot enroll into a ${course.status} course. Publish the course first before enrolling students.` };
   }
 
   // Insert enrollment

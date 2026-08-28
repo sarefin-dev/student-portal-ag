@@ -40,7 +40,11 @@ export default async function EnrollmentsPage({
     .order(sort, { ascending: order === 'asc' })
     .range(from, to);
 
-  const { data: courses } = await supabase.from('courses').select('id, title, status, price_amount, currency');
+  const { data: courses } = await supabase
+    .from('courses')
+    .select('id, title, status, price_amount, currency')
+    .eq('status', 'active')
+    .order('title', { ascending: true });
 
   const totalPages = count ? Math.ceil(count / pageSize) : 1;
 
