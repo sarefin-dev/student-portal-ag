@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -75,6 +75,11 @@ export default async function CourseBuilderPage({ params }: { params: Promise<{ 
           <Link href={`/admin/courses/${course.id}/assessments`}>
             <Button variant="outline">Manage Assessments</Button>
           </Link>
+          {['live_cohort', 'in_person'].includes(course.type) && (
+            <Link href={`/admin/courses/${course.id}/cohort`}>
+              <Button variant="outline">Cohort Completion</Button>
+            </Link>
+          )}
           
           {course.status !== 'coming_soon' && course.status !== 'active' && (
             <form action={setComingSoon}>
