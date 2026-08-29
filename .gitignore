@@ -54,3 +54,5 @@ supabase/.temp
 
 # Production secrets
 .env.production
+
+.env.local.backup
